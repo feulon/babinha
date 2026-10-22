@@ -25,7 +25,6 @@
       <div class="status__body">
         <p class="status__headline">Você está na lista</p>
         {% if week.can_leave %}
-          <p class="small">{% if week.in_free_period %}Pode desistir sem custo até sábado às 23h59.{% else %}O prazo para desistir sem multa já passou.{% endif %}</p>
           <a class="btn btn--ghost btn--block" href="{% url 'games:leave' %}">Desistir</a>
         {% else %}
           <p class="small">O jogo deste domingo já começou.</p>
@@ -39,7 +38,6 @@
         <p class="status__headline">Você foi promovido da espera</p>
         {% if week.my_entry.position == "goleiro" %}<p>Você joga no gol.</p>{% endif %}
         {% if week.can_leave %}
-          <p class="small">{% if week.in_free_period %}Se não puder ir, recuse sem custo até sábado às 23h59.{% else %}O prazo para recusar sem multa já passou.{% endif %}</p>
           <a class="btn btn--ghost btn--block" href="{% url 'games:leave' %}">Recusar a vaga</a>
         {% else %}
           <p class="small">O jogo deste domingo já começou.</p>

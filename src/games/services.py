@@ -20,7 +20,15 @@ from fines import services as fines
 from fines.models import Fine, FineReason
 from games.domain import roster as engine
 from games.domain import schedule as sched
-from games.domain.roster import Applicant, DemoDay, Entry, ListContext, ListError, Roster
+from games.domain.roster import (
+    Applicant,
+    DemoDay,
+    Entry,
+    ListContext,
+    ListError,
+    Roster,
+    Section,
+)
 from games.domain.schedule import WeekSchedule, follow_sunday, matchday_sunday, upcoming_sunday
 from games.domain.types import EntryStatus, PlayerType, Position
 from games.models import Attendance, GameDay, ListEntry
@@ -128,6 +136,7 @@ def _to_domain(row: ListEntry) -> Entry:
         confirmed_at=row.confirmed_at,
         bumped=row.bumped,
         promoted=row.promoted,
+        board_rank=row.board_rank,
     )
 
 
@@ -148,6 +157,7 @@ def _persist(game_day: GameDay, before: Roster, after: Roster) -> set[int]:
                 "confirmed_at": entry.confirmed_at,
                 "bumped": entry.bumped,
                 "promoted": entry.promoted,
+                "board_rank": entry.board_rank,
             },
         )
     return changed
@@ -207,6 +217,20 @@ def leave_list(
         if isinstance(event, engine.Dropped) and event.late
     )
     return ListResult(outcome.events, recorded)
+
+
+@transaction.atomic
+def place_on_list(
+    game_day_id: int, player: Player, section: Section, index: int | None, board_actor: Player
+) -> ListResult:
+    """The diretoria puts `player` at `index` of a section (see `engine.place`). Never fined."""
+    if board_actor is None or not board_actor.is_board:
+        raise PermissionDenied
+    game_day = _lock(game_day_id)
+    before = load_roster(game_day)
+    outcome = engine.place(before, player.pk, section, index, context_for(game_day))
+    _apply(game_day, before, outcome.roster, board_actor)
+    return ListResult(outcome.events)
 
 
 @transaction.atomic

@@ -4,6 +4,7 @@ from django.contrib import messages
 
 from accounts.models import Player
 from games.domain import roster as engine
+from games.domain.types import EntryStatus, Position
 from games.services import ListResult
 
 Message = tuple[int, str]  # (django.contrib.messages level, text)
@@ -42,10 +43,32 @@ def for_actor(result: ListResult, player_id: int) -> list[Message]:
     return lines
 
 
+SECTION_NAMES = {
+    (EntryStatus.LISTA, Position.LINHA): "da linha",
+    (EntryStatus.LISTA, Position.GOLEIRO): "dos goleiros",
+    (EntryStatus.ESPERA, Position.LINHA): "da fila de espera da linha",
+    (EntryStatus.ESPERA, Position.GOLEIRO): "da fila de espera dos goleiros",
+}
+
+
 def for_board(result: ListResult, name: str) -> list[Message]:
     lines: list[Message] = []
+    overflowed = {e.player_id for e in result.events if isinstance(e, engine.Overflowed)}
     for event in result.events:
         match event:
+            case engine.Placed(player_id=pid, section=section, index=index) if (
+                pid not in overflowed
+            ):
+                where = SECTION_NAMES[(section.status, section.position)]
+                lines.append((messages.SUCCESS, f"{name} agora é o {index}º {where}."))
+            case engine.Overflowed(player_id=pid):
+                lines.append(
+                    (
+                        messages.INFO,
+                        f"{_name_of(pid)} ficou fora das vagas e foi para o topo da fila de "
+                        "espera, sem multa.",
+                    )
+                )
             case engine.Confirmed():
                 lines.append((messages.SUCCESS, f"{name} entrou na lista."))
             case engine.Waitlisted():

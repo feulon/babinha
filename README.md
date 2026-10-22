@@ -209,6 +209,15 @@ Horarios sempre em America/Sao_Paulo.
   goleiro retomam as vagas 21 e 22 do ultimo jogador de linha a entrar. Quem perde a vaga vai
   para o topo da espera, sem multa.
 - Fila de espera por ordem de chegada e por posicao, com promocao automatica ate o jogo comecar.
+- A diretoria edita a lista inteira a qualquer hora, mesmo depois do prazo de sabado, sem multa
+  para quem ela move: na lista de jogadores da tela do domingo, tocar no nome abre Subir, Descer,
+  Lugar (ir direto a uma posicao), Para a fila / Para a lista e Para o gol / Para a linha. O
+  lugar escolhido pela diretoria (selo "fixo") vale sobre a ordem de chegada e as prioridades
+  enquanto o jogador ficar naquela parte da lista: as prioridades nunca o tiram da vaga e as
+  regras automaticas seguem ordenando os demais em volta dele. Quem fica alem do limite de vagas
+  vai para o topo da espera, sem multa; mandar alguem para a fila passa a vaga ao proximo da
+  espera. O Inicio do jogador nao lembra o prazo de desistencia (para nao incentivar); as regras e
+  o cadastro continuam explicando.
 - Desistir ou recusar promocao e gratis ate sabado 23h59; depois gera multa. Falta marcada na
   lista de presenca tambem gera multa. O valor sobe a cada
   ocorrencia pelo multiplicador (padrao 1,5x: R$ 50, 75, 112,50...; a diretoria edita); o perdao da diretoria tira a ocorrencia da contagem. O atraso e multado a parte, com valor fixo pelo tempo (padrao: 15 min = R$ 10,

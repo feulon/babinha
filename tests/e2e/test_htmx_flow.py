@@ -70,6 +70,35 @@ def test_board_removes_a_player_in_place(
     assert page.evaluate("window.__noReload") is True
 
 
+def test_board_reorders_and_moves_players_in_place(
+    page: Page,
+    live_server,
+    fill_sunday: Callable[..., Sunday],
+    board_member: Player,
+) -> None:
+    sunday = fill_sunday(line=3, goalkeepers=1)
+    third = sunday.line[2]
+    page.on("dialog", lambda dialog: dialog.accept())
+    log_in(page, live_server.url, board_member)
+    page.goto(f"{live_server.url}/diretoria/domingo/{sunday.game_day.date.isoformat()}/")
+    page.evaluate(NO_RELOAD)
+    page.get_by_text("Lista de jogadores (").click()
+
+    page.locator("summary", has_text=third.name).click()  # a tap on the name opens its moves
+    page.get_by_role("button", name=f"Subir {third.name}").click()
+    expect(page.get_by_text(f"{third.name} agora é o 2º da linha.")).to_be_visible()
+    # The moves stay open, so the next tap moves the player again.
+    page.get_by_role("button", name=f"Subir {third.name}").click()
+    expect(page.get_by_text(f"{third.name} agora é o 1º da linha.")).to_be_visible()
+    first_row = page.locator("#lista-jogadores .roster").nth(1).locator("li").first
+    expect(first_row).to_contain_text(third.name)
+
+    page.get_by_role("button", name=f"Passar {third.name} para o gol").click()
+    expect(page.get_by_text(f"{third.name} agora é o 2º dos goleiros.")).to_be_visible()
+    assert ListEntry.objects.get(player=third).position == "goleiro"
+    assert page.evaluate("window.__noReload") is True
+
+
 def test_board_marks_attendance_and_lateness_during_the_games(
     page: Page,
     live_server,

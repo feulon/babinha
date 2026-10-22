@@ -1,14 +1,18 @@
+{% comment %}`section` ("lista-linha", "espera-goleiro", ...) turns on the tools that move a player: a tap on the name opens them.{% endcomment %}
 {% if rows %}
   <ol class="roster">
     {% for row in rows %}
       <li>
-        <span class="roster__name">
-          {{ row.player.name }}
-          {% include "board/times/_rookie.html" with player=row.player %}
-          {% if row.enrolled %}<span class="badge badge--primary" title="Mensalista">M</span>{% elif row.player.player_type == "agregado" %}<span class="badge">Agregado</span>{% endif %}
-          {% if row.promoted %}<span class="badge badge--primary">promovido</span>{% endif %}
-          {% if row.bumped %}<span class="badge badge--wait">prioridade</span>{% endif %}
-        </span>
+        {% if section and not game_day.is_cancelled %}
+          <details class="roster__edit" id="mover-{{ row.player_id }}" data-keep-open>
+            <summary class="roster__name" title="Mover {{ row.player.name }}">
+              {% include "board/_entry_name.html" %}
+            </summary>
+            {% include "board/_entry_moves.html" %}
+          </details>
+        {% else %}
+          <span class="roster__name">{% include "board/_entry_name.html" %}</span>
+        {% endif %}
         <span class="roster__tools">
           {% if remove_tools %}
             {% url 'board:remove_from_list' day=game_day.date.isoformat player_id=row.player_id as remove_url %}

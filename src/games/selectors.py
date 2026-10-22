@@ -164,6 +164,14 @@ class BoardRoster:
     def waiting_count(self) -> int:
         return len(self.waiting_line) + len(self.waiting_goalkeepers)
 
+    @property
+    def line_full(self) -> bool:
+        return len(self.line) >= self.line_capacity
+
+    @property
+    def goalkeepers_full(self) -> bool:
+        return len(self.goalkeepers) >= MAX_GOALKEEPERS
+
 
 def board_roster(game_day: GameDay) -> BoardRoster:
     ctx = context_for(game_day)

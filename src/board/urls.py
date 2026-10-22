@@ -30,6 +30,11 @@ urlpatterns = [
         name="remove_from_list",
     ),
     path(
+        "domingo/<str:day>/mover/<int:player_id>/",
+        views.place_on_list,
+        name="place_on_list",
+    ),
+    path(
         "domingo/<str:day>/presenca/<int:player_id>/",
         views.mark_attendance,
         name="mark_attendance",
