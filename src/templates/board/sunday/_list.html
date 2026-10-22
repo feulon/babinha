@@ -8,16 +8,16 @@
     </form>
   {% endif %}
   <div class="card__title"><h3 class="roster__sub">Goleiros</h3><span class="count">{{ roster.goalkeepers|length }}/4</span></div>
-  {% include "board/_entry_rows.html" with rows=roster.goalkeepers empty="Nenhum goleiro." remove_tools=True %}
+  {% include "board/_entry_rows.html" with rows=roster.goalkeepers empty="Nenhum goleiro." remove_tools=True section="lista-goleiro" on_list=True keeper=True %}
   <div class="card__title"><h3 class="roster__sub">Linha</h3><span class="count">{{ roster.line|length }}/{{ roster.line_capacity }}</span></div>
-  {% include "board/_entry_rows.html" with rows=roster.line empty="Ninguém na lista." remove_tools=True %}
+  {% include "board/_entry_rows.html" with rows=roster.line empty="Ninguém na lista." remove_tools=True section="lista-linha" on_list=True %}
   <div class="card__title"><h3 class="roster__sub">Fila de espera</h3><span class="count">{{ roster.waiting_count }}</span></div>
   {% if roster.waiting_goalkeepers %}
     <p class="small muted">Goleiros</p>
-    {% include "board/_entry_rows.html" with rows=roster.waiting_goalkeepers remove_tools=True %}
+    {% include "board/_entry_rows.html" with rows=roster.waiting_goalkeepers remove_tools=True section="espera-goleiro" keeper=True full=roster.goalkeepers_full %}
   {% endif %}
   {% if roster.waiting_goalkeepers and roster.waiting_line %}<p class="small muted">Linha</p>{% endif %}
-  {% include "board/_entry_rows.html" with rows=roster.waiting_line empty="Ninguém na espera." remove_tools=True %}
+  {% include "board/_entry_rows.html" with rows=roster.waiting_line empty="Ninguém na espera." remove_tools=True section="espera-linha" full=roster.line_full %}
   {% if roster.gone %}
     <details data-keep-state id="lista-saiu">
       <summary>Saíram ({{ roster.gone|length }})</summary>

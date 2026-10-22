@@ -1,0 +1,6 @@
+{{ row.player.name }}
+{% include "board/times/_rookie.html" with player=row.player %}
+{% if row.enrolled %}<span class="badge badge--primary" title="Mensalista">M</span>{% elif row.player.player_type == "agregado" %}<span class="badge">Agregado</span>{% endif %}
+{% if row.promoted %}<span class="badge badge--primary">promovido</span>{% endif %}
+{% if row.bumped %}<span class="badge badge--wait">prioridade</span>{% endif %}
+{% if row.board_rank %}<span class="badge" title="Lugar definido pela diretoria">fixo</span>{% endif %}

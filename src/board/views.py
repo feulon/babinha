@@ -22,6 +22,7 @@ from board.forms import (
     ClubSettingsForm,
     ForgiveForm,
     NewPlayerForm,
+    PlaceOnListForm,
     PlayerForm,
 )
 from board.middleware import SundayUnavailable
@@ -340,6 +341,32 @@ def remove_from_list(request: HttpRequest, day: str, player_id: int) -> HttpResp
     player = get_object_or_404(Player, pk=player_id)
     try:
         result = services.leave_list(current.pk, player, board_actor=request.user)
+    except ListError as error:
+        messages.error(request, error.message)
+    else:
+        for level, text in for_board(result, player.name):
+            messages.add_message(request, level, text)
+    return _roster_changed(request, current)
+
+
+@board_required
+@require_POST
+def place_on_list(request: HttpRequest, day: str, player_id: int) -> HttpResponse:
+    """Move a player up or down, to a place, or between the list, the waitlist and the goal."""
+    current = _sunday_or_404(day)
+    player = get_object_or_404(Player, pk=player_id)
+    form = PlaceOnListForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Escolha um lugar válido na lista.")
+        return _roster_changed(request, current)
+    try:
+        result = services.place_on_list(
+            current.pk,
+            player,
+            form.cleaned_data["section"],
+            form.cleaned_data["index"],
+            request.user,
+        )
     except ListError as error:
         messages.error(request, error.message)
     else:

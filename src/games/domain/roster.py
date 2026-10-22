@@ -15,6 +15,11 @@ Rules (docs/plan.md "Lista semanal" plus the captain's decisions):
   Promotion is automatic until the game starts.
 - Dropping out (or declining a promotion) is free until Saturday 23h59; afterwards leaving a
   spot is a late dropout, which the service turns into a fine. Leaving the waitlist is free.
+- The diretoria may put anyone at any place of the list or the waitlist, at any time and with no
+  fine (`place`). That place holds over the automatic order and the priorities while the player
+  stays in that section: the automatic rules keep ordering everyone else around it, and the
+  priorities never bump a player the diretoria placed. Whoever ends up past the spot limit goes
+  to the top of the waitlist, with no fine.
 """
 
 from dataclasses import dataclass, replace
@@ -75,6 +80,11 @@ class Entry:
     confirmed_at: datetime | None = None  # when the current spot was obtained
     bumped: bool = False  # lost the spot to a priority rule and waits on top of the queue
     promoted: bool = False  # got the current spot from the waitlist
+    board_rank: int | None = None  # 1-based place in its section set by the diretoria
+
+    @property
+    def placed_by_board(self) -> bool:
+        return self.board_rank is not None
 
     @property
     def is_mensalista(self) -> bool:
@@ -83,6 +93,18 @@ class Entry:
     @property
     def is_active(self) -> bool:
         return self.status != EntryStatus.SAIU
+
+
+@dataclass(frozen=True)
+class Section:
+    """One of the four parts of the list: the spots or the waitlist, of one position."""
+
+    status: EntryStatus  # LISTA or ESPERA
+    position: Position
+
+    def __post_init__(self) -> None:
+        if self.status == EntryStatus.SAIU:
+            raise ValueError("a section is the list or the waitlist")
 
 
 @dataclass(frozen=True)
@@ -150,7 +172,23 @@ class Dropped:
     late: bool  # left a spot after the free period: fined unless the diretoria removed them
 
 
-Event = Confirmed | Waitlisted | Bumped | Promoted | Dropped
+@dataclass(frozen=True)
+class Placed:
+    """The diretoria put the player at `index` (1-based) of a section."""
+
+    player_id: int
+    section: Section
+    index: int
+
+
+@dataclass(frozen=True)
+class Overflowed:
+    """A board placement left the player past the spot limit: they went to the waitlist."""
+
+    player_id: int
+
+
+Event = Confirmed | Waitlisted | Bumped | Promoted | Dropped | Placed | Overflowed
 
 
 @dataclass(frozen=True)
@@ -161,17 +199,22 @@ class Roster:
         return next((e for e in self.entries if e.player_id == player_id), None)
 
     def confirmed(self, position: Position) -> tuple[Entry, ...]:
-        """Players holding a spot, in the order they got it."""
+        """Players holding a spot, in the order they got it, around those the diretoria placed."""
         holders = [
             e for e in self.entries if e.status == EntryStatus.LISTA and e.position == position
         ]
-        return tuple(sorted(holders, key=lambda e: (e.confirmed_at, e.player_id)))
+        return _arrange(sorted(holders, key=lambda e: (e.confirmed_at, e.player_id)))
 
     def waitlist(self, position: Position, *, in_free_period: bool) -> tuple[Entry, ...]:
         waiting = [
             e for e in self.entries if e.status == EntryStatus.ESPERA and e.position == position
         ]
-        return tuple(sorted(waiting, key=lambda e: _queue_key(e, in_free_period)))
+        return _arrange(sorted(waiting, key=lambda e: _queue_key(e, in_free_period)))
+
+    def section(self, section: Section, *, in_free_period: bool) -> tuple[Entry, ...]:
+        if section.status == EntryStatus.LISTA:
+            return self.confirmed(section.position)
+        return self.waitlist(section.position, in_free_period=in_free_period)
 
     def count(self, position: Position) -> int:
         return len(self.confirmed(position))
@@ -190,6 +233,21 @@ class Outcome:
     events: tuple[Event, ...]
 
 
+def _arrange(automatic: list[Entry]) -> tuple[Entry, ...]:
+    """The automatic order, with everyone the diretoria placed put back at their place.
+
+    Placed entries go in by rank, so a place past the end of the section means the end.
+    """
+    placed = sorted(
+        (e for e in automatic if e.board_rank is not None),
+        key=lambda e: (e.board_rank, e.player_id),
+    )
+    order = [e for e in automatic if e.board_rank is None]
+    for entry in placed:
+        order.insert(min(entry.board_rank - 1, len(order)), entry)
+    return tuple(order)
+
+
 def _queue_key(entry: Entry, in_free_period: bool) -> tuple[int, int, datetime, int]:
     mensalista_first = 0 if in_free_period and entry.is_mensalista else 1
     bumped_first = 0 if entry.bumped else 1
@@ -198,16 +256,33 @@ def _queue_key(entry: Entry, in_free_period: bool) -> tuple[int, int, datetime, 
 
 def _confirm(entry: Entry, now: datetime, *, promoted: bool) -> Entry:
     return replace(
-        entry, status=EntryStatus.LISTA, confirmed_at=now, bumped=False, promoted=promoted
+        entry,
+        status=EntryStatus.LISTA,
+        confirmed_at=now,
+        bumped=False,
+        promoted=promoted,
+        board_rank=None,
     )
 
 
 def _bump(entry: Entry) -> Entry:
-    return replace(entry, status=EntryStatus.ESPERA, confirmed_at=None, bumped=True, promoted=False)
+    return replace(
+        entry,
+        status=EntryStatus.ESPERA,
+        confirmed_at=None,
+        bumped=True,
+        promoted=False,
+        board_rank=None,
+    )
 
 
 def _last_to_enter(entries: tuple[Entry, ...], *, non_mensalista_only: bool) -> Entry | None:
-    candidates = [e for e in entries if not (non_mensalista_only and e.is_mensalista)]
+    """The last one a priority may bump. Whoever the diretoria placed is never bumped."""
+    candidates = [
+        e
+        for e in entries
+        if not e.placed_by_board and not (non_mensalista_only and e.is_mensalista)
+    ]
     return candidates[-1] if candidates else None
 
 
@@ -222,8 +297,10 @@ def _goalkeeper_placement(
             return True, None
         if ctx.in_free_period:
             holders = roster.confirmed(Position.LINHA)
-            victim = _last_to_enter(holders, non_mensalista_only=True) or holders[-1]
-            return True, victim
+            victim = _last_to_enter(holders, non_mensalista_only=True) or _last_to_enter(
+                holders, non_mensalista_only=False
+            )
+            return victim is not None, victim
         return False, None
     if applicant.player_type == PlayerType.MENSALISTA and ctx.in_free_period:
         victim = _last_to_enter(roster.confirmed(Position.GOLEIRO), non_mensalista_only=True)
@@ -299,41 +376,54 @@ def drop(roster: Roster, player_id: int, ctx: ListContext, *, by_board: bool = F
 
     was_confirmed = entry.status == EntryStatus.LISTA
     late = was_confirmed and not ctx.in_free_period and not by_board
-    left = replace(entry, status=EntryStatus.SAIU, confirmed_at=None, bumped=False, promoted=False)
+    left = replace(
+        entry,
+        status=EntryStatus.SAIU,
+        confirmed_at=None,
+        bumped=False,
+        promoted=False,
+        board_rank=None,
+    )
     dropped = Dropped(player_id, was_confirmed=was_confirmed, late=late)
     refilled = fill(roster.put(left), ctx)
     return Outcome(refilled.roster, (dropped, *refilled.events))
 
 
-def fill(roster: Roster, ctx: ListContext) -> Outcome:
+def fill(roster: Roster, ctx: ListContext, *, hold: frozenset[int] = frozenset()) -> Outcome:
     """Promote from the waitlist while spots are free. Stops once the game starts.
 
     When a free spot could go to either position (a flex spot), goalkeepers win during the free
-    period; afterwards whoever has waited longest gets it.
+    period; afterwards whoever has waited longest gets it. Players in `hold` are not promoted.
     """
     if ctx.cancelled or ctx.closed:
         return Outcome(roster, ())
     events: list[Event] = []
-    while (head := _next_promotion(roster, ctx)) is not None:
+    while (head := _next_promotion(roster, ctx, hold)) is not None:
         roster = roster.put(_confirm(head, ctx.now, promoted=True))
         events.append(Promoted(head.player_id))
     _check_capacity(roster)
     return Outcome(roster, tuple(events))
 
 
-def _next_promotion(roster: Roster, ctx: ListContext) -> Entry | None:
+def _next_promotion(
+    roster: Roster, ctx: ListContext, hold: frozenset[int] = frozenset()
+) -> Entry | None:
     goalkeepers = roster.count(Position.GOLEIRO)
     line = roster.count(Position.LINHA)
     free = ctx.in_free_period
     candidates: list[Entry] = []
 
-    gk_queue = roster.waitlist(Position.GOLEIRO, in_free_period=free)
+    def queue(position: Position) -> tuple[Entry, ...]:
+        waiting = roster.waitlist(position, in_free_period=free)
+        return tuple(e for e in waiting if e.player_id not in hold)
+
+    gk_queue = queue(Position.GOLEIRO)
     if gk_queue and goalkeepers < MAX_GOALKEEPERS and line <= line_capacity(goalkeepers + 1):
         if free:
             return gk_queue[0]
         candidates.append(gk_queue[0])
 
-    line_queue = roster.waitlist(Position.LINHA, in_free_period=free)
+    line_queue = queue(Position.LINHA)
     if line_queue and line < line_capacity(goalkeepers):
         candidates.append(line_queue[0])
 
@@ -345,6 +435,92 @@ def _next_promotion(roster: Roster, ctx: ListContext) -> Entry | None:
 def _check_capacity(roster: Roster) -> None:
     if not roster.within_capacity():
         raise AssertionError("list engine exceeded the spot limits")
+
+
+class NobodyToTakeTheSpot(ListError):
+    message = "Ninguém na fila pode ficar com esta vaga. Para tirar o jogador, use Retirar."
+
+
+def place(
+    roster: Roster, player_id: int, target: Section, index: int | None, ctx: ListContext
+) -> Outcome:
+    """The diretoria puts a player at `index` (1-based) of a section, at any time and with no fine.
+
+    Without `index` the player goes to the last spot inside the limit of the list, or to the top
+    of the waitlist. Someone sent to the waitlist leaves the spot to the next in the queue.
+    Whoever ends up past the spot limit, the moved player included, goes to the top of the
+    waitlist; the freed spots are then refilled as usual.
+    """
+    if ctx.cancelled:
+        raise GameCancelled
+    entry = roster.get(player_id)
+    if entry is None or not entry.is_active:
+        raise NotOnList
+
+    free = ctx.in_free_period
+    moved = _moved_to(entry, target, ctx.now)
+    others = tuple(
+        e for e in roster.section(target, in_free_period=free) if e.player_id != player_id
+    )
+    if index is None:
+        index = _default_index(roster.put(moved), target, len(others))
+    index = max(1, min(index, len(others) + 1))
+    order = (*others[: index - 1], moved, *others[index - 1 :])
+    # The new place is pinned, and so are those already placed, at their new places.
+    for rank, e in enumerate(order, start=1):
+        if e.player_id == player_id or e.placed_by_board:
+            roster = roster.put(replace(e, board_rank=rank))
+
+    events: list[Event] = [Placed(player_id, target, index)]
+    roster, overflowed = _make_room(roster)
+    events.extend(overflowed)
+
+    left_a_spot = entry.status == EntryStatus.LISTA and target.status == EntryStatus.ESPERA
+    hold = frozenset({player_id}) if left_a_spot else frozenset()
+    refilled = fill(roster, ctx, hold=hold)
+    if hold and fill(refilled.roster, ctx).events:
+        raise NobodyToTakeTheSpot
+    _check_capacity(refilled.roster)
+    return Outcome(refilled.roster, (*events, *refilled.events))
+
+
+def _moved_to(entry: Entry, target: Section, now: datetime) -> Entry:
+    if entry.status == target.status:
+        return replace(entry, position=target.position)
+    if target.status == EntryStatus.LISTA:
+        return _confirm(replace(entry, position=target.position), now, promoted=True)
+    return replace(
+        entry,
+        status=EntryStatus.ESPERA,
+        position=target.position,
+        confirmed_at=None,
+        bumped=False,
+        promoted=False,
+        board_rank=None,
+    )
+
+
+def _default_index(roster: Roster, target: Section, others: int) -> int:
+    """The last spot inside the limit of the list, or the top of the waitlist."""
+    if target.status == EntryStatus.ESPERA:
+        return 1
+    goalkeepers = min(roster.count(Position.GOLEIRO), MAX_GOALKEEPERS)
+    limit = MAX_GOALKEEPERS if target.position == Position.GOLEIRO else line_capacity(goalkeepers)
+    return min(others + 1, limit)
+
+
+def _make_room(roster: Roster) -> tuple[Roster, tuple[Event, ...]]:
+    """Send the last players past the spot limit to the top of the waitlist, with no fine."""
+    events: list[Event] = []
+    while roster.count(Position.GOLEIRO) > MAX_GOALKEEPERS:
+        last = roster.confirmed(Position.GOLEIRO)[-1]
+        roster = roster.put(_bump(last))
+        events.append(Overflowed(last.player_id))
+    while roster.count(Position.LINHA) > line_capacity(roster.count(Position.GOLEIRO)):
+        last = roster.confirmed(Position.LINHA)[-1]
+        roster = roster.put(_bump(last))
+        events.append(Overflowed(last.player_id))
+    return roster, tuple(events)
 
 
 def waitlist_position(roster: Roster, player_id: int, *, in_free_period: bool) -> int | None:

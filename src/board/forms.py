@@ -17,6 +17,8 @@ from core import clock
 from core.forms import localize_money
 from core.models import DUE_DAY_MAX, DUE_DAY_MIN, FINE_FACTOR_MIN, ClubSettings
 from core.pix import normalize_pix_key
+from games.domain.roster import Section
+from games.domain.types import EntryStatus, Position
 
 POTE_HELP = (
     "Pote 1 é o mais forte e pote 5 o mais fraco. O sorteio espalha os potes entre os times."
@@ -262,6 +264,24 @@ class AddToListForm(forms.Form):
             pk__in=exclude_ids
         )
         self.fields["player"].label_from_instance = lambda p: p.name
+
+
+SECTIONS = {
+    f"{status}-{position}": Section(status, position)
+    for status in (EntryStatus.LISTA, EntryStatus.ESPERA)
+    for position in Position
+}
+
+
+class PlaceOnListForm(forms.Form):
+    """Where the diretoria puts a player: a section ("lista-linha", "espera-goleiro", ...) and,
+    optionally, a place in it (1 is the top)."""
+
+    section = forms.ChoiceField(choices=[(key, key) for key in SECTIONS])
+    index = forms.IntegerField(label="Posição", min_value=1, max_value=99, required=False)
+
+    def clean_section(self) -> Section:
+        return SECTIONS[self.cleaned_data["section"]]
 
 
 class NewPlayerForm(PhotoFormMixin, SameNameMixin, ContactCleanMixin, forms.ModelForm):

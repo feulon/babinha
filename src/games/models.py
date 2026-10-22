@@ -85,6 +85,13 @@ class ListEntry(models.Model):
     confirmed_at = models.DateTimeField("vaga desde", null=True, blank=True)
     bumped = models.BooleanField("perdeu a vaga por prioridade", default=False)
     promoted = models.BooleanField("promovido da espera", default=False)
+    board_rank = models.PositiveSmallIntegerField(
+        "posição definida pela diretoria",
+        null=True,
+        blank=True,
+        help_text="Lugar na lista ou na espera em que a diretoria pôs o jogador; vale sobre a "
+        "ordem automática enquanto ele ficar ali.",
+    )
     attendance = models.CharField(
         "presença", max_length=10, choices=Attendance.choices, blank=True, default=""
     )
@@ -116,6 +123,11 @@ class ListEntry(models.Model):
             models.CheckConstraint(
                 condition=models.Q(late_minutes__isnull=True) | ~models.Q(attendance="faltou"),
                 name="late_entries_did_not_miss",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(board_rank__isnull=True)
+                | (~models.Q(status=EntryStatus.SAIU.value) & models.Q(board_rank__gte=1)),
+                name="board_rank_only_on_list_or_waitlist",
             ),
         ]
         indexes = [models.Index(fields=["game_day", "status"])]
