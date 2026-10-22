@@ -8,6 +8,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 
 from accounts.invites import invite_link
 from core.htmx import is_htmx
+from core.models import ClubSettings
 from finance.views import payments_context
 from fines import services as fines
 from games import services
@@ -32,6 +33,7 @@ def _render_home(
         "week": view,
         "hero_day": followed,
         "hero_over": services.sunday_over(followed),
+        "venue_name": ClubSettings.load().venue_name,
         "next_url": reverse("games:home"),
         "invite_link": invite_link(request, request.user.name),
         **payments_context(request),

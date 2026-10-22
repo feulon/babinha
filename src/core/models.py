@@ -88,6 +88,7 @@ class ClubSettings(models.Model):
         blank=True,
         validators=[validate_phone],
     )
+    venue_name = models.CharField("local do jogo", max_length=80, blank=True)
     pix_key_changed_at = models.DateTimeField("chave Pix trocada em", null=True, blank=True)
     pix_key_changed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

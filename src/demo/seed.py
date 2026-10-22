@@ -44,6 +44,8 @@ from matchday import services as matchday
 from matchday.domain.score import Side
 from matchday.models import Match
 
+DEMO_VENUE = "Campo da demonstração"
+
 LAST_SUNDAY_LIST = (
     "presidente",
     "paredao",
@@ -177,6 +179,7 @@ class _Seeder:
         values.single_fee = Decimal("35.00")
         values.fine_base = Decimal("20.00")
         values.monthly_due_day = 20
+        values.venue_name = DEMO_VENUE
         values.pix_key = f"presidente@{DEMO_EMAIL_DOMAIN}"
         values.updated_by = self.board
         values.full_clean()
