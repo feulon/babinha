@@ -1,0 +1,10 @@
+{# Início card for a non-mensalista while the plan is offered: title and the join button only. Needs plan. #}
+{% if plan.is_offered and not plan.enrolled %}
+  <section class="card" data-state="vire-mensalista">
+    <h2>Vire um mensalista</h2>
+    <form method="post" action="{% url 'finance:join_monthly' %}" data-confirm="Virar mensalista de {{ plan.month|date:'F'|lower }}? Abre a mensalidade de R$ {{ plan.fee|floatformat:'2g' }}.">
+      {% csrf_token %}
+      <button type="submit" class="btn btn--primary btn--block">Virar mensalista</button>
+    </form>
+  </section>
+{% endif %}
