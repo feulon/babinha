@@ -1,76 +1,55 @@
 {% load money fine_rules %}{% club_settings as club %}<section class="card stack" id="estou-ciente" data-signup-rules>
   <h2>Regras do Babinha de Domingo</h2>
-  <p class="small muted">Antes de criar sua conta, leia atentamente as regras de participação, prioridade, multas e pagamentos do Babinha de Domingo.</p>
-  <p class="small muted">Ao continuar, você declara estar ciente das regras abaixo.</p>
+  <p class="small muted">Antes de criar sua conta, leia as regras. Ao continuar, você declara estar ciente delas. Domingo, das 10h às 12h, horário de Brasília.</p>
 
-  <h3>1. Regras dos jogos</h3>
-  <h4>Dinâmica das partidas</h4>
-  <ul class="plain-list">
-    <li>Cada partida termina ao atingir 2 gols ou 7 minutos, o que acontecer primeiro.</li>
-    <li>O time vencedor permanece em campo.</li>
-    <li>Em caso de empate, ambos os times deixam o campo.</li>
-    <li>A entrada dos próximos times respeita a ordem de espera, dando preferência a quem está aguardando há mais tempo.</li>
-  </ul>
-  <h4>Bola de Ouro</h4>
-  <ul class="plain-list">
-    <li>Ao final de cada domingo, todos os participantes podem votar no destaque do dia.</li>
-    <li>O jogador mais votado recebe o título de Bola de Ouro do Domingo.</li>
-  </ul>
+  <div class="rule-card" data-signup-rule="jogo">
+    <h3>O jogo</h3>
+    <ul class="plain-list">
+      <li>Cada partida acaba com <strong>2 gols</strong> ou <strong>7 minutos</strong>, o que vier primeiro.</li>
+      <li>Quem ganha <strong>fica</strong>. No empate, <strong>saem os dois</strong>.</li>
+      <li>Entra quem espera há mais tempo.</li>
+      <li>No fim do domingo todos votam na <strong>Bola de Ouro</strong>, e o mais votado leva o título.</li>
+    </ul>
+  </div>
 
-  <h3>2. Inscrição e prioridade na lista</h3>
-  <h4>Abertura das inscrições</h4>
-  <ul class="plain-list">
-    <li>Segunda-feira, às 08h: inscrições abertas para mensalistas e avulsos.</li>
-    <li>Quarta-feira, às 20h: agregados podem se inscrever, desde que existam vagas disponíveis.</li>
-  </ul>
-  <h4>Regras de prioridade</h4>
-  <ul class="plain-list">
-    <li>Até sábado, às 23h59, mensalistas têm prioridade. Caso a lista esteja cheia, um mensalista que se inscrever assume a vaga do último jogador não mensalista inscrito.</li>
-    <li>Os goleiros têm prioridade sobre as vagas 21 e 22, substituindo os últimos jogadores de linha inscritos, quando necessário.</li>
-  </ul>
-  <h4>Lista de espera</h4>
-  <ul class="plain-list">
-    <li>Ao atingir o limite de participantes, novas inscrições entram automaticamente na lista de espera.</li>
-    <li>As vagas são distribuídas conforme a ordem de inscrição, respeitando as prioridades.</li>
-    <li>Quem perder a vaga por uma regra de prioridade será movido para o início da lista de espera, sem multa.</li>
-  </ul>
+  <div class="rule-card" data-signup-rule="lista">
+    <h3>A lista</h3>
+    <ul class="plain-list">
+      <li>Abre <strong>segunda, 8h</strong> para mensalistas e avulsos.</li>
+      <li>Agregados entram <strong>quarta, 20h</strong>, se houver vaga.</li>
+      <li>Lista cheia? Você entra na <strong>fila de espera</strong>, por ordem de inscrição.</li>
+      <li>Sair da lista ou recusar a vaga da espera é de graça até <strong>sábado, 23h59</strong>.</li>
+    </ul>
+  </div>
 
-  <h3>3. Valores e pagamentos</h3>
-  <h4>Mensalistas</h4>
-  <ul class="plain-list">
-    <li>Mensalidade: {{ club.monthly_fee|brl }}.</li>
-    <li>Vencimento: todo dia {{ club.monthly_due_day }}.</li>
-  </ul>
-  <h4>Avulsos e agregados</h4>
-  <ul class="plain-list">
-    <li>Valor por participação: {{ club.single_fee|brl }} por domingo.</li>
-  </ul>
-  <h4>Como pagar</h4>
-  <ul class="plain-list">
-    <li>As cobranças referentes ao domingo são geradas após o futebol, com prazo de vencimento informado no aplicativo.</li>
-    <li>O pagamento deve ser realizado via Pix.</li>
-    <li>Após pagar, envie o comprovante pelo aplicativo.</li>
-    <li>A diretoria verificará o pagamento e atualizará seu status.</li>
-  </ul>
+  <div class="rule-card" data-signup-rule="prioridade">
+    <h3>Prioridade</h3>
+    <ul class="plain-list">
+      <li>Até <strong>sábado, 23h59</strong>, o mensalista toma a vaga do último não mensalista.</li>
+      <li>Goleiros têm prioridade nas vagas 21 e 22, no lugar dos últimos de linha.</li>
+      <li>Quem perde a vaga assim vai para o topo da fila, <strong>sem multa</strong>.</li>
+    </ul>
+  </div>
 
-  <h3>4. Multas e penalidades</h3>
-  <h4>Falta sem aviso</h4>
-  <ul class="plain-list">
-    <li>Se você estiver confirmado na lista e não comparecer, receberá uma multa.</li>
-    <li>A primeira falta custa {{ club.fine_base|brl }}. A cada nova falta, o valor aumenta em {{ club.fine_factor|increase_percent }}% em relação à anterior.</li>
-    <li>Exemplo: {% for amount in club.fine_examples %}{{ amount|brl }}{% if not forloop.last %} → {% endif %}{% endfor %}...</li>
-  </ul>
-  <h4>Atrasos</h4>
-  <ul class="plain-list">
-    <li>Atraso de 15 minutos: {{ club.late_fine_15|brl }}.</li>
-    <li>Atraso de 30 minutos: {{ club.late_fine_30|brl }}.</li>
-  </ul>
-  <h4>Desistência fora do prazo</h4>
-  <ul class="plain-list">
-    <li>Você pode sair da lista ou recusar uma vaga da lista de espera até sábado, às 23h59, sem penalidade.</li>
-    <li>Após esse horário, a desistência está sujeita a multa.</li>
-  </ul>
-  <p class="small"><strong>Importante:</strong> O pagamento de uma multa não apaga seu histórico de infrações. Somente a diretoria pode conceder o perdão de uma falta registrada.</p>
+  <div class="rule-card" data-signup-rule="valores">
+    <h3>Quanto custa</h3>
+    <dl class="kv">
+      <dt>Mensalidade (vencimento: todo dia {{ club.monthly_due_day }})</dt><dd>{{ club.monthly_fee|brl }}</dd>
+      <dt>Avulso ou agregado, por domingo</dt><dd>{{ club.single_fee|brl }}</dd>
+    </dl>
+    <p class="small muted">A cobrança do domingo sai depois do futebol, com o vencimento no app. Pague por <strong>Pix</strong> e envie o comprovante pelo app. A diretoria confere e atualiza o status.</p>
+  </div>
+
+  <div class="rule-card" data-signup-rule="multas">
+    <h3>Multas</h3>
+    <dl class="kv">
+      <dt>Falta sem aviso</dt><dd>{{ club.fine_base|brl }}, sobe {{ club.fine_factor|increase_percent }}% a cada nova</dd>
+      <dt>Atraso de 15 minutos</dt><dd>{{ club.late_fine_15|brl }}</dd>
+      <dt>Atraso de 30 minutos</dt><dd>{{ club.late_fine_30|brl }}</dd>
+    </dl>
+    <p class="small muted">Exemplo de faltas: {% for amount in club.fine_examples %}{{ amount|brl }}{% if not forloop.last %} → {% endif %}{% endfor %}...</p>
+    <p class="small muted">Desistir depois de <strong>sábado, 23h59</strong> também gera multa. Pagar não apaga o histórico.</p>
+  </div>
 
   <h3>Confirmação</h3>
   <p class="small">Ao aceitar, você confirma que leu, compreendeu e concorda com as regras de participação, prioridade, multas e pagamentos do Babinha de Domingo.</p>

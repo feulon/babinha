@@ -90,6 +90,8 @@ class TestPlayerView:
     def test_draft_teams_are_hidden(self, sunday: Sunday, lineup: Lineup) -> None:
         html = text(login(sunday.line[0]).get(TODAY))
         assert 'data-state="sem-times"' in html
+        assert "Nada por aqui ainda" in html
+        assert "Ansioso? O domingo chega logo." in html
         assert "Time A" not in html
 
     def test_confirmed_teams_are_shown_without_potes(
@@ -99,6 +101,7 @@ class TestPlayerView:
         me = sunday.line[0]
         my_team = lineup.teams.get(number=team_number(lineup, me)).name
         html = text(login(me).get(TODAY))
+        assert "Nada por aqui ainda" not in html
         assert f"Você está no {my_team}" in html
         assert f"{me.name} (você)" in html
         assert all(player.name in html for player in sunday.line + sunday.goalkeepers)

@@ -61,17 +61,29 @@ class TestRulesAcknowledgement:
         club_values.save()
         html = client.get(SIGNUP).content.decode()
         for text in (
-            "A primeira falta custa R$ 40,00.",
-            "aumenta em 25% em relação",
-            "Exemplo: R$ 40,00 → R$ 50,00 → R$ 62,50 → R$ 78,13...",
-            "Atraso de 15 minutos: R$ 12,00.",
-            "Atraso de 30 minutos: R$ 27,50.",
-            "Mensalidade: R$ 150,00.",
-            "Vencimento: todo dia 5.",
-            "R$ 40,00 por domingo.",
+            "R$ 40,00, sobe 25% a cada nova",
+            "Exemplo de faltas: R$ 40,00 → R$ 50,00 → R$ 62,50 → R$ 78,13...",
+            "<dt>Atraso de 15 minutos</dt><dd>R$ 12,00</dd>",
+            "<dt>Atraso de 30 minutos</dt><dd>R$ 27,50</dd>",
+            "<dd>R$ 150,00</dd>",
+            "vencimento: todo dia 5",
+            "<dd>R$ 40,00</dd>",
         ):
             assert text in html
         assert "R$ 20,00" not in html
+
+    def test_the_cards_come_in_order_and_drop_the_forgiveness_line(
+        self, client: Client, president: Player
+    ) -> None:
+        html = client.get(SIGNUP).content.decode()
+        order = [
+            html.index(f'data-signup-rule="{key}"')
+            for key in ("jogo", "lista", "prioridade", "valores", "multas")
+        ]
+        assert order == sorted(order)
+        assert "perdão" not in html
+        assert "perdoa" not in html
+        assert "Pagar não apaga o histórico." in html
 
     def test_signup_is_blocked_without_the_acknowledgement(
         self, client: Client, president: Player

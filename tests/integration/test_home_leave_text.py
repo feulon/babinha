@@ -64,4 +64,5 @@ def test_after_the_deadline_the_home_says_nothing_about_it(
 
 def test_the_rules_page_still_explains_the_deadline(client: Client) -> None:
     page = client.get(reverse("rules")).content.decode()
-    assert "não custa nada até sábado às 23h59" in page
+    assert "Último prazo sem multa" in page
+    assert "é de graça até aqui" in page
