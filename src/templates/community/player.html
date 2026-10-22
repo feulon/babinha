@@ -1,10 +1,9 @@
 {% extends "base.html" %}
-{% load avatars navigation %}
+{% load avatars %}
 {% block title %}{{ subject.name }}{% endblock %}
 {% block content %}
 <div class="stack">
   <header>
-    {% url 'community:players' as parent %}{% back_link parent "Turma" %}
     <div class="profile-head" data-profile-photo>
       {% if subject.photo %}
         <a class="profile-head__photo-link" href="{% url 'accounts:photo_page' player_id=subject.pk %}" aria-label="Ver a foto de {{ subject.name }}">{% avatar subject.name subject.pk subject.photo "profile-head__avatar" %}</a>

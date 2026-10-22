@@ -74,7 +74,7 @@ TEMPLATES = [
                 "core.context_processors.fake_clock_banner",
                 "core.context_processors.demo_banner",
                 "core.context_processors.csrf_cookie",
-                "core.context_processors.back_link",
+                "core.context_processors.navigation_tab",
                 "core.context_processors.monthly_member",
                 "community.context_processors.gold_ball",
                 "board.context_processors.board_entry",

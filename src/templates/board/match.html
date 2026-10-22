@@ -1,11 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Jogo {{ row.number }}{% endblock %}
-{% block page_back %}{% endblock %}
 {% block content %}
 <div class="stack">
   <header>
-    <p class="eyebrow"><a href="{% url 'board:matches' day=game_day.date.isoformat %}">‹ Tabela de {{ game_day.date|date:"d/m" }}</a></p>
+    <a class="btn btn--ghost btn--small" href="{% url 'board:matches' day=game_day.date.isoformat %}">Tabela de {{ game_day.date|date:"d/m" }}</a>
     <h1>Jogo {{ row.number }}</h1>
   </header>
 

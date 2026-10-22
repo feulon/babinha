@@ -344,8 +344,7 @@ ou `rclone sync` para outro bucket.
   em destaque), tabela de jogos e placares, presenca (a do proprio jogador e "Quem vai"; some quando o domingo encerra, junto com o botao "Atualizar"), Bola de
   Ouro (so depois que o futebol encerra: votar, ou o resultado a partir de segunda 8h). Sao as
   mesmas telas de antes (Jogos, votacao), sem regra nova. Quem chega
-  pelo botao leva `?next=` de tela em tela: o link de voltar no alto leva a tela anterior (Inicio,
-  Domingo...) e a aba de baixo continua a de onde o jogador saiu (Inicio); so caminhos do proprio
+  pelo botao leva `?next=` de tela em tela: a aba de baixo continua a de onde o jogador saiu (Inicio); so caminhos do proprio
   site valem. O mesmo destino e a aba **Domingo**, junto do historico.
 - Na **Tabela de jogos** a diretoria chama o proximo jogo com um botao, sem montar rodada: o primeiro
   e entre os dois primeiros times; depois o vencedor fica e entra o time que espera ha mais tempo, e

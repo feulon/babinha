@@ -1,10 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Times {{ game_day.date|date:"d/m" }}{% endblock %}
-{% block page_back %}{% endblock %}
 {% block content %}
 <div class="stack">
   <header>
-    <p class="eyebrow"><a href="{% url 'board:game_day' day=game_day.date.isoformat %}">‹ Montar o domingo {{ game_day.date|date:"d/m" }}</a></p>
+    <a class="btn btn--ghost btn--small" href="{% url 'board:game_day' day=game_day.date.isoformat %}">Montar o domingo {{ game_day.date|date:"d/m" }}</a>
     <h1>Times</h1>
   </header>
   {% include "board/_times.html" %}

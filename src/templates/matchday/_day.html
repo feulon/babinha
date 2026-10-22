@@ -1,6 +1,5 @@
 {% load navigation %}<div id="day" class="stack" data-live-refresh hx-get="{{ here_url }}" hx-trigger="live-refresh" hx-target="this" hx-swap="outerHTML">
   <header class="day-head">
-    {% if not is_current %}<p class="eyebrow"><a href="{% url 'matchday:today' %}">‹ Voltar para o domingo atual</a></p>{% endif %}
     <p class="eyebrow">{% if view.over %}Domingo encerrado{% else %}Acompanhar o domingo{% endif %}</p>
     <h1>Domingo, {{ view.game_day.date|date:"d/m" }}</h1>
     {% if not view.over %}<button type="button" class="btn btn--ghost btn--small day-head__refresh" hx-get="{{ here_url }}" hx-target="#day" hx-swap="outerHTML" data-refresh>Atualizar</button>{% endif %}
@@ -112,7 +111,7 @@
       <h2>Domingos anteriores</h2>
       <ul class="link-list">
         {% for past in history %}
-          <li><a href="{% url 'matchday:day' day=past.date.isoformat %}{% if back_url %}?next={{ back_url|urlencode:'' }}{% endif %}">Domingo, {{ past.date|date:"d/m/Y" }}</a></li>
+          <li><a href="{% url 'matchday:day' day=past.date.isoformat %}{% keep_next "?" %}">Domingo, {{ past.date|date:"d/m/Y" }}</a></li>
         {% endfor %}
       </ul>
     </section>

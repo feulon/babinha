@@ -1,11 +1,8 @@
 from django.conf import settings
 from django.http import HttpRequest
-from django.urls import reverse
 from django.utils.functional import SimpleLazyObject
 
 from core import clock, demo, fake_clock, navigation
-
-PAINEL = "board:dashboard"
 
 
 def fake_clock_banner(request: HttpRequest) -> dict[str, object]:
@@ -33,26 +30,14 @@ def monthly_member(request: HttpRequest) -> dict[str, object]:
     return {"viewer_is_monthly": SimpleLazyObject(lambda: user.is_mensalista)}
 
 
-def back_link(request: HttpRequest) -> dict[str, object]:
-    """The page's way back and the tab of the bar that stays lit: the tab of the screen where the
-    `?next=` chain started, else the screen's own. A diretoria screen opened without a `next`
-    goes back to the Painel."""
+def navigation_tab(request: HttpRequest) -> dict[str, object]:
+    """The tab of the bar that stays lit: the tab of the screen where the `?next=` chain started,
+    else the screen's own."""
     match = request.resolver_match
     own = match.view_name if match else ""
     target = navigation.requested_next(request)
     if target is None:
-        to_painel = navigation.tab_of(own) == navigation.DIRETORIA and own != PAINEL
-        return {
-            "back_url": reverse(PAINEL) if to_painel else "",
-            "back_label": navigation.LABELS[PAINEL] if to_painel else "",
-            "nav_tab": navigation.tab_of(own),
-            "here_url": request.path,
-        }
+        return {"nav_tab": navigation.tab_of(own), "here_url": request.path}
     origin = navigation.origin_match(target)
     origin_name = origin.view_name if origin else own
-    return {
-        "back_url": target,
-        "back_label": navigation.back_label(target),
-        "nav_tab": navigation.tab_of(origin_name),
-        "here_url": navigation.here(request),
-    }
+    return {"nav_tab": navigation.tab_of(origin_name), "here_url": navigation.here(request)}

@@ -1,12 +1,11 @@
 {% extends "base.html" %}
-{% load navigation %}{% block title %}Meu contato{% endblock %}
+{% block title %}Meu contato{% endblock %}
 {% block content %}
 <section class="auth">
   {% if needs_phone %}
     <h1>Qual é o seu celular?</h1>
     <p class="lead">O celular agora é o seu login.</p>
   {% else %}
-    {% more_back %}
     <h1>Meu contato</h1>
   {% endif %}
   <form method="post" class="form card" novalidate>
@@ -22,7 +21,6 @@
       <button type="submit" class="btn btn--ghost btn--block">Sair</button>
     </form>
   {% else %}
-    <div class="form-links"><p><a href="{% url 'community:player' player_id=user.pk %}">Voltar para o perfil</a></p></div>
   {% endif %}
 </section>
 {% endblock %}
