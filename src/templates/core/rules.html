@@ -1,10 +1,9 @@
 {% extends "base.html" %}
-{% load money fine_rules navigation %}
+{% load money fine_rules %}
 {% block title %}Regras do babinha{% endblock %}
 {% block content %}
 <div class="stack">
   <header>
-    {% if user.is_authenticated %}{% more_back %}{% endif %}
     <p class="eyebrow">Babinha de Domingo</p>
     <h1>Regras do babinha</h1>
     <p class="muted small">Domingo, das 10h às 12h. Todos os horários são de Brasília.</p>

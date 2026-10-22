@@ -1,9 +1,8 @@
 {% extends "base.html" %}
-{% load avatars navigation %}
+{% load avatars %}
 {% block title %}Minha foto{% endblock %}
 {% block content %}
 <section class="auth">
-  {% more_back %}
   <h1>Minha foto</h1>
   <div class="photo-edit">
     {% avatar user.name user.pk user.photo "profile-head__avatar" %}
@@ -20,6 +19,5 @@
       <button type="submit" class="btn btn--ghost btn--block">Remover foto</button>
     </form>
   {% endif %}
-  <div class="form-links"><p><a href="{% url 'community:player' player_id=user.pk %}">Voltar para o perfil</a></p></div>
 </section>
 {% endblock %}

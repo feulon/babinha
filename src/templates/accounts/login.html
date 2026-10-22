@@ -11,9 +11,9 @@
     <button type="submit" class="btn btn--primary btn--block">Entrar</button>
   </form>
   <div class="form-links">
-    <p><a href="{% url 'accounts:password_reset' %}">Esqueci minha senha</a></p>
-    <p>Primeira vez? <a href="{% url 'accounts:signup' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Criar conta</a></p>
-    <p><a href="{% url 'rules' %}">Regras do babinha</a></p>
+    <a class="btn btn--ghost btn--block" href="{% url 'accounts:password_reset' %}">Esqueci minha senha</a>
+    <a class="btn btn--ghost btn--block" href="{% url 'accounts:signup' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Primeira vez? Criar conta</a>
+    <a class="btn btn--ghost btn--block" href="{% url 'rules' %}">Regras do babinha</a>
   </div>
 </section>
 {% endblock %}

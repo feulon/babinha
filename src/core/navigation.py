@@ -2,8 +2,7 @@
 the bar each screen belongs to.
 
 Opening Jogos from the Início carries `?next=/`; from there the Bola de Ouro carries
-`?next=/jogo/%3Fnext%3D/`, and so on. The back link goes one step back and the tab bar keeps the
-tab where the chain started.
+`?next=/jogo/%3Fnext%3D/`, and so on. The tab bar keeps the tab where the chain started.
 """
 
 from urllib.parse import parse_qs, urlencode, urlsplit
@@ -17,23 +16,6 @@ MAX_DEPTH = 4
 # Links from one origin screen to another stack their `next`s; past this the chain is dropped and
 # the destination goes back to its fixed parent.
 MAX_NEXT_LENGTH = 400
-
-LABELS = {
-    "games:home": "Início",
-    "more": "Mais",
-    "board:dashboard": "Diretoria",
-    "board:players": "Jogadores",
-    "community:players": "Turma",
-    "community:ranking": "Ranking",
-    "matchday:today": "Domingo",
-    "matchday:day": "Domingo",
-    "community:gold_ball": "Bola de Ouro",
-    "community:gold_ball_day": "Bola de Ouro",
-    "finance:payments": "Pagamentos",
-    "fines:mine": "Histórico de multas",
-    "about": "Sobre o app",
-    "feedback": "Reportar bug ou sugestão",
-}
 
 
 def safe_target(target: str | None) -> str | None:
@@ -100,15 +82,6 @@ def origin_match(target: str) -> ResolverMatch | None:
         return resolve(urlsplit(target).path)
     except Resolver404:
         return None
-
-
-def origin_view_name(target: str) -> str | None:
-    match = origin_match(target)
-    return match.view_name if match else None
-
-
-def back_label(target: str) -> str:
-    return LABELS.get(view_name_of(target) or "", "Voltar")
 
 
 # The tabs of the bar. Diretoria is shown only to the diretoria; the server still checks every

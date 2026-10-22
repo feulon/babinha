@@ -53,7 +53,7 @@
   </section>
   <form method="post" action="{% url 'accounts:logout' %}" class="signout" data-confirm="Sair do Babinha?">
     {% csrf_token %}
-    <button type="submit" class="signout__button">Sair</button>
+    <button type="submit" class="btn btn--ghost btn--block">Sair</button>
   </form>
 </div>
 {% endblock %}

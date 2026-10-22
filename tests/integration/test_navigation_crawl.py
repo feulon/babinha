@@ -1,9 +1,10 @@
 """Regression walk over every GET page of the app, as a player and as the diretoria. Three
 invariants keep the navigation honest:
 
-- every page of the signed-in app has a way out: a lit tab or a back link;
+- every page of the signed-in app has a way out: a lit tab or an exit button;
 - every link on a page leads to an address that exists (no dead ends, no 404);
-- a back link never points at the page itself, and a screen opened with `?next=` goes back there.
+- no page has a loose back link (an underlined "Mais" above the title): the way back is the tab
+  bar, and a screen opened with `?next=` keeps the tab of the screen it came from lit.
 """
 
 import re
@@ -35,9 +36,9 @@ MODES = ("player", "board")
 NO_EXIT_NEEDED = {"accounts:photo_page"}
 
 LINK = re.compile(r'<a\b[^>]*?href="([^"]*)"', re.S)
-BACK = re.compile(r"<a href=\"([^\"]*)\">\u2039 [^<]*</a>")
-BOARD_BACK = re.compile(r'<a class="board-back" href="([^"]*)"')
+LOOSE_BACK = re.compile(r'class="board-back"|class="eyebrow"><a |<a [^>]*>\s*\u2039 ')
 LIT_TAB = re.compile(r'class="tabbar__item is-active')
+LIT_MAIS = re.compile(r'<a href="/mais/" class="tabbar__item is-active')
 EXIT_BUTTON = re.compile(r'<a [^>]*href="[^"]*"[^>]*>\s*(Voltar|Cancelar|Fechar)[^<]*</a>')
 
 
@@ -163,14 +164,10 @@ def test_every_page_has_a_way_out_and_only_live_links(
         html = response.content.decode()
         if view_name(url) in NO_EXIT_NEEDED:
             continue
-        backs = BACK.findall(html) + BOARD_BACK.findall(html)
-        has_exit = bool(LIT_TAB.search(html) or backs or EXIT_BUTTON.search(html))
-        if not has_exit:
-            problems.append(f"{mode}: {url} has no tab and no back link")
-        here = url.split("?", 1)[0]
-        for target in backs:
-            if target.split("?", 1)[0] == here:
-                problems.append(f"{mode}: {url} goes back to itself")
+        if LOOSE_BACK.search(html):
+            problems.append(f"{mode}: {url} has a loose back link")
+        if not (LIT_TAB.search(html) or EXIT_BUTTON.search(html)):
+            problems.append(f"{mode}: {url} has no tab and no exit button")
         for link in internal_links(html):
             path = link.split("?", 1)[0].split("#", 1)[0]
             try:
@@ -183,7 +180,7 @@ def test_every_page_has_a_way_out_and_only_live_links(
 
 
 @pytest.mark.parametrize("mode", MODES)
-def test_a_screen_opened_with_next_goes_back_there(
+def test_a_screen_opened_with_next_keeps_the_tab_it_came_from(
     mode: str, world: dict[str, object], board_member: Player
 ) -> None:
     client = client_as(mode, world["other"], board_member)
@@ -205,9 +202,5 @@ def test_a_screen_opened_with_next_goes_back_there(
         ]
     for url in opened_with_next:
         html = client.get(url, {"next": origin}).content.decode()
-        backs = (
-            BACK.findall(html)
-            + BOARD_BACK.findall(html)
-            + re.findall(r'<a [^>]*href="([^"]*)"[^>]*>\s*(?:Voltar|Cancelar)</a>', html)
-        )
-        assert origin in backs, f"{mode}: {url} does not go back to {origin}: {backs}"
+        assert LIT_MAIS.search(html), f"{mode}: {url} does not keep Mais lit"
+        assert not LOOSE_BACK.search(html), f"{mode}: {url} has a loose back link"

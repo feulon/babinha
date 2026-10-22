@@ -3,7 +3,6 @@
 {% block content %}
 <div class="stack">
   <header>
-    {% back_link %}
     <p class="eyebrow">Comunidade</p>
     <h1>Bola de Ouro</h1>
   </header>
@@ -52,7 +51,7 @@
           <p class="small muted">5 pontos para o 1º, 3 para o 2º, 2 para o 3º. Você não vota em si mesmo. {% include "community/_result_when.html" with window=view.window %}</p>
           <form method="post" action="{% url 'community:vote' day=day.date.isoformat %}" class="form" data-distinct-selects data-confirm="Confirmar o voto? Ele não pode ser alterado.">
             {% csrf_token %}
-            {% if back_url %}<input type="hidden" name="next" value="{{ request.GET.next }}">{% endif %}
+            {% next_field %}
             {% for name, label, chosen in places %}
               <div class="field">
                 <label for="vote-{{ name }}">{{ label }}</label>

@@ -39,7 +39,6 @@
   {% endif %}
 
   <main class="page">
-    {% block page_back %}{% include "includes/page_back.html" %}{% endblock %}
     {% include "includes/messages.html" %}
     {% if user.is_authenticated and user.password_is_provisional and request.resolver_match.view_name != 'accounts:password_change' %}
       <section class="status status--info" role="status" data-provisional-password>

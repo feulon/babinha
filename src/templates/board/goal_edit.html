@@ -1,10 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Editar gol{% endblock %}
-{% block page_back %}{% endblock %}
 {% block content %}
 <div class="stack">
   <header>
-    <p class="eyebrow"><a href="{% url 'board:match' match_id=match.pk %}">‹ {{ match.home_team.name }} x {{ match.away_team.name }}</a></p>
+    <a class="btn btn--ghost btn--small" href="{% url 'board:match' match_id=match.pk %}">{{ match.home_team.name }} x {{ match.away_team.name }}</a>
     <h1>Editar gol</h1>
   </header>
 

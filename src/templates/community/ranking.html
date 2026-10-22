@@ -3,7 +3,6 @@
 {% block content %}
 <div class="stack">
   <header>
-    {% back_link %}
     <p class="eyebrow">Comunidade</p>
     <h1>Ranking</h1>
     <p class="muted small">{% if overall %}Todas as temporadas{% else %}Temporada {{ table.season.number }}{% if not table.season.is_open %} (encerrada){% endif %}{% endif %} · {{ table.sundays }} domingo{{ table.sundays|pluralize }} jogado{{ table.sundays|pluralize }}</p>

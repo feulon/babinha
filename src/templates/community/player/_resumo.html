@@ -26,7 +26,7 @@
 </section>
 
 <section class="card">
-  <div class="card__title"><h2>Últimos domingos</h2><a class="small" href="{{ tab_url }}?aba=domingos{% keep_next %}" hx-get="{{ tab_url }}?aba=domingos{% keep_next %}" hx-target="#perfil-abas" hx-swap="outerHTML" hx-push-url="true">ver todos ›</a></div>
+  <div class="card__title"><h2>Últimos domingos</h2></div>
   {% if summary.recent %}
     {% for sunday in summary.recent %}{% include "community/player/_sunday.html" with compact=True %}{% endfor %}
   {% else %}

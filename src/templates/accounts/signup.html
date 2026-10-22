@@ -20,7 +20,7 @@
     </div>
   {% endif %}
   <div class="form-links">
-    <p>Já tem conta? <a href="{% url 'accounts:login' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Entrar</a></p>
+    <a class="btn btn--ghost btn--block" href="{% url 'accounts:login' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Já tem conta? Entrar</a>
   </div>
 </section>
 {% endblock %}
