@@ -569,6 +569,22 @@ p {
   color: #0f5132;
 }
 
+.hero__cta--locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* The list state lives inside the hero card, as a light panel under the slot meter. */
+.hero .status {
+  margin-top: 0.875rem;
+  color: var(--text);
+}
+
+.hero .status p {
+  margin: 0 0 0.375rem;
+}
+
 .meter {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

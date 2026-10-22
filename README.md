@@ -330,8 +330,8 @@ ou `rclone sync` para outro bucket.
   todos os jogos em miniatura: o jogo atual abre grande embaixo (placar e gols), um por vez, com
   "jogo anterior". Se os times estao desequilibrados, a
   confirmacao mostra o aviso na propria pagina e o botao vira "Confirmar times mesmo assim".
-- **Acompanhar o domingo**: o cartao do proximo jogo, no Inicio do jogador, tem o botao
-  "Acompanhar o domingo" (e so ele: o cartao do jogo do dia nao tem outro botao para os times). Quando o domingo acaba (a diretoria encerra, ou chegam as 12h30, a mesma hora em que a Bola de Ouro abre), o cartao passa a dizer "Domingo encerrado" com o botao "Ver como foi o domingo", e o cabecalho de **/jogo/** tambem. O botao abre **/jogo/** com tudo do domingo em blocos: times (o do jogador
+- **Acompanhar o domingo**: o cartao do proximo jogo, no Inicio do jogador, tem a situacao do jogador na lista
+  (entrar, sair, fila de espera) e o botao "Acompanhar o domingo" (e so ele: o cartao do jogo do dia nao tem outro botao para os times). O botao fica bloqueado (com cadeado, sem link) ate chegar o domingo, a partir das 00h; no modo demonstracao ja nasce aberto. Quando o domingo acaba (a diretoria encerra, ou chegam as 12h30, a mesma hora em que a Bola de Ouro abre), o cartao passa a dizer "Domingo encerrado" com o botao "Ver como foi o domingo", e o cabecalho de **/jogo/** tambem. O botao abre **/jogo/** com tudo do domingo em blocos: times (o do jogador
   em destaque), tabela de jogos e placares, presenca (a do proprio jogador e "Quem vai"; some quando o domingo encerra, junto com o botao "Atualizar"), Bola de
   Ouro (so depois que o futebol encerra: votar, ou o resultado a partir de segunda 8h). Sao as
   mesmas telas de antes (Jogos, votacao), sem regra nova. Quem chega

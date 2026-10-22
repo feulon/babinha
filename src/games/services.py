@@ -19,6 +19,7 @@ from finance import charges
 from fines import services as fines
 from fines.models import Fine, FineReason
 from games.domain import roster as engine
+from games.domain import schedule as sched
 from games.domain.roster import Applicant, DemoDay, Entry, ListContext, ListError, Roster
 from games.domain.schedule import WeekSchedule, follow_sunday, matchday_sunday, upcoming_sunday
 from games.domain.types import EntryStatus, PlayerType, Position
@@ -49,6 +50,11 @@ def sunday_over(game_day: GameDay, now=None) -> bool:
         return True
     now = now or clock.now()
     return not demo.is_on() and now >= schedule_for(game_day.date).charges_open
+
+
+def sunday_arrived(game_day: GameDay) -> bool:
+    """The day of the game has come, so "Acompanhar o domingo" can be opened."""
+    return sched.sunday_arrived(game_day.date, clock.now())
 
 
 def game_day_for(sunday: date) -> GameDay:

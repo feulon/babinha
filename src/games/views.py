@@ -33,6 +33,7 @@ def _render_home(
         "week": view,
         "hero_day": followed,
         "hero_over": services.sunday_over(followed),
+        "hero_follow_open": services.sunday_arrived(followed),
         "venue_name": ClubSettings.load().venue_name,
         "next_url": reverse("games:home"),
         "invite_link": invite_link(request, request.user.name),
