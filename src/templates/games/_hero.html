@@ -9,5 +9,10 @@
       <div><dt>na espera</dt><dd>{{ week.waiting_count }}</dd></div>
     </dl>
   {% endif %}
-  <a class="btn btn--block hero__cta" href="{% url 'matchday:today' %}?next={{ next_url|urlencode:'' }}">{% if hero_over %}Ver como foi o domingo{% else %}Acompanhar o domingo{% endif %}</a>
+  {% if not hero_over %}{% include "games/_list_state.html" %}{% endif %}
+  {% if hero_follow_open %}
+    <a class="btn btn--block hero__cta" href="{% url 'matchday:today' %}?next={{ next_url|urlencode:'' }}">{% if hero_over %}Ver como foi o domingo{% else %}Acompanhar o domingo{% endif %}</a>
+  {% else %}
+    <span class="btn btn--block hero__cta hero__cta--locked" role="link" aria-disabled="true"><span aria-hidden="true">&#128274;</span> Acompanhar o domingo</span>
+  {% endif %}
 </section>

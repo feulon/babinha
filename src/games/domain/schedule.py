@@ -130,6 +130,12 @@ def last_game_date(now: datetime) -> date:
     return upcoming_sunday(now) if demo.is_on() else now.date()
 
 
+def sunday_arrived(sunday: date, now: datetime) -> bool:
+    """Whether the day of the game has come (from 00h of the Sunday, Sao Paulo time). Demo mode
+    releases the calendar, so the Sunday of the demo has always arrived."""
+    return demo.is_on() or now.astimezone(SAO_PAULO).date() >= sunday
+
+
 def teams_out(now: datetime) -> bool:
     """Whether it is game day and the teams are out: Sunday from one hour before kickoff on."""
     if demo.is_on():

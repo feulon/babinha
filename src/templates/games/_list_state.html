@@ -1,0 +1,64 @@
+  {% with state=week.state %}
+  {% if state == "cancelado" %}
+    <div class="status status--danger" data-state="cancelado">
+      <p class="status__headline">Domingo cancelado</p>
+      {% if week.game_day.cancel_reason %}<p>Motivo: {{ week.game_day.cancel_reason }}</p>{% endif %}
+    </div>
+  {% elif state == "fechada" %}
+    <div class="status status--info" data-state="fechada">
+      <p class="status__headline">A lista ainda não abriu</p>
+      <p>Para você, ela abre {{ week.opens_at|date:"l"|lower }}, {{ week.opens_at|date:"d/m \à\s H\hi" }}.</p>
+      {% if week.viewer_type == "agregado" %}<p class="small">Agregados entram na quarta às 20h, se ainda houver vaga.</p>{% endif %}
+    </div>
+  {% elif state == "fora" %}
+    <div class="status status--neutral" data-state="fora">
+      <p class="status__headline">Você não está na lista</p>
+      <p>{{ week.total_confirmed }} confirmado{{ week.total_confirmed|pluralize }} até agora.{% if week.joins_waitlist %} A lista está cheia: você entra na fila de espera.{% endif %}</p>
+      <form method="post" action="{% url 'games:join' %}" hx-post="{% url 'games:join' %}" hx-target="#home" hx-swap="outerHTML" hx-disabled-elt="find button">
+        {% csrf_token %}
+        <button type="submit" class="btn btn--primary btn--block">{% if week.joins_waitlist %}Entrar na fila de espera{% else %}Entrar na lista{% endif %}</button>
+      </form>
+    </div>
+  {% elif state == "lista" %}
+    <div class="status status--ok status--marked" data-state="lista">
+      <span class="status__mark" aria-hidden="true">✓</span>
+      <div class="status__body">
+        <p class="status__headline">Você está na lista</p>
+        {% if week.can_leave %}
+          <p class="small">{% if week.in_free_period %}Pode desistir sem custo até sábado às 23h59.{% else %}O prazo para desistir sem multa já passou.{% endif %}</p>
+          <a class="btn btn--ghost btn--block" href="{% url 'games:leave' %}">Desistir</a>
+        {% else %}
+          <p class="small">O jogo deste domingo já começou.</p>
+        {% endif %}
+      </div>
+    </div>
+  {% elif state == "promovido" %}
+    <div class="status status--ok status--marked" data-state="promovido">
+      <span class="status__mark" aria-hidden="true">✓</span>
+      <div class="status__body">
+        <p class="status__headline">Você foi promovido da espera</p>
+        {% if week.my_entry.position == "goleiro" %}<p>Você joga no gol.</p>{% endif %}
+        {% if week.can_leave %}
+          <p class="small">{% if week.in_free_period %}Se não puder ir, recuse sem custo até sábado às 23h59.{% else %}O prazo para recusar sem multa já passou.{% endif %}</p>
+          <a class="btn btn--ghost btn--block" href="{% url 'games:leave' %}">Recusar a vaga</a>
+        {% else %}
+          <p class="small">O jogo deste domingo já começou.</p>
+        {% endif %}
+      </div>
+    </div>
+  {% elif state == "espera" %}
+    <div class="status status--wait status--marked" data-state="espera">
+      <span class="status__mark" aria-hidden="true">{{ week.waitlist_position }}º</span>
+      <div class="status__body">
+        <p class="status__headline">Você é o {{ week.waitlist_position }}º na espera</p>
+        <p>Fila {% if week.my_entry.position == "goleiro" %}de goleiros{% else %}de linha{% endif %}.{% if week.closed %} O jogo deste domingo já começou.{% else %} Se abrir uma vaga, você entra automaticamente e aparece aqui como promovido.{% endif %}</p>
+        {% if week.my_entry.bumped %}<p class="small">Você perdeu a vaga por prioridade (mensalista ou goleiro) e foi para o topo da fila, sem multa.</p>{% endif %}
+        {% if week.can_leave %}<a class="btn btn--ghost btn--block" href="{% url 'games:leave' %}">Sair da espera</a>{% endif %}
+      </div>
+    </div>
+  {% else %}
+    <div class="status status--neutral" data-state="encerrada">
+      <p class="status__headline">Lista encerrada</p>
+    </div>
+  {% endif %}
+  {% endwith %}
