@@ -207,7 +207,14 @@ class ClubSettingsForm(forms.ModelForm):
 
     class Meta:
         model = ClubSettings
-        fields = [*MONEY_FIELDS, "fine_factor", "monthly_due_day", "pix_key", "board_contact_phone"]
+        fields = [
+            *MONEY_FIELDS,
+            "fine_factor",
+            "monthly_due_day",
+            "pix_key",
+            "board_contact_phone",
+            "venue_name",
+        ]
         widgets = {"pix_key": forms.TextInput(attrs={"autocomplete": "off", "spellcheck": "false"})}
 
     def __init__(self, *args: object, editor: Player, **kwargs: object) -> None:

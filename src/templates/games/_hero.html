@@ -1,7 +1,7 @@
 <section class="hero" data-hero>
   <p class="hero__eyebrow">{% if hero_over %}Domingo encerrado{% else %}Próximo jogo{% endif %}</p>
   <h1>Domingo, {% if hero_over %}{{ hero_day.date|date:"d/m" }}{% else %}{{ week.game_day.date|date:"d/m" }}{% endif %} · 10h às 12h</h1>
-  <p class="hero__sub">Arena Ibirapuera</p>
+  {% if venue_name %}<p class="hero__sub">{{ venue_name }}</p>{% endif %}
   {% if not hero_over and not week.game_day.is_cancelled %}
     <dl class="meter">
       <div><dt>goleiros</dt><dd>{{ week.goalkeepers|length }}/{{ week.goalkeeper_capacity }}</dd></div>

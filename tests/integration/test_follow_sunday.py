@@ -11,6 +11,7 @@ from django.urls import reverse
 
 from accounts.models import Player
 from core.clock import FixedClock
+from core.models import ClubSettings
 from matchday import services as matchday
 from matchday.domain.score import Side
 from tests.conftest import SP, Sunday, end_game
@@ -58,6 +59,18 @@ def sunday(
 def hero_of(page: str) -> str:
     start = page.index('class="hero"')
     return page[start : page.index("</section>", start)]
+
+
+class TestVenue:
+    """The hero shows the venue the diretoria configured, and nothing when there is none."""
+
+    def test_the_configured_venue_is_shown(self, sunday: Sunday) -> None:
+        ClubSettings.objects.update_or_create(pk=1, defaults={"venue_name": "Campo do Zé"})
+        assert "Campo do Zé" in hero_of(text(login(sunday.line[0]).get(HOME)))
+
+    def test_without_a_venue_nothing_takes_its_place(self, sunday: Sunday) -> None:
+        ClubSettings.objects.update_or_create(pk=1, defaults={"venue_name": ""})
+        assert "hero__sub" not in hero_of(text(login(sunday.line[0]).get(HOME)))
 
 
 class TestFinishedSunday:
