@@ -19,8 +19,8 @@ from finance import charges
 from fines import services as fines
 from fines.models import Fine, FineReason
 from games.domain import roster as engine
-from games.domain.roster import Applicant, DemoDay, Entry, ListContext, ListError, Roster
 from games.domain import schedule as sched
+from games.domain.roster import Applicant, DemoDay, Entry, ListContext, ListError, Roster
 from games.domain.schedule import WeekSchedule, follow_sunday, matchday_sunday, upcoming_sunday
 from games.domain.types import EntryStatus, PlayerType, Position
 from games.models import Attendance, GameDay, ListEntry
