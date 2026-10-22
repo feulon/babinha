@@ -189,7 +189,7 @@ Tudo por variaveis de ambiente; veja `.env.example`. As principais:
 
 Os valores em dinheiro (mensalidade, avulso, multa de falta com seu multiplicador e multa de atraso de 15 e 30 min), o dia de vencimento da mensalidade, a
 chave Pix e o WhatsApp da diretoria (opcional; a pagina publica de recuperacao de senha nao o mostra, por seguranca) ficam no banco e a
-diretoria edita em **Diretoria > Configuracoes**. Valor 0,00 desliga a cobranca. A tela
+diretoria edita em **Diretoria > Configuracoes**, junto com o nome do local do jogo (opcional), mostrado na tela inicial. Valor 0,00 desliga a cobranca. A tela
 publica `/regras/` ("Regras do babinha") le esses valores e explica prazos, prioridade e desistencia.
 
 ## Producao
