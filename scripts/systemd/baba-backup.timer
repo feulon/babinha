@@ -1,0 +1,11 @@
+[Unit]
+Description=Nightly Babinha backup
+
+[Timer]
+# 03:30 every day. Persistent: if the laptop was asleep or off at that time, run when it wakes.
+OnCalendar=*-*-* 03:30:00
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

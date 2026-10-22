@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load money money_nav %}
+{% block title %}Avisos{% endblock %}
+{% block content %}
+<div class="stack">
+  {% money_nav "receber" %}
+  <h1>Avisos</h1>
+  <p class="muted small">Envie por e-mail um aviso de pagamento pendente.</p>
+
+  <form method="post" class="form card" action="{% url 'board:reminders' %}">
+    {% csrf_token %}
+    <div class="card__title">
+      <h2>Quem deve</h2>
+      <span class="count">{{ debtors|length }}</span>
+    </div>
+    {% if debtors %}
+      <ul class="rows">
+        {% for d in debtors %}
+          <li>
+            <label class="row-head">
+              <span><input type="checkbox" name="player" value="{{ d.player.pk }}"{% if not d.recently_reminded %} checked{% endif %}> <strong>{{ d.player.name }}</strong></span>
+              <span class="amount">{{ d.total|brl }}</span>
+            </label>
+            <p class="small muted">{% for row in d.rows %}{{ row.charge.description }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+            <p class="small">
+              {% if not d.has_email %}<span class="badge badge--danger">Sem e-mail</span>{% endif %}
+              {% if d.recently_reminded %}<span class="badge badge--wait">Avisado em {{ d.last_reminded|date:"d/m \à\s H\hi" }}</span>{% endif %}
+            </p>
+          </li>
+        {% endfor %}
+      </ul>
+      {% if not pix.is_configured %}<p class="small muted">A chave Pix ainda não foi cadastrada, então o aviso vai sem ela.</p>{% endif %}
+      <button type="submit" class="btn btn--primary">Ver prévia do aviso</button>
+    {% else %}
+      <p class="roster--empty">Ninguém devendo.</p>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}

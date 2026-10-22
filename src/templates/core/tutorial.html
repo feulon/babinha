@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load navigation fine_rules %}
+{% block title %}Tutorial{% endblock %}
+{% block content %}
+<div class="stack">
+  <header>
+    {% more_back %}
+    <p class="eyebrow">Babinha de Domingo</p>
+    <h1>Tutorial do jogador</h1>
+  </header>
+  <p class="small muted">Como usar o Babinha, do Início ao Pix. Nada é alterado enquanto você lê.</p>
+  <ol class="guide">
+    <li class="card guide__step">
+      <h2>1. Comece pelo Início</h2>
+      <p>O Início mostra a data, o horário e o local do próximo domingo, e o botão da ação principal do momento: <strong>Entrar na lista</strong>, <strong>Desistir</strong> ou o pagamento que está em aberto. Na barra de baixo ficam <strong>Início</strong>, <strong>Domingo</strong>, <strong>Turma</strong> e <strong>Mais</strong>. A sua foto, no alto, abre o seu perfil.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>2. Entre na lista</h2>
+      <p>A lista abre na segunda. Quando abrir para você, toque em <strong>Entrar na lista</strong>. Se as vagas acabaram, o botão vira <strong>Entrar na fila de espera</strong>: você entra por ordem de chegada e, quando alguém sai, o primeiro da fila entra sozinho. Os detalhes estão em <strong>Mais &gt; Regras do babinha</strong>.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>3. Desistir sem multa</h2>
+      <p>Toque em <strong>Desistir</strong> para sair. Até sábado 23h59 é sem custo, e sair da fila de espera nunca gera multa.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>4. Multas de falta e de atraso</h2>
+      <p>São duas multas diferentes. A <strong>multa de falta</strong> vem de faltar quando você estava na lista, ou de desistir depois de sábado 23h59 (ou recusar a vaga que veio da espera). {% fine_progression %} {% late_fine_rules %} Veja o histórico em <strong>Mais &gt; Histórico de multas</strong>. Se foi engano, a diretoria corrige.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>5. Pague por Pix e envie o comprovante</h2>
+      <p>Em <strong>Mais &gt; Pagamentos e Pix</strong>, toque em <strong>Enviar comprovante</strong> depois de pagar. {% include "core/help/_pix.html" %} Se recusar, o motivo aparece ali e você envia de novo.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>6. Acompanhe o domingo</h2>
+      <p>Em <strong>Domingo</strong>, veja a lista, os times e o placar ao vivo. {% include "core/help/_match_rules.html" %} Os gols aparecem com o autor e a assistência.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>7. Vote na Bola de Ouro</h2>
+      <p>{% include "core/help/_gold_ball.html" %} Enquanto estiver aberta, a aba <strong>Turma</strong> mostra uma bolinha.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>8. Turma e perfil</h2>
+      <p>Em <strong>Turma</strong> ficam os jogadores, o ranking e a Bola de Ouro. No seu perfil (a sua foto, no alto) ficam seus domingos e suas Bolas de Ouro. Foto, celular, e-mail e senha ficam em <strong>Mais &gt; Minha conta</strong>, junto com <strong>Sair</strong>.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>9. Convide por link</h2>
+      <p>{% include "core/help/_invite.html" %}</p>
+    </li>
+    <li class="card guide__step">
+      <h2>10. Sobre o app</h2>
+      <p>Em <strong>Mais &gt; Sobre o app</strong> você fala com o criador. Em <strong>Mais &gt; Reportar bug ou sugestão</strong>, escolha o tipo, escreva e toque em <strong>Enviar</strong>.</p>
+    </li>
+  </ol>
+</div>
+{% endblock %}

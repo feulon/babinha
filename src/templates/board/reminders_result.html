@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load money_nav %}
+{% block title %}Avisos enviados{% endblock %}
+{% block content %}
+<div class="stack">
+  {% money_nav "receber" %}
+  <h1>Resultado</h1>
+  <section class="card" data-state="resultado">
+    <ul class="rows">
+      <li><strong>Enviados: {{ result.sent|length }}</strong>{% if result.sent %}<p class="small muted">{% for p in result.sent %}{{ p.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}</li>
+      <li><strong>Sem e-mail: {{ result.no_email|length }}</strong>{% if result.no_email %}<p class="small muted">{% for p in result.no_email %}{{ p.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}</li>
+      <li><strong>Falhas: {{ result.failed|length }}</strong>{% if result.failed %}<p class="small muted">{% for p in result.failed %}{{ p.name }}{% if not forloop.last %}, {% endif %}{% endfor %}. Tente de novo mais tarde.</p>{% endif %}</li>
+      {% if result.skipped_recent %}<li><strong>Já avisados, ignorados: {{ result.skipped_recent|length }}</strong><p class="small muted">{% for p in result.skipped_recent %}{{ p.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p></li>{% endif %}
+    </ul>
+  </section>
+  <a class="btn btn--ghost" href="{% url 'board:reminders' %}">Voltar aos avisos</a>
+</div>
+{% endblock %}

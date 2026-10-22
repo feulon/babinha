@@ -1,0 +1,22 @@
+{% load navigation %}{% load avatars %}<div id="people" class="stack">
+  <nav class="chips" aria-label="Filtrar jogadores">
+    {% for key, label in kinds %}
+      <a class="chip chip--small{% if key == kind %} is-active{% endif %}" href="?tipo={{ key }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}" hx-get="{% url 'community:players' %}?tipo={{ key }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}" hx-target="#people" hx-swap="outerHTML" hx-replace-url="true">{{ label }}</a>
+    {% endfor %}
+  </nav>
+  <section class="card card--tight">
+    {% for row in rows %}
+      <a class="person" href="{% nexturl 'community:player' player_id=row.player.pk %}">
+        {% avatar row.player.name row.player.pk row.player.photo %}
+        <span>
+          <strong>{{ row.player.name }}</strong>{% if row.player.pk == user.pk %} <span class="muted small">(você)</span>{% endif %}<br>
+          <span class="muted small">{% if row.player.enrolled %}Mensalista{% else %}{{ row.player.get_player_type_display }}{% endif %} · {{ row.player.get_position_display }}</span>
+        </span>
+        <span class="person__meta">{% if row.gold_balls %}<span class="ball" aria-hidden="true">★</span> {{ row.gold_balls }}<span class="visually-hidden"> Bola{{ row.gold_balls|pluralize:"s" }} de Ouro</span> · {% endif %}{{ row.sundays }} dom.</span>
+        <span class="person__chev" aria-hidden="true">›</span>
+      </a>
+    {% empty %}
+      <p class="roster--empty">Nenhum jogador encontrado.</p>
+    {% endfor %}
+  </section>
+</div>

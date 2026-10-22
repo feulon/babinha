@@ -1,0 +1,34 @@
+{% comment %}Where the lineup stands: not drawn, draft, confirmed, or out of sync with the list.{% endcomment %}
+{% if state.lineup.is_confirmed %}
+  <section class="status {% if lineup_state == 'stale' %}status--wait{% else %}status--ok{% endif %}" data-lineup="confirmed">
+    {% if lineup_state == "stale" %}
+      <p class="status__headline">Confirmados, mas precisa de ajuste</p>
+      <p>Os jogadores veem os times como estavam, com o aviso "times em ajuste", até você ajustar.</p>
+    {% else %}
+      <p class="status__headline">Times confirmados</p>
+      <p>Os jogadores já veem os times, sem os potes. Ajustes salvos aparecem para eles na hora.</p>
+    {% endif %}
+    <form method="post" action="{% url 'board:unconfirm_teams' day=game_day.date.isoformat %}"
+          hx-post="{% url 'board:unconfirm_teams' day=game_day.date.isoformat %}" hx-target="#times" hx-swap="outerHTML"
+          hx-confirm="Esconder os times dos jogadores e voltar ao rascunho?">
+      {% csrf_token %}
+      <button class="btn btn--ghost btn--block">Desfazer confirmação</button>
+    </form>
+  </section>
+{% endif %}
+{% if lineup_state == "stale" %}
+  <section class="status status--danger" data-lineup="stale">
+    <p class="status__headline">{% if state.gone or state.unassigned %}A lista mudou depois do sorteio{% else %}Os potes mudaram depois do sorteio{% endif %}</p>
+    {% if state.gone %}<p>Saíram ou faltaram: {% for player in state.gone %}{{ player.name }}{% if not forloop.last %}, {% endif %}{% endfor %}.</p>{% endif %}
+    {% if state.unassigned %}<p>Entraram: {% for player in state.unassigned %}{{ player.name }}{% if not forloop.last %}, {% endif %}{% endfor %}. Escolha o time deles abaixo.</p>{% endif %}
+    {% if state.repoted %}<p>Mudaram de pote: {% for player, old in state.repoted %}{{ player.name }} (P{{ old }} para P{{ player.pote }}){% if not forloop.last %}, {% endif %}{% endfor %}.</p>{% endif %}
+    <p class="small">Ajuste os times{% if not state.lineup.is_confirmed %} ou sorteie de novo{% endif %} para atualizar.</p>
+    {% if state.repoted %}
+      {% url 'board:accept_potes' day=game_day.date.isoformat as accept_url %}
+      <form method="post" action="{{ accept_url }}" hx-post="{{ accept_url }}" hx-target="#times" hx-swap="outerHTML" hx-disabled-elt="find button">
+        {% csrf_token %}
+        <button class="btn btn--ghost btn--block">Manter os times assim</button>
+      </form>
+    {% endif %}
+  </section>
+{% endif %}

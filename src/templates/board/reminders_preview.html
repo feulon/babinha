@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load money money_nav %}
+{% block title %}Prévia do aviso{% endblock %}
+{% block content %}
+<div class="stack">
+  {% money_nav "receber" %}
+  <h1>Prévia do aviso</h1>
+  <p class="muted small">{{ to_send }} e-mail{{ to_send|pluralize:",s" }} {{ to_send|pluralize:"será enviado,serão enviados" }}{% if recent %} (sem repetir os já avisados){% endif %}. Cada jogador recebe o próprio valor; abaixo, o exemplo de {{ example.player.name }}.</p>
+
+  {% if without_email %}
+    <section class="status status--danger" data-state="sem-email">
+      <p class="status__headline">Sem e-mail: {{ without_email|length }}</p>
+      <p class="small">{% for d in without_email %}{{ d.player.name }}{% if not forloop.last %}, {% endif %}{% endfor %} não {{ without_email|length|pluralize:"tem,têm" }} e-mail cadastrado e não receber{{ without_email|length|pluralize:"á,ão" }} o aviso.</p>
+    </section>
+  {% endif %}
+
+  <section class="card">
+    <p class="small muted">Assunto: {{ subject }}</p>
+    <pre class="small email-preview">{{ body }}</pre>
+  </section>
+
+  <form method="post" class="form card" action="{% url 'board:reminders' %}">
+    {% csrf_token %}
+    <input type="hidden" name="step" value="send">
+    {% for d in chosen %}<input type="hidden" name="player" value="{{ d.player.pk }}">{% endfor %}
+    {% if recent %}
+      <section class="status status--wait" data-state="ja-avisados">
+        <p class="status__headline">Já avisados nos últimos {{ window_days }} dias</p>
+        <p class="small">{% for d in recent %}{{ d.player.name }} ({{ d.last_reminded|date:"d/m" }}){% if not forloop.last %}, {% endif %}{% endfor %}. Por padrão eles ficam de fora.</p>
+        <label><input type="checkbox" name="repeat" value="1"> Avisar de novo mesmo assim</label>
+      </section>
+    {% endif %}
+    <div class="actions">
+      <button type="submit" class="btn btn--primary">{% if recent %}Enviar avisos{% else %}Enviar {{ to_send }} aviso{{ to_send|pluralize }}{% endif %}</button>
+      <a class="btn btn--ghost" href="{% url 'board:reminders' %}">Voltar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

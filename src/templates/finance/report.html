@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load navigation %}
+{% block title %}Caixa{% endblock %}
+{% block content %}
+<div class="stack">
+  {% more_back %}
+  <nav class="week-nav" aria-label="Meses">
+    <a class="btn btn--ghost btn--small week-nav__arrow" href="{% url 'finance:report_month' month=previous_month %}" aria-label="Mês anterior">‹</a>
+    <h1>Caixa · {{ report.month|date:"F/Y" }}</h1>
+    <a class="btn btn--ghost btn--small week-nav__arrow" href="{% url 'finance:report_month' month=next_month %}" aria-label="Próximo mês">›</a>
+  </nav>
+
+  {% include "finance/_report_totals.html" %}
+</div>
+{% endblock %}

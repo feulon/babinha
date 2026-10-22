@@ -1,0 +1,21 @@
+<section class="card">
+  <div class="card__title"><h2>Bolas de Ouro</h2><span class="count">{{ profile.gold_balls|length }}</span></div>
+  {% for sunday in profile.gold_balls %}
+    <div class="gold-row">
+      <span class="ball ball--lg" aria-hidden="true">★</span>
+      <div><strong>{{ sunday.game_day.date|date:"d/m/Y" }}</strong><br><span class="muted small">{{ sunday.team }} · {{ sunday.line.goals }} gol{{ sunday.line.goals|pluralize:",s" }} nesse dia</span></div>
+      <span class="gold-row__meta">Temporada {{ sunday.season }}</span>
+    </div>
+  {% empty %}
+    <p class="roster--empty">Ainda não ganhou nenhuma Bola de Ouro.</p>
+  {% endfor %}
+</section>
+<section class="card">
+  <div class="card__title"><h2>Pódios</h2></div>
+  {% with runner_ups=profile.runner_ups golds=profile.gold_balls|length %}
+    <div class="gold-row"><span class="ball" aria-hidden="true">1</span><strong>{{ golds }} vez{{ golds|pluralize:"es" }} em 1º lugar</strong></div>
+    <div class="gold-row"><span class="ball ball--silver" aria-hidden="true">2</span><strong>{{ runner_ups.2|length }} vez{{ runner_ups.2|length|pluralize:"es" }} em 2º lugar</strong></div>
+    <div class="gold-row"><span class="ball ball--bronze" aria-hidden="true">3</span><strong>{{ runner_ups.3|length }} vez{{ runner_ups.3|length|pluralize:"es" }} em 3º lugar</strong></div>
+  {% endwith %}
+  <p class="muted small">Só o resultado aparece, depois que a votação fecha.</p>
+</section>

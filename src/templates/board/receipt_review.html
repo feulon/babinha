@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load money text navigation %}
+{% block title %}Conferir comprovante{% endblock %}
+{% block content %}
+<div class="stack">
+  <div>
+    <p class="eyebrow">Comprovante</p>
+    <h1>{{ charge.player.name }}</h1>
+  </div>
+  <section class="card">
+    <dl class="kv">
+      <dt>Cobrança</dt><dd>{{ charge.description }}</dd>
+      <dt>Valor</dt><dd>R$ {{ charge.amount|floatformat:"2g" }}</dd>
+      <dt>Vencimento</dt><dd>{{ charge.due_date|date:"d/m/Y" }}</dd>
+      <dt>Enviado em</dt><dd>{{ receipt.submitted_at|date:"d/m/Y H\hi" }}</dd>
+      <dt>Situação</dt><dd>{{ receipt.get_status_display }}</dd>
+    </dl>
+  </section>
+
+  <section class="card receipt-preview">
+    {% if receipt.is_image %}
+      <a href="{% url 'finance:receipt_file' receipt_id=receipt.pk %}" target="_blank" rel="noopener">
+        <img src="{% url 'finance:receipt_file' receipt_id=receipt.pk %}" alt="Comprovante de {{ charge.player.name }}">
+      </a>
+    {% endif %}
+    <a class="btn btn--ghost btn--block" href="{% url 'finance:receipt_file' receipt_id=receipt.pk %}" target="_blank" rel="noopener">{% if receipt.is_image %}Abrir em tamanho real{% else %}Abrir PDF{% endif %}</a>
+    {% if receipt.original_name %}<p class="small muted">{{ receipt.original_name }}</p>{% endif %}
+  </section>
+
+  {% if receipt.status == "em_analise" %}
+    <form method="post" action="{% url 'board:approve_receipt' receipt_id=receipt.pk %}" data-confirm="Confirmar o pagamento de {{ charge.player.name }} ({{ charge.amount|brl }})? A cobrança passa a paga e entra no caixa.">
+      {% csrf_token %}{% next_field %}
+      <button type="submit" class="btn btn--primary btn--block">Confirmar pagamento</button>
+    </form>
+    <section class="card">
+      <h2>Recusar</h2>
+      <p class="small muted">O jogador vê o motivo e pode enviar outro comprovante.</p>
+      <form method="post" action="{% url 'board:refuse_receipt' receipt_id=receipt.pk %}" class="form" novalidate>
+        {% csrf_token %}{% next_field %}
+        {% include "includes/form_errors.html" with form=refuse_form %}
+        {% include "includes/field.html" with field=refuse_form.reason %}
+        <button type="submit" class="btn btn--danger btn--block">Recusar comprovante</button>
+      </form>
+    </section>
+  {% elif receipt.status == "substituido" %}
+    <p class="small muted">O jogador enviou outro comprovante no lugar deste.</p>
+  {% elif receipt.reviewed_by %}
+    <p class="small muted">Analisado por {{ receipt.reviewed_by.name }} em {{ receipt.reviewed_at|date:"d/m/Y H\hi" }}{% if receipt.refusal_reason %}: {{ receipt.refusal_reason|stop }}{% else %}.{% endif %}</p>
+    {% if can_undo %}
+      <form method="post" action="{% url 'board:undo_approval' receipt_id=receipt.pk %}" data-confirm="Desfazer a confirmação do pagamento de {{ charge.player.name }}? A cobrança volta a ficar em análise.">
+        {% csrf_token %}{% next_field %}
+        <button type="submit" class="btn btn--ghost btn--block">Desfazer confirmação</button>
+        <p class="small muted">Dá para desfazer até 10 minutos depois de confirmar.</p>
+      </form>
+    {% endif %}
+  {% endif %}
+
+  {% if earlier %}
+    <section class="card">
+      <h2>Envios anteriores</h2>
+      <ul class="rows">
+        {% for other in earlier %}
+          <li>
+            <div class="row-head">
+              <a href="{% url 'board:receipt' receipt_id=other.pk %}{% keep_next "?" %}">{{ other.submitted_at|date:"d/m H\hi" }}</a>
+              <span class="badge">{{ other.get_status_display }}</span>
+            </div>
+            {% if other.refusal_reason %}<p class="small muted">{{ other.refusal_reason }}</p>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+  {% url 'board:receipts' as receipts_url %}
+  <a class="btn btn--ghost btn--block" href="{% back_url receipts_url %}">Voltar</a>
+</div>
+{% endblock %}

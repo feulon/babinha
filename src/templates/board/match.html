@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Jogo {{ row.number }}{% endblock %}
+{% block page_back %}{% endblock %}
+{% block content %}
+<div class="stack">
+  <header>
+    <p class="eyebrow"><a href="{% url 'board:matches' day=game_day.date.isoformat %}">‹ Tabela de {{ game_day.date|date:"d/m" }}</a></p>
+    <h1>Jogo {{ row.number }}</h1>
+  </header>
+
+  {% include "board/_match_score.html" %}
+
+  {% if timer_on %}
+    <section class="card timer" data-match-timer data-seconds="{{ match_seconds }}" data-key="baba-timer-{{ match.pk }}" hidden>
+      <output class="timer__clock" aria-live="off">{{ match_minutes }}:00</output>
+      <p class="timer__done small" hidden>Fim do tempo. Encerre a partida.</p>
+      <button type="button" class="btn btn--primary btn--block" data-timer-toggle>Iniciar</button>
+      <p class="small muted">O cronômetro roda só neste celular.</p>
+      <button type="button" class="btn btn--ghost btn--small timer__reset" data-timer-reset>Zerar cronômetro</button>
+    </section>
+  {% endif %}
+
+  {% include "board/_match_live.html" %}
+
+  <section class="card">
+    <details>
+      <summary>Goleiros desta partida</summary>
+      <form method="post" action="{% url 'board:set_goalkeepers' match_id=match.pk %}" class="form">
+        {% csrf_token %}
+        {% for field in goalkeepers_form %}
+          <div class="field">
+            <label for="{{ field.id_for_label }}">Goleiro do {% if field.name == "home_goalkeeper" %}{{ match.home_team.name }}{% else %}{{ match.away_team.name }}{% endif %}</label>
+            {{ field }}
+          </div>
+        {% endfor %}
+        <button class="btn btn--primary">Salvar goleiros</button>
+      </form>
+    </details>
+  </section>
+
+  <section class="card">
+    <details>
+      <summary>Quem jogou esta partida</summary>
+      <p class="small muted">Para uma troca só nesta partida. Quem faz ou dá o gol entra aqui sozinho.</p>
+      <form method="post" action="{% url 'board:set_roster' match_id=match.pk %}" class="form">
+        {% csrf_token %}
+        <ol class="roster">
+          {% for field in roster_form %}
+            <li>
+              <span class="roster__name">{{ field.label }}</span>
+              <span class="roster__tools">{{ field }}</span>
+            </li>
+          {% endfor %}
+        </ol>
+        <button class="btn btn--primary">Salvar escalação</button>
+      </form>
+    </details>
+  </section>
+
+  <section class="card">
+    <details>
+      <summary>Times da partida</summary>
+      <p class="small muted">Os gols de um time trocado passam para o time que entra no lugar.</p>
+      <form method="post" action="{% url 'board:edit_match' match_id=match.pk %}" class="form">
+        {% csrf_token %}
+        {% for field in teams_form %}{% include "includes/field.html" %}{% endfor %}
+        <button class="btn btn--primary">Salvar times</button>
+      </form>
+    </details>
+  </section>
+
+  <section class="card">
+    <details>
+      <summary class="summary--touch">Apagar partida</summary>
+      <form method="post" action="{% url 'board:delete_match' match_id=match.pk %}" data-confirm="Apagar o jogo {{ row.number }}{% if row.goals %} e os {{ row.goals|length }} gol{{ row.goals|length|pluralize:"s" }} dele{% endif %}?">
+        {% csrf_token %}
+        <button class="btn btn--danger">Apagar partida</button>
+      </form>
+    </details>
+  </section>
+</div>
+<script src="{% static 'js/match-timer.js' %}" defer></script>
+{% endblock %}

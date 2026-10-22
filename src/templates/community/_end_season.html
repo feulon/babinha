@@ -1,0 +1,16 @@
+{% load navigation %}  <section class="card" data-state="encerrar">
+    <div class="card__title"><h2>Encerrar a temporada</h2></div>
+    <p>Fecha o ranking de hoje e começa a temporada {{ season.number|add:1 }} do zero. Os domingos até hoje ficam na temporada {{ season.number }}, que continua disponível no <a href="{% nexturl 'community:ranking' %}">Ranking</a> e em cada histórico.</p>
+    {% if voting %}
+      <p class="small"><strong>Atenção:</strong> a votação da Bola de Ouro ainda está aberta ou por abrir em {% for day in voting %}{{ day.date|date:"d/m" }}{% if not forloop.last %}, {% endif %}{% endfor %}. O resultado entra nesta temporada quando fechar.</p>
+    {% endif %}
+    {% if user.is_presidente %}
+      <form method="post" action="{% url 'community:end_season' %}" data-confirm="Encerrar a temporada {{ season.number }}? Isso não pode ser desfeito.">
+        {% csrf_token %}
+        <button class="btn btn--danger btn--block">Encerrar temporada {{ season.number }}</button>
+      </form>
+    {% else %}
+      <button class="btn btn--danger btn--block" type="button" disabled>Encerrar temporada {{ season.number }}</button>
+      <p class="small muted">Só o presidente encerra a temporada.</p>
+    {% endif %}
+  </section>

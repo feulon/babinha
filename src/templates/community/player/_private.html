@@ -1,0 +1,32 @@
+{% load money phone text navigation %}
+<section class="card card--private" data-private="payments">
+  <div class="card__title">
+    <h2 class="lock"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 10V8a6 6 0 0 1 12 0v2h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h8V8a4 4 0 0 0-8 0z"/></svg> {% if is_self %}Só você e a diretoria veem{% else %}Só a diretoria vê{% endif %}</h2>
+    {% if is_board and not is_self and nav_tab == "diretoria" %}<a class="btn btn--ghost btn--small" href="{% nexturl 'board:player_edit' player_id=subject.pk %}">Editar</a>{% endif %}
+  </div>
+  {% with open=private.payments.open %}
+    {% if open %}
+      <p class="small"><span class="badge badge--wait">Em aberto</span> {{ open|length }} cobrança{{ open|length|pluralize }}, {{ private.payments.total_payable|brl }} a pagar.</p>
+    {% else %}
+      <p class="small"><span class="badge badge--primary">Em dia</span> Nenhuma cobrança em aberto.</p>
+    {% endif %}
+  {% endwith %}
+  {% if is_board and not is_self %}{% include "community/player/_board_data.html" %}{% endif %}
+  {% if is_self and not is_board %}
+    <dl class="kv">
+      <dt>Celular</dt><dd>{{ subject.phone|phone_br }}</dd>
+      <dt>E-mail</dt><dd class="kv__long">{{ subject.email|default:"não informado" }}</dd>
+    </dl>
+  {% endif %}
+</section>
+
+
+{% if is_board and is_self %}
+<section class="card card--private">
+  <div class="card__title">
+    <h2 class="lock"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z"/></svg> Só a diretoria vê</h2>
+    {% if nav_tab == "diretoria" %}<a class="btn btn--ghost btn--small" href="{% nexturl 'board:player_edit' player_id=subject.pk %}">Editar</a>{% endif %}
+  </div>
+  {% include "community/player/_board_data.html" %}
+</section>
+{% endif %}

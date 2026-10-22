@@ -1,0 +1,19 @@
+{% load navigation %}{% if card %}
+  {% with view=card.view %}
+  <section class="card" data-card="bola-de-ouro">
+    <div class="card__title"><h2>Bola de Ouro</h2>{% if view.window.is_open %}<span class="badge badge--wait">votação aberta</span>{% endif %}</div>
+    {% if view.window.is_open %}
+      {% if view.has_voted %}
+        <p>Voto registrado. {% include "community/_result_when.html" with window=view.window %}</p>
+        <a class="btn btn--ghost btn--block" href="{% nexturl 'community:gold_ball_day' day=view.game_day.date.isoformat %}">Ver a votação</a>
+      {% else %}
+        <p>Vote no melhor do domingo. {% include "community/_result_when.html" with window=view.window %}</p>
+        <a class="btn btn--primary btn--block" href="{% nexturl 'community:gold_ball_day' day=view.game_day.date.isoformat %}">Votar</a>
+      {% endif %}
+    {% else %}
+      <p>Domingo, {{ view.game_day.date|date:"d/m" }}: <strong>{% for winner in view.winners %}{{ winner.name }}{% if not forloop.last %} e {% endif %}{% endfor %}</strong>.</p>
+      <a class="btn btn--ghost btn--block" href="{% nexturl 'community:gold_ball_day' day=view.game_day.date.isoformat %}">Ver a votação</a>
+    {% endif %}
+  </section>
+  {% endwith %}
+{% endif %}

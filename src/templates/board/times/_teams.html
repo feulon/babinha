@@ -1,0 +1,95 @@
+{% comment %}The drawn teams: tap someone to move them or swap them, then confirm.{% endcomment %}
+{% url 'board:teams' day=game_day.date.isoformat as teams_url %}
+{% url 'board:assign_teams' day=game_day.date.isoformat as adjust_url %}
+{% url 'board:confirm_teams' day=game_day.date.isoformat as confirm_url %}
+{% url 'board:draw_teams' day=game_day.date.isoformat as draw_url %}
+{% include "board/times/_status.html" %}
+
+{% if split %}
+  <div class="alert alert--danger" role="status" data-alert="split">
+    <svg class="ic" aria-hidden="true"><use href="#i-no"/></svg>
+    <div class="alert__body">
+      <p class="alert__title">Precisam jogar juntos</p>
+      <ul>{% for line in split %}<li>{{ line }}</li>{% endfor %}</ul>
+    </div>
+  </div>
+{% endif %}
+
+{% if board.picked %}
+  <section class="pick" data-pick="{{ board.picked.key }}">
+    <p class="pick__title">Mover <b>{{ board.picked.label }}</b></p>
+    <p class="small">Toque num time para mover{% if board.picked.place != "novo" and board.picked.place != "dividido" %}, ou num jogador para trocar{% endif %}.</p>
+    {% if board.bonds %}
+      <p class="small pick__bond">Estreantes jogam com quem convidou.
+        {% for bond in board.bonds %}
+          {% url 'board:release_rookie' day=game_day.date.isoformat player_id=bond.rookie.pk as release_url %}
+          <form method="post" action="{{ release_url }}" hx-post="{{ release_url }}" hx-target="#times" hx-swap="outerHTML" class="inline-form">
+            {% csrf_token %}
+            <button class="btn btn--ghost btn--small">Soltar {{ bond.rookie.name }}</button>
+          </form>
+        {% endfor %}
+      </p>
+    {% endif %}
+    <a class="pick__cancel" href="{{ teams_url }}" hx-get="{{ teams_url }}" hx-target="#times" hx-swap="outerHTML" hx-push-url="false">Cancelar</a>
+  </section>
+{% else %}
+  <p class="small muted" data-hint="tocar">Toque num jogador para trocar de time.</p>
+{% endif %}
+
+{% include "board/times/_balance.html" %}
+
+<div class="spots">
+  {% for spot in board.spots %}{% include "board/times/_spot.html" %}{% endfor %}
+</div>
+
+{% with spot=board.goal %}{% if spot.rows or state.goalkeepers or spot.receives %}{% include "board/times/_spot.html" with wide=True goalkeepers=state.goalkeepers %}{% endif %}{% endwith %}
+{% with spot=board.pending %}{% if spot.rows %}{% include "board/times/_spot.html" with wide=True %}{% endif %}{% endwith %}
+
+<p class="small muted spot__legend"><span class="rk" aria-hidden="true">E</span> estreante · P1 a P5: o pote{% if grouping.groups %} · barra: jogam juntos{% endif %}</p>
+
+{% if not state.lineup.is_confirmed %}
+  <section class="status status--wait" data-lineup="draft">
+    <p class="status__headline">Rascunho</p>
+    <p>Confirme para mostrar aos jogadores.</p>
+    <form method="post" action="{{ confirm_url }}" hx-post="{{ confirm_url }}" hx-target="#times" hx-swap="outerHTML" hx-disabled-elt="find button">
+      {% csrf_token %}
+      <button class="btn btn--primary btn--block">Confirmar times{% if imbalances %} mesmo assim{% endif %}</button>
+    </form>
+  </section>
+
+  <section class="card" data-card="sortear">
+    <details{% if problem %} open{% endif %}>
+      <summary>Sortear de novo e regras</summary>
+      {% if problem %}
+        {% include "board/times/_problem.html" %}
+      {% else %}
+        <form method="post" action="{{ draw_url }}" hx-post="{{ draw_url }}" hx-target="#times" hx-swap="outerHTML" hx-disabled-elt="find button"
+              hx-confirm="Sortear de novo? Os ajustes feitos à mão se perdem.">
+          {% csrf_token %}
+          <button class="btn btn--ghost btn--block">Sortear de novo</button>
+        </form>
+      {% endif %}
+      <p class="small muted rules-title">Regras do sorteio</p>
+      {% include "board/times/_rules.html" %}
+    </details>
+  </section>
+{% endif %}
+
+<section class="card">
+  <details>
+    <summary>Nomes dos times</summary>
+    {% url 'board:rename_teams' day=game_day.date.isoformat as rename_url %}
+    <form method="post" action="{{ rename_url }}" hx-post="{{ rename_url }}" hx-target="#times" hx-swap="outerHTML" class="form">
+      {% csrf_token %}
+      {% include "includes/form_errors.html" with form=names_form %}
+      {% for field in names_form %}{% include "includes/field.html" %}{% endfor %}
+      <button class="btn btn--primary">Salvar nomes</button>
+    </form>
+  </details>
+</section>
+
+<section class="card">
+  <ul class="link-list">
+    <li><a href="{% url 'board:matches' day=game_day.date.isoformat %}">Tabela de jogos</a></li>
+  </ul>
+</section>

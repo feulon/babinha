@@ -1,0 +1,41 @@
+  <details class="{% if not compact %}card {% endif %}who" id="quem-vai" data-keep-open>
+    <summary class="who__summary">
+      {% if compact %}
+      <span class="who__title">Goleiros {{ week.goalkeepers|length }}/{{ week.goalkeeper_capacity }} · Linha {{ week.line|length }}/{{ week.line_capacity }} · Na espera {{ week.waiting_count }}</span>
+      <span class="who__hint small muted">Toque para ver a lista completa</span>
+      {% else %}
+      <span class="who__title">Quem vai</span>
+      <span class="count">{{ week.total_confirmed }}/{{ week.goalkeeper_capacity|add:week.line_capacity }}</span>
+      {% endif %}
+    </summary>
+  <section class="who__section">
+    <div class="card__title">
+      <h2>Goleiros</h2>
+      <span class="count">{{ week.goalkeepers|length }}/{{ week.goalkeeper_capacity }}</span>
+    </div>
+    {% include "games/_roster.html" with spots=week.goalkeepers empty="Nenhum goleiro ainda." %}
+  </section>
+
+  <section class="who__section">
+    <div class="card__title">
+      <h2>Linha</h2>
+      <span class="count">{{ week.line|length }}/{{ week.line_capacity }}</span>
+    </div>
+    {% include "games/_roster.html" with spots=week.line empty="Ninguém na lista ainda." %}
+  </section>
+
+  {% if week.waiting_line or week.waiting_goalkeepers %}
+  <section class="who__section">
+    <div class="card__title"><h2>Fila de espera</h2><span class="count">{{ week.waiting_count }}</span></div>
+    {% if week.waiting_goalkeepers %}
+      <h3 class="roster__sub">Goleiros</h3>
+      {% include "games/_roster.html" with spots=week.waiting_goalkeepers %}
+    {% endif %}
+    {% if week.waiting_line %}
+      {% if week.waiting_goalkeepers %}<h3 class="roster__sub">Linha</h3>{% endif %}
+      {% include "games/_roster.html" with spots=week.waiting_line %}
+    {% endif %}
+  </section>
+  {% endif %}
+  <p class="small muted">M = mensalista</p>
+  </details>

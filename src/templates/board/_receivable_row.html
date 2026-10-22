@@ -1,0 +1,10 @@
+{# One open charge of A receber, as the diretoria reads it. Needs row. #}
+<div class="row-head">
+  <strong>{{ row.charge.player.name }}</strong>
+  <span class="amount">R$ {{ row.charge.amount|floatformat:"2g" }}</span>
+</div>
+<div class="charge__meta">
+  <span class="small muted">{{ row.charge.description }} · vence {{ row.charge.due_date|date:"d/m" }}</span>
+  {% include "finance/_charge_badge.html" with charge=row.charge overdue=row.overdue %}
+</div>
+{% if row.refusal_reason %}<p class="small muted">Recusado: {{ row.refusal_reason }}</p>{% endif %}

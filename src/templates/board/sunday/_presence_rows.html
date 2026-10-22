@@ -1,0 +1,49 @@
+{% load lookup money %}
+{% if group.rows %}
+  <ol class="roster roster--presence">
+    {% for row in group.rows %}
+      <li>
+        <span class="roster__name">
+          {{ row.player.name }}
+          {% include "board/times/_rookie.html" with player=row.player %}
+          {% if row.enrolled %}<span class="badge badge--primary" title="Mensalista">M</span>{% elif row.player.player_type == "agregado" %}<span class="badge">Agregado</span>{% endif %}
+          {% if row.player_id in fined_late_ids %}<span class="badge badge--danger">multado</span>{% endif %}
+        </span>
+        <span class="roster__tools">
+          {% url 'board:mark_attendance' day=game_day.date.isoformat player_id=row.player_id as attendance_url %}
+          {% if row.attendance == "presente" %}<span class="mark-ok" role="img" aria-label="Presente" title="Presente"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></span>{% elif row.attendance == "faltou" %}<span class="badge badge--danger">Faltou</span>{% endif %}
+          {% if row.attendance != "presente" %}
+            <form method="post" action="{{ attendance_url }}" class="inline-form"
+                  hx-post="{{ attendance_url }}" hx-target="#roster-board" hx-swap="outerHTML">
+              {% csrf_token %}
+              <button class="btn btn--ghost btn--small" name="attendance" value="presente">Presente</button>
+            </form>
+          {% endif %}
+          {% if row.attendance != "faltou" %}
+            {% with fine=next_fines|get:row.player_id %}
+            <form method="post" action="{{ attendance_url }}" class="inline-form"
+                  hx-post="{{ attendance_url }}" hx-target="#roster-board" hx-swap="outerHTML"
+                  hx-confirm="Marcar {{ row.player.name }} como faltou? Gera multa{% if fine %} de {{ fine.amount|brl }} ({{ fine.ordinal }}ª ocorrência){% endif %}.">
+              {% csrf_token %}
+              <button class="btn btn--ghost btn--small" name="attendance" value="faltou">Faltou</button>
+            </form>
+            {% endwith %}
+            {% url 'board:mark_late' day=game_day.date.isoformat player_id=row.player_id as late_url %}
+            <form method="post" action="{{ late_url }}" class="inline-form"
+                  hx-post="{{ late_url }}" hx-target="#roster-board" hx-swap="outerHTML">
+              {% csrf_token %}
+              {% if row.player_id in fined_late_ids %}
+                <button class="btn btn--ghost btn--small btn--clock is-on" type="button" disabled title="Atraso já multado: perdoe a multa em Multas para corrigir" aria-label="Atraso de {{ row.player.name }} já multado">{% include "board/sunday/_clock.html" %}{{ row.late_minutes }}</button>
+              {% else %}
+                <input type="hidden" name="minutes" value="{% if row.late_minutes == 15 %}30{% elif row.late_minutes == 30 %}0{% else %}15{% endif %}">
+                <button class="btn btn--ghost btn--small btn--clock{% if row.late_minutes %} is-on{% endif %}" title="{% if row.late_minutes == 15 %}Atrasou 15 min: toque para 30 min{% elif row.late_minutes == 30 %}Atrasou 30 min: toque para limpar{% else %}Marcar atraso de 15 min{% endif %}" aria-label="Atraso de {{ row.player.name }}{% if row.late_minutes %}: {{ row.late_minutes }} minutos{% endif %}">{% include "board/sunday/_clock.html" %}{% if row.late_minutes %}{{ row.late_minutes }}{% endif %}</button>
+              {% endif %}
+            </form>
+          {% endif %}
+        </span>
+      </li>
+    {% endfor %}
+  </ol>
+{% else %}
+  <p class="roster--empty">Ninguém neste grupo.</p>
+{% endif %}

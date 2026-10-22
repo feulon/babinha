@@ -1,0 +1,31 @@
+{% load navigation %}{% load avatars %}
+<section class="card">
+  <div class="card__title"><h2>De onde veio</h2></div>
+  <dl class="kv">
+    <dt>Indicado por</dt>
+    <dd>{% if origin.referred_by %}<a href="{% nexturl 'community:player' player_id=origin.referred_by.pk q_aba='origem' %}">{{ origin.referred_by.name }}</a>{% elif subject.referrer_text %}{{ subject.referrer_text }} <span class="muted small origin-note">(texto livre, não ligado a um jogador)</span>{% elif subject.is_presidente %}Fundador{% else %}Sem indicação{% endif %}</dd>
+    <dt>No Babinha desde</dt><dd>{{ origin.joined_on|date:"d/m/Y" }}</dd>
+    <dt>Primeiro Babinha no app</dt><dd>{% if origin.first_played %}{{ origin.first_played|date:"d/m/Y" }}{% else %}-{% endif %}</dd>
+  </dl>
+  {% if is_self and not subject.is_presidente %}<a class="btn btn--ghost btn--block" href="{% url 'accounts:referrer' %}">{% if subject.referred_by %}Trocar ou remover{% elif subject.referrer_text %}Ligar a um jogador{% else %}Dizer quem me indicou{% endif %}</a>{% endif %}
+</section>
+{% if is_self %}
+<section class="card">
+  <div class="card__title"><h2>Convidar um jogador</h2></div>
+  <p class="small muted">O link abre o cadastro já com o seu nome e o código do grupo preenchidos.</p>
+  <button type="button" class="btn btn--primary btn--block" data-share="{{ invite_link }}" data-share-text="Entra no Babinha! Seu cadastro já vem com o código e o meu nome." hidden>Enviar convite</button>
+  <noscript><p class="small invite-link">Copie e envie este link: {{ invite_link }}</p></noscript>
+</section>
+{% endif %}
+<section class="card">
+  <div class="card__title"><h2>Trouxe</h2><span class="count">{{ origin.referrals|length }}</span></div>
+  {% for referral in origin.referrals %}
+    <a class="person" href="{% nexturl 'community:player' player_id=referral.player.pk q_aba='origem' %}">
+      {% avatar referral.player.name referral.player.pk referral.player.photo %}
+      <strong>{{ referral.player.name }}</strong>
+      <span class="person__meta">entrou em {{ referral.player.joined_on|date:"d/m/Y" }}<br>{{ referral.sundays }} domingo{{ referral.sundays|pluralize }}</span>
+    </a>
+  {% empty %}
+    <p class="roster--empty">Ainda não trouxe ninguém.</p>
+  {% endfor %}
+</section>

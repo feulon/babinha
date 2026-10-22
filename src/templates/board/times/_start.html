@@ -1,0 +1,21 @@
+{% comment %}Before the draw: who is on the list, the draw itself and the few rules it keeps.{% endcomment %}
+{% url 'board:draw_teams' day=game_day.date.isoformat as draw_url %}
+<section class="status status--neutral" data-card="sortear" data-lineup="none">
+  <p class="status__headline">Times ainda não sorteados</p>
+  <p>{{ state.line_count }} jogador{{ state.line_count|pluralize:"es" }} de linha e {{ state.goalkeepers|length }} goleiro{{ state.goalkeepers|length|pluralize }} na lista. O sorteio equilibra os potes entre os 4 times.</p>
+  {% if problem %}
+    {% include "board/times/_problem.html" %}
+  {% else %}
+    <form method="post" action="{{ draw_url }}" hx-post="{{ draw_url }}" hx-target="#times" hx-swap="outerHTML" hx-disabled-elt="find button">
+      {% csrf_token %}
+      <button class="btn btn--primary btn--block">Sortear times</button>
+    </form>
+  {% endif %}
+</section>
+
+<section class="card" data-card="regras">
+  <details{% if problem %} open{% endif %}>
+    <summary>Regras do sorteio</summary>
+    {% include "board/times/_rules.html" %}
+  </details>
+</section>

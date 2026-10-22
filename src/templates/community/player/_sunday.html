@@ -1,0 +1,26 @@
+<div class="sunday">
+  <div class="sunday__top">
+    <strong>{{ sunday.game_day.date|date:"d/m/Y" }}</strong>
+    {% if sunday.won_gold_ball %}<span class="ball" title="Bola de Ouro"><span aria-hidden="true">★</span><span class="visually-hidden">Bola de Ouro</span></span>
+    {% elif sunday.runner_up_place %}<span class="ball ball--{% if sunday.runner_up_place == 2 %}silver{% else %}bronze{% endif %}" title="{{ sunday.runner_up_place }}º lugar na Bola de Ouro">{{ sunday.runner_up_place }}<span class="visually-hidden">º lugar na Bola de Ouro</span></span>{% endif %}
+    <span class="sunday__team">{{ sunday.team }} · {{ sunday.line.goals }} gol{{ sunday.line.goals|pluralize:",s" }}{% if sunday.line.assists %} · {{ sunday.line.assists }} assist.{% endif %}</span>
+  </div>
+  {% if compact %}
+    <div class="sunday__line">
+      <span class="res res--V">{{ sunday.line.wins }}V</span><span class="res res--E">{{ sunday.line.draws }}E</span><span class="res res--D">{{ sunday.line.losses }}D</span>
+    </div>
+  {% elif sunday.matches %}
+    <ol class="sunday__line sunday__matches">
+      {% for match in sunday.matches %}
+        <li class="scoreline" title="{{ match.team }} {{ match.mine }} x {{ match.theirs }} {{ match.opponent }}">
+          <span class="res res--{{ match.result }}">{{ match.result }}</span>
+          <span>{{ match.mine }}×{{ match.theirs }}</span>
+          <span class="visually-hidden">{{ match.team }} contra {{ match.opponent }}</span>
+          {% if match.goals %}<span class="scoreline__goals" aria-label="{{ match.goals }} gol{{ match.goals|pluralize:',s' }}">⚽{{ match.goals }}</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    <p class="muted small sunday__line">Sem partidas encerradas neste domingo.</p>
+  {% endif %}
+</div>

@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}Jogos {{ view.game_day.date|date:"d/m" }}{% endblock %}
+{% block content %}
+{% include "matchday/_day.html" %}
+{% endblock %}

@@ -1,0 +1,13 @@
+{% load money %}<section class="card">
+  <dl class="kv totals">
+    <dt>Arrecadado</dt><dd data-total="arrecadado">{{ report.collected|brl }}</dd>
+    <dt class="totals__origin">Mensalistas</dt><dd class="totals__origin" data-total="mensalistas">{{ report.collected_monthly|brl }}</dd>
+    <dt class="totals__origin">Multas</dt><dd class="totals__origin" data-total="multas">{{ report.collected_fines|brl }}</dd>
+    <dt class="totals__origin">Avulsos</dt><dd class="totals__origin" data-total="avulsos">{{ report.collected_walk_in|brl }}</dd>
+    <dt>Despesas</dt><dd data-total="despesas">{{ report.expenses_total|brl }}</dd>
+  </dl>
+  <dl class="kv totals totals__balance{% if report.balance < 0 %} is-negative{% endif %}">
+    <dt>Saldo do mês</dt><dd data-total="saldo">{{ report.balance|brl }}</dd>
+  </dl>
+</section>
+<p class="small muted">Pagamentos confirmados pelo mês a que se referem, menos as despesas do mês.</p>

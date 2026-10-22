@@ -1,0 +1,8 @@
+{% load phone %}
+<dl class="kv" data-private="board">
+  <dt>Celular</dt><dd>{% if subject.phone %}{{ subject.phone|phone_br }} · <a href="{{ subject.phone|whatsapp_url }}" target="_blank" rel="noopener noreferrer">WhatsApp</a>{% else %}ainda não informou{% endif %}</dd>
+  <dt>E-mail</dt><dd class="kv__long">{{ subject.email|default:"não informou" }}</dd>
+  <dt>Posição · pote</dt><dd>{{ subject.get_position_display }}{% if subject.position == "linha" %} · pote {{ subject.pote }}{% endif %}</dd>
+  {% if subject.is_presidente %}<dt>Cargo</dt><dd>Presidente</dd>{% elif subject.is_diretoria %}<dt>Cargo</dt><dd>Diretoria</dd>{% endif %}
+  <dt>Conta criada em</dt><dd>{{ subject.created_at|date:"d/m/Y" }}</dd>
+</dl>

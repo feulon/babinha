@@ -1,0 +1,26 @@
+{% load static %}<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <title>Algo deu errado · Babinha de Domingo</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  {% if demo_banner %}<p class="demo-banner" role="status" data-demo-banner>{{ demo_banner }}</p>{% endif %}
+  <header class="topbar">
+    <a class="brand" href="/">
+      <img src="{% static 'icons/icon-192.png' %}" alt="" width="28" height="28">
+      <span>Babinha</span>
+    </a>
+  </header>
+  <main class="page">
+    <section class="status status--neutral" data-state="erro">
+      <p class="status__headline">Algo deu errado</p>
+      <p>O Babinha teve um problema para abrir esta tela. Tente de novo em instantes.</p>
+      <a class="btn btn--primary btn--block" href="/">Voltar ao início</a>
+    </section>
+  </main>
+</body>
+</html>

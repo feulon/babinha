@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load avatars %}
+{% block title %}Quem me indicou{% endblock %}
+{% block content %}
+<section class="auth">
+  <h1>Quem me indicou</h1>
+  {% if user.referred_by %}
+    <p class="lead">Hoje está ligado a <strong>{{ user.referred_by.name }}</strong>. Busque outro nome para trocar.</p>
+  {% elif user.referrer_text %}
+    <p class="lead">No cadastro você escreveu <strong>{{ user.referrer_text }}</strong>. Busque essa pessoa na lista e ligue.</p>
+  {% else %}
+    <p class="lead">Busque quem trouxe você para o Babinha.</p>
+  {% endif %}
+  <form method="get" class="form card" role="search">
+    <div class="field">
+      <label for="id_q">Buscar jogador pelo nome</label>
+      <input type="text" enterkeyhint="search" name="q" id="id_q" value="{{ query }}" maxlength="60" autocomplete="off" placeholder="Nome ou apelido">
+    </div>
+    <button type="submit" class="btn btn--primary btn--block">Buscar</button>
+  </form>
+  <div class="card">
+    {% for candidate in results|slice:":30" %}
+      <form method="post" class="person-pick">
+        {% csrf_token %}
+        <input type="hidden" name="player" value="{{ candidate.pk }}">
+        <span class="row-who">{% avatar candidate.name candidate.pk candidate.photo %}<strong>{{ candidate.name }}</strong></span>
+        <button type="submit" class="btn btn--ghost btn--small">Foi essa pessoa</button>
+      </form>
+    {% empty %}
+      <p class="roster--empty">Ninguém com esse nome. Confira como a pessoa aparece na lista.</p>
+    {% endfor %}
+    {% if results|length > limit %}<p class="muted small">Mostrando os primeiros {{ limit }}. Digite mais letras do nome para filtrar.</p>{% endif %}
+  </div>
+  {% if user.referred_by or user.referrer_text %}
+    <form method="post" data-confirm="Remover a indicação?">
+      {% csrf_token %}
+      <button type="submit" name="remove" value="1" class="btn btn--ghost btn--block">Remover indicação</button>
+    </form>
+  {% endif %}
+  <div class="form-links"><p><a href="{% url 'community:player' player_id=user.pk %}?aba=origem">Voltar para o perfil</a></p></div>
+</section>
+{% endblock %}

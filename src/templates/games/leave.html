@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Sair da lista{% endblock %}
+{% block content %}
+<div class="stack">
+  <h1>{% if week.state == "espera" %}Sair da espera{% elif week.state == "promovido" %}Recusar a vaga{% else %}Desistir do domingo{% endif %}</h1>
+  {% if week.leaving_is_fined %}
+    <section class="status status--danger">
+      <p class="status__headline">Vai gerar multa</p>
+      <p>O prazo sem custo era sábado às 23h59.</p>
+      <p><strong>Multa de R$ {{ fine_amount|floatformat:"2g" }} ({{ fine_ordinal }}ª ocorrência)</strong></p>
+    </section>
+  {% elif week.state == "espera" %}
+    <p>Você sai da fila de espera deste domingo. Sem custo.</p>
+  {% else %}
+    <p>Sua vaga vai para o próximo da fila de espera. Sem custo até sábado às 23h59.</p>
+  {% endif %}
+  <form method="post" class="actions">
+    {% csrf_token %}
+    <button type="submit" class="btn {% if week.leaving_is_fined %}btn--danger{% else %}btn--primary{% endif %} btn--block">Confirmar</button>
+    <a class="btn btn--ghost btn--block" href="{% url 'games:home' %}">Voltar</a>
+  </form>
+</div>
+{% endblock %}

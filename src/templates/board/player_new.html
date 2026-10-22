@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Novo jogador{% endblock %}
+{% block page_back %}{% endblock %}
+{% block content %}
+<div class="stack">
+  <div>
+    <p class="eyebrow"><a href="{{ back }}">‹ Jogadores</a></p>
+    <h1>Novo jogador</h1>
+    <p class="muted small">Cria a conta sem colocar o jogador na lista de nenhum domingo.</p>
+  </div>
+  <form method="post" class="form card" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {% include "includes/form_errors.html" %}
+    {% for field in form %}{% include "includes/field.html" %}{% endfor %}
+    <div class="actions">
+      <button type="submit" class="btn btn--primary">Criar jogador</button>
+      <a class="btn btn--ghost" href="{{ back }}">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

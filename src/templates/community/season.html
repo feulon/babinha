@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load navigation %}{% block title %}Temporada{% endblock %}
+{% block content %}
+<div class="stack">
+  <header>
+    <h1>Temporada {{ season.number }}</h1>
+    <p class="muted small">{{ table.sundays }} domingo{{ table.sundays|pluralize }} jogado{{ table.sundays|pluralize }} até agora.</p>
+  </header>
+
+  <section class="card">
+    <div class="card__title"><h2>Líderes</h2></div>
+    {% if table.rows %}
+      <ol class="ranking-list">
+        {% for row in table.rows|slice:":3" %}
+          <li><a href="{% nexturl 'community:player' player_id=row.player.pk %}">{{ row.player.name }}</a><span class="ranking-list__detail muted small">{{ row.totals.gold_balls }} Bola{{ row.totals.gold_balls|pluralize:",s" }} de Ouro · {{ row.totals.goals }} gol{{ row.totals.goals|pluralize:",s" }} · {{ row.totals.assists }} assist.</span></li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <p class="roster--empty">Ainda não há jogos nesta temporada.</p>
+    {% endif %}
+    <a class="btn btn--ghost btn--block" href="{% nexturl 'community:ranking' %}">Ver o ranking completo</a>
+  </section>
+
+  {% include "community/_end_season.html" %}
+
+  {% if finished %}
+    <section class="card">
+      <h2>Temporadas encerradas</h2>
+      <ul class="link-list">
+        {% for done in finished %}
+          <li><a href="{% nexturl 'community:ranking' q_temporada=done.number %}"><span>Temporada {{ done.number }} · até {{ done.ends_on|date:"d/m/Y" }}</span></a></li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

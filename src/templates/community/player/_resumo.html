@@ -1,0 +1,37 @@
+{% load navigation %}{% url 'community:player' player_id=subject.pk as tab_url %}
+<nav class="chips" aria-label="Temporada">
+  <a class="chip chip--small{% if not summary.season %} is-active{% endif %}" href="{{ tab_url }}?aba=resumo&amp;temporada=geral{% keep_next %}" hx-get="{{ tab_url }}?aba=resumo&amp;temporada=geral{% keep_next %}" hx-target="#perfil-abas" hx-swap="outerHTML" hx-push-url="true">Geral</a>
+  {% for season in seasons %}
+    <a class="chip chip--small{% if summary.season.number == season.number %} is-active{% endif %}" href="{{ tab_url }}?aba=resumo&amp;temporada={{ season.number }}{% keep_next %}" hx-get="{{ tab_url }}?aba=resumo&amp;temporada={{ season.number }}{% keep_next %}" hx-target="#perfil-abas" hx-swap="outerHTML" hx-push-url="true">Temporada {{ season.number }}</a>
+  {% endfor %}
+</nav>
+
+<section class="card">
+  <div class="card__title"><h2>{% if summary.season %}Temporada {{ summary.season.number }}{% else %}Todas as temporadas{% endif %}</h2></div>
+  <dl class="stat-grid">
+    <div><dt>Domingos</dt><dd>{{ summary.totals.sundays }}</dd></div>
+    <div><dt>Gols</dt><dd>{{ summary.totals.goals }}</dd></div>
+    <div><dt>Assistências</dt><dd>{{ summary.totals.assists }}</dd></div>
+    <div><dt>Bolas de Ouro</dt><dd>{{ summary.totals.gold_balls }}</dd></div>
+    <div><dt>Vitórias</dt><dd>{{ summary.totals.wins }}</dd></div>
+    <div><dt>Presença</dt><dd>{% if summary.presence is None %}-{% else %}{{ summary.presence }}%{% endif %}</dd></div>
+  </dl>
+  {% if summary.presence is not None %}
+    <progress class="bar" value="{{ summary.presence }}" max="100" aria-label="Presença"></progress>
+    <p class="muted small">Foi a {{ summary.totals.sundays }} de {{ summary.possible }} domingo{{ summary.possible|pluralize }} desde o primeiro Babinha.</p>
+  {% endif %}
+  {% if summary.totals.matches %}
+    <p class="muted small">{{ summary.totals.wins }} vitória{{ summary.totals.wins|pluralize }}, {{ summary.totals.draws }} empate{{ summary.totals.draws|pluralize }} e {{ summary.totals.losses }} derrota{{ summary.totals.losses|pluralize }} em {{ summary.totals.matches }} partida{{ summary.totals.matches|pluralize }}{% if summary.goals_per_sunday is not None %} · {{ summary.goals_per_sunday|floatformat:1 }} gols por domingo{% endif %}.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <div class="card__title"><h2>Últimos domingos</h2><a class="small" href="{{ tab_url }}?aba=domingos{% keep_next %}" hx-get="{{ tab_url }}?aba=domingos{% keep_next %}" hx-target="#perfil-abas" hx-swap="outerHTML" hx-push-url="true">ver todos ›</a></div>
+  {% if summary.recent %}
+    {% for sunday in summary.recent %}{% include "community/player/_sunday.html" with compact=True %}{% endfor %}
+  {% else %}
+    <p class="roster--empty">Ainda não jogou nenhum domingo{% if summary.season %} nesta temporada{% endif %}.</p>
+  {% endif %}
+</section>
+
+{% if private %}{% include "community/player/_private.html" %}{% endif %}

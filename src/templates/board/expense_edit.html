@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Editar despesa{% endblock %}
+{% block content %}
+<div class="stack">
+  <div>
+    <p class="eyebrow">Despesa</p>
+    <h1>{{ expense.description }}</h1>
+    <p class="muted small">Lançada por {{ expense.created_by.name }} em {{ expense.created_at|date:"d/m/Y" }}.</p>
+  </div>
+  <form method="post" class="form card" novalidate>
+    {% csrf_token %}
+    {% include "includes/form_errors.html" %}
+    {% for field in form %}{% include "includes/field.html" %}{% endfor %}
+    <div class="actions">
+      <button type="submit" class="btn btn--primary">Salvar</button>
+      <a class="btn btn--ghost" href="{% url 'board:expenses_month' month=expense.date|date:'Y-m' %}">Cancelar</a>
+    </div>
+  </form>
+  <form method="post" action="{% url 'board:expense_delete' expense_id=expense.pk %}" data-confirm="Excluir esta despesa?">
+    {% csrf_token %}
+    <button type="submit" class="btn btn--danger btn--block">Excluir despesa</button>
+  </form>
+</div>
+{% endblock %}

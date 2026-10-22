@@ -1,0 +1,17 @@
+{% load navigation %}<div id="perfil-abas" class="stack">
+  <nav class="seg" aria-label="Seções do perfil">
+    {% for key, label in tabs %}
+      {% url 'community:player' player_id=subject.pk as tab_url %}
+      <a href="{{ tab_url }}?aba={{ key }}{% keep_next %}" hx-get="{{ tab_url }}?aba={{ key }}{% keep_next %}" hx-target="#perfil-abas" hx-swap="outerHTML" hx-push-url="true"{% if key == tab %} class="on" aria-current="page"{% endif %}>{{ label }}</a>
+    {% endfor %}
+  </nav>
+  {% if tab == "resumo" %}
+    {% include "community/player/_resumo.html" %}
+  {% elif tab == "domingos" %}
+    {% include "community/player/_domingos.html" %}
+  {% elif tab == "bolas" %}
+    {% include "community/player/_bolas.html" %}
+  {% else %}
+    {% include "community/player/_origem.html" %}
+  {% endif %}
+</div>

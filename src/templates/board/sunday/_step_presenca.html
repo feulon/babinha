@@ -1,0 +1,28 @@
+{% comment %}Step 3: attendance, marked during the games. It never blocks the teams or the games.{% endcomment %}
+<details data-keep-state class="card step" id="passo-presenca"{% if current_step == "presenca" %} open{% endif %} data-step="presenca">
+  <summary class="step__head">
+    <span class="step__num" aria-hidden="true">3</span>
+    <span class="step__text">
+      <span class="step__title">Presença</span>
+      <span class="step__sub">{% if can_mark_attendance %}{{ attendance_marked }} de {{ attendance_total }} marcados · não trava os jogos{% else %}Abre às {{ schedule.starts|date:"H\h" }} · não trava os jogos{% endif %}</span>
+    </span>
+  </summary>
+  <div class="step__body">
+    {% if can_mark_attendance %}
+      <p class="small muted">Marque durante o futebol. Falta gera multa; corrigir para presente cancela a multa. O relógio marca o atraso (15 ou 30 min).</p>
+      {% url 'board:mark_all_present' day=game_day.date.isoformat as all_present_url %}
+      <form method="post" action="{{ all_present_url }}"
+            hx-post="{{ all_present_url }}" hx-target="#roster-board" hx-swap="outerHTML" hx-disabled-elt="find button"
+            hx-confirm="Marcar como presentes todos da lista que ainda não têm presença marcada? Quem já está marcado não muda.">
+        {% csrf_token %}
+        <button class="btn btn--primary btn--block">Todos presentes</button>
+      </form>
+      {% for group in attendance_groups %}
+        <details data-keep-state class="step__list" id="presenca-{{ group.key }}" data-group="{{ group.key }}">
+          <summary>{{ group.title }} <span class="count">{{ group.marked }}/{{ group.rows|length }}</span></summary>
+          {% include "board/sunday/_presence_rows.html" %}
+        </details>
+      {% endfor %}
+    {% endif %}
+  </div>
+</details>

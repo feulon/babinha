@@ -1,0 +1,40 @@
+# Part 2 (optional): publish the app on the internet through a Cloudflare Tunnel.
+# Add it to the base file and the port leaves the home network: only cloudflared, on the compose
+# network, reaches the app as http://app:8000. Needs a domain on Cloudflare and TUNNEL_TOKEN in
+# .env.production (docs/producao.md, part 2). scripts/baba.sh adds this file by itself when
+# TUNNEL_TOKEN is set.
+#
+#   docker compose --env-file .env.production -f compose.prod.yaml -f compose.prod.tunnel.yaml up -d
+services:
+  app:
+    # No port on the host or the home network any more.
+    ports: !reset []
+    environment:
+      # HTTPS is terminated by Cloudflare: Secure cookies, HSTS (gradual) and the real client IP.
+      DJANGO_BEHIND_HTTPS_PROXY: ${DJANGO_BEHIND_HTTPS_PROXY:-true}
+      DJANGO_SECURE_COOKIES: ${DJANGO_SECURE_COOKIES:-true}
+      DJANGO_HSTS_SECONDS: ${DJANGO_HSTS_SECONDS:-3600}
+      BABA_CLIENT_IP_HEADER: ${BABA_CLIENT_IP_HEADER:-HTTP_CF_CONNECTING_IP}
+
+  cloudflared:
+    image: cloudflare/cloudflared:2026.10.0
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    # The public hostname is configured in the Cloudflare dashboard and points to
+    # http://app:8000. The token comes from the environment, never from this file.
+    command: tunnel --no-autoupdate --metrics 127.0.0.1:2000 run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?set TUNNEL_TOKEN in .env.production}
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "cloudflared", "tunnel", "--metrics", "127.0.0.1:2000", "ready"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s

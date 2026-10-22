@@ -1,0 +1,12 @@
+<nav class="seg seg--money" aria-label="Financeiro">
+  {% for key, label, url_name in sections %}
+    <a href="{% url url_name %}"{% if current == key %} class="on" aria-current="page"{% endif %}>{{ label }}{% if key == "receber" and receipts_to_review and not receivable %} <span class="seg__badge" aria-label="{{ receipts_to_review }} para conferir">{{ receipts_to_review }}</span>{% endif %}</a>
+  {% endfor %}
+</nav>
+{% if receivable %}
+  <nav class="seg seg--sub" aria-label="A receber">
+    {% for key, label, url in receivable %}
+      <a href="{{ url }}"{% if receivable_current == key %} class="on" aria-current="page"{% endif %}>{{ label }}{% if key == "conferir" and receipts_to_review %} <span class="seg__badge" aria-label="{{ receipts_to_review }} para conferir">{{ receipts_to_review }}</span>{% endif %}</a>
+    {% endfor %}
+  </nav>
+{% endif %}

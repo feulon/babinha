@@ -1,0 +1,68 @@
+{% comment %}Step 4: after the game. The no-show and late fines and the charges, in that order. Locked until the game starts.{% endcomment %}
+{% load money %}
+{% if not can_mark_attendance %}
+  <div class="card step step--locked" id="passo-fim" data-step="fim">
+    <div class="step__head">
+      <span class="step__num" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3z"/></svg></span>
+      <span class="step__text">
+        <span class="step__title">Finalizar e cobrar</span>
+        <span class="step__sub">Abre às {{ schedule.starts|date:"H\h" }}</span>
+      </span>
+    </div>
+  </div>
+{% else %}
+  <details data-keep-state class="card step{% if game_day.is_finished %} step--done{% endif %}" id="passo-fim" data-step="fim">
+    <summary class="step__head">
+      <span class="step__num" aria-hidden="true">{% if game_day.is_finished %}✓{% else %}4{% endif %}</span>
+      <span class="step__text">
+        <span class="step__title">Finalizar e cobrar</span>
+        <span class="step__sub">{% if game_day.is_finished %}Cobranças abertas{% else %}Cobranças abrem às {{ schedule.charges_open|date:"H\hi" }}{% endif %}</span>
+      </span>
+    </summary>
+    <div class="step__body">
+      {% if no_show_rows %}
+        <div id="multar-falta" data-card="falta">
+          <div class="card__title"><h3 class="roster__sub">{{ no_show_reason }}</h3><span class="count">{{ no_show_rows|length }}</span></div>
+          <ul class="rows">
+            {% for row in no_show_rows %}
+              <li class="late-row">
+                <span>{{ row.entry.player.name }}{% if row.fine %} <span class="badge badge--wait">{{ row.fine.ordinal }}ª ocorrência</span>{% if row.fine.status == "perdoada" %} <span class="badge">perdoada</span>{% else %} <span class="badge badge--danger">multado</span>{% endif %}{% else %} <span class="badge">sem multa</span>{% endif %}</span>
+                {% if row.fine %}<b>{{ row.fine.amount|brl }}</b>{% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+      {% if late_rows %}
+        <div id="multar-atraso" data-card="atraso">
+          <div class="card__title"><h3 class="roster__sub">Multar por atraso</h3><span class="count">{{ late_rows|length }}</span></div>
+          <ul class="rows">
+            {% for row in late_rows %}
+              <li class="late-row">
+                <span>{{ row.entry.player.name }} <span class="badge badge--wait">{{ row.entry.late_minutes }} min</span>{% if row.fined %} <span class="badge badge--danger">multado</span>{% endif %}</span>
+                <b>{{ row.amount|brl }}</b>
+              </li>
+            {% endfor %}
+          </ul>
+          {% if late_pending %}
+            {% url 'board:fine_late' day=game_day.date.isoformat as fine_late_url %}
+            <form method="post" action="{{ fine_late_url }}"
+                  hx-post="{{ fine_late_url }}" hx-target="#roster-board" hx-swap="outerHTML" hx-disabled-elt="find button"
+                  hx-confirm="Multar {{ late_pending|length }} jogador{{ late_pending|length|pluralize:'es' }} por atraso, total {{ late_pending_total|brl }}?">
+              {% csrf_token %}
+              <button class="btn btn--ghost btn--block">Multar {{ late_pending|length }} jogador{{ late_pending|length|pluralize:"es" }} · {{ late_pending_total|brl }}</button>
+            </form>
+          {% else %}
+            <p class="small muted">Todos os atrasos marcados já foram multados.</p>
+          {% endif %}
+        </div>
+      {% endif %}
+      {% if not game_day.is_finished %}
+        <form method="post" action="{% url 'board:finish' day=game_day.date.isoformat %}" data-confirm="Finalizar o jogo e abrir as cobranças do domingo?">
+          {% csrf_token %}
+          <button class="btn btn--primary btn--block">Finalizar jogo e cobrar</button>
+        </form>
+      {% endif %}
+    </div>
+  </details>
+{% endif %}

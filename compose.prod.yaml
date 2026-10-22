@@ -1,0 +1,113 @@
+# Production stack (v0 local): app + Postgres + a local store for the Pix receipts.
+# The app is published on the home network only (players open http://<notebook IP>); do not
+# forward this port in the router. For the public setup behind a Cloudflare Tunnel add
+# compose.prod.tunnel.yaml (docs/producao.md, part 2), which takes the port off the network.
+#
+# Easiest way to run it: scripts/baba.sh subir
+# By hand:  docker compose --env-file .env.production -f compose.prod.yaml up -d --build
+name: baba-prod
+
+# Docker keeps container logs forever by default; cap them so the laptop disk never fills up.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      POSTGRES_DB: baba
+      POSTGRES_USER: baba
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env.production}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    # Not published: only the app (same compose network) talks to Postgres.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U baba -d baba"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  # Versity S3 Gateway: the S3 API over plain files, so every receipt is an ordinary file in the
+  # s3-data volume (easy to copy, see scripts/backup.sh). Only runs with the "local-receipts"
+  # profile, which .env.production turns on (COMPOSE_PROFILES). To use a Cloudflare R2 bucket
+  # instead, remove that line and set the BABA_S3_* variables (docs/producao.md).
+  s3:
+    image: versity/versitygw:v1.8.0
+    profiles: ["local-receipts"]
+    restart: unless-stopped
+    logging: *logging
+    entrypoint: ["/bin/sh", "-c", "mkdir -p /data/$$BUCKET && exec versitygw posix /data"]
+    environment:
+      ROOT_ACCESS_KEY_ID: ${BABA_S3_ACCESS_KEY_ID:?set BABA_S3_ACCESS_KEY_ID in .env.production}
+      ROOT_SECRET_ACCESS_KEY: ${BABA_S3_SECRET_ACCESS_KEY:?set BABA_S3_SECRET_ACCESS_KEY in .env.production}
+      BUCKET: ${BABA_S3_BUCKET:-baba-comprovantes}
+    volumes:
+      - s3-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 7070"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    image: baba-app:prod
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      # Makes the app refuse to start unless every value below is safe (src/baba/production_checks.py).
+      BABA_PRODUCTION: "true"
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-false}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?set DJANGO_SECRET_KEY in .env.production}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:?set DJANGO_ALLOWED_HOSTS in .env.production}
+      DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-}
+      # Plain HTTP on the home network: no Secure cookies, no HSTS, no proxy header.
+      # compose.prod.tunnel.yaml flips these for the HTTPS setup.
+      DJANGO_BEHIND_HTTPS_PROXY: ${DJANGO_BEHIND_HTTPS_PROXY:-false}
+      DJANGO_SECURE_COOKIES: ${DJANGO_SECURE_COOKIES:-false}
+      DJANGO_HSTS_SECONDS: ${DJANGO_HSTS_SECONDS:-0}
+      BABA_CLIENT_IP_HEADER: ${BABA_CLIENT_IP_HEADER:-}
+      DATABASE_URL: postgres://baba:${POSTGRES_PASSWORD}@db:5432/baba
+      BABA_S3_ENDPOINT_URL: ${BABA_S3_ENDPOINT_URL:-http://s3:7070}
+      BABA_S3_BUCKET: ${BABA_S3_BUCKET:-baba-comprovantes}
+      BABA_S3_REGION: ${BABA_S3_REGION:-us-east-1}
+      BABA_S3_ACCESS_KEY_ID: ${BABA_S3_ACCESS_KEY_ID:?set BABA_S3_ACCESS_KEY_ID in .env.production}
+      BABA_S3_SECRET_ACCESS_KEY: ${BABA_S3_SECRET_ACCESS_KEY:?set BABA_S3_SECRET_ACCESS_KEY in .env.production}
+      BABA_S3_ADDRESSING_STYLE: ${BABA_S3_ADDRESSING_STYLE:-path}
+      EMAIL_HOST: ${EMAIL_HOST:-localhost}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER:-}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD:-}
+      EMAIL_USE_TLS: ${EMAIL_USE_TLS:-true}
+      EMAIL_USE_SSL: ${EMAIL_USE_SSL:-false}
+      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-Babinha <baba@localhost>}
+      # Code the group types to sign up; the app refuses to start without it.
+      BABA_INVITE_CODE: ${BABA_INVITE_CODE:?set BABA_INVITE_CODE in .env.production}
+      BABA_LIST_OPENS_AT: ${BABA_LIST_OPENS_AT:-08:00}
+      # Optional: contact e-mail on the "Sobre o app" screen (hidden when empty).
+      BABA_CREATOR_EMAIL: ${BABA_CREATOR_EMAIL:-}
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-3}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    # The home network only. APP_BIND=127.0.0.1 would make it reachable from the notebook alone.
+    ports:
+      - "${APP_BIND:-0.0.0.0}:${APP_PORT:-80}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      # Host is localhost, so DJANGO_ALLOWED_HOSTS must keep "localhost".
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/saude/')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  db-data:
+  s3-data:

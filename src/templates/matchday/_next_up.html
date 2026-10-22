@@ -1,0 +1,7 @@
+{% comment %}The match the waiting line calls next: who comes on court. Not on the table until the diretoria starts it.{% endcomment %}
+<p class="match-link__teams">
+  <span>{{ upcoming.home.name }}</span>
+  <strong class="match-link__score">x</strong>
+  <span>{{ upcoming.away.name }}</span>
+</p>
+<p class="small muted">Entra quem espera há mais tempo.{% if upcoming.waiting %} Esperando: {% for team in upcoming.waiting %}{{ team.name }}{% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %}</p>

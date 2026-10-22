@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: shellcheck -x scripts/*.sh
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: baba
+          POSTGRES_USER: baba
+          POSTGRES_PASSWORD: baba
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U baba -d baba"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+    env:
+      DATABASE_URL: postgres://baba:baba@localhost:5432/baba
+      BABA_TEST_S3_ENDPOINT_URL: http://localhost:7070
+      BABA_TEST_S3_ACCESS_KEY_ID: baba
+      BABA_TEST_S3_SECRET_ACCESS_KEY: baba-ci-secret
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      # Same S3-compatible gateway as compose.yaml, for tests/integration/test_s3_storage.py.
+      - name: Start S3 gateway
+        run: |
+          docker run -d --name s3 -p 7070:7070 \
+            -e ROOT_ACCESS_KEY_ID=baba -e ROOT_SECRET_ACCESS_KEY=baba-ci-secret \
+            --entrypoint sh versity/versitygw:v1.8.0 -c "mkdir -p /data && exec versitygw posix /data"
+          timeout 60 sh -c 'until nc -z localhost 7070; do sleep 1; done'
+      # The backup tests also run against the real rclone (a local folder as the remote).
+      - run: sudo apt-get update && sudo apt-get install -y rclone
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+      - run: uv sync --frozen
+      - run: uv run python manage.py makemigrations --check --dry-run
+        env:
+          DJANGO_SECRET_KEY: ci-only
+      - run: uv run playwright install --with-deps chromium
+      # One test database per worker (test_baba_gw0, ...); a file stays on one worker.
+      - run: uv run pytest -n auto --dist loadfile --cov=src --cov-report=term --cov-fail-under=80
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - run: docker build -t baba:ci .
+      # The production stacks must at least parse with the minimal variables filled in.
+      - name: Validate production compose files
+        run: |
+          printf 'TUNNEL_TOKEN=x\nDJANGO_SECRET_KEY=x\nDJANGO_ALLOWED_HOSTS=x\nPOSTGRES_PASSWORD=x\nBABA_S3_ACCESS_KEY_ID=x\nBABA_S3_SECRET_ACCESS_KEY=x\nBABA_INVITE_CODE=x\n' > ci.env
+          docker compose --env-file ci.env -f compose.prod.yaml config -q
+          docker compose --env-file ci.env -f compose.prod.yaml -f compose.prod.tunnel.yaml config -q
+      - name: Validate the demo compose file
+        run: docker compose -f compose.demo.yaml config -q

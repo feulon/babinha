@@ -1,0 +1,47 @@
+{% comment %}A team (or the goal, or who is waiting for a team) with its players. A tap on a player picks
+them, or swaps them with the picked one; `spot.receives` adds the button to move the picked one here.
+The goal shows the goalkeepers on one line, and a head only when line players are in it.{% endcomment %}
+<section class="spot{% if wide %} spot--wide{% endif %}{% if spot.receives %} spot--target{% endif %}" data-team="{{ spot.name }}">
+  {% if not goalkeepers or spot.rows or spot.receives %}
+    <header class="spot__head">
+      <h3>{{ spot.name }}</h3>
+      {% if not wide %}<span class="spot__sum" aria-label="Soma dos potes: {{ spot.pote_sum }}">{{ spot.pote_sum }}</span>{% endif %}
+    </header>
+    {% if not wide and spot.uneven %}<p class="spot__count">{{ spot.count }} jogador{{ spot.count|pluralize:"es" }}</p>{% endif %}
+  {% endif %}
+  {% if goalkeepers %}
+    <p class="small spot__keepers">Goleiros: {% for player in goalkeepers %}{{ player.name }}{% if player.pk in grouping.rookie_ids %}<span class="rk" role="img" aria-label="Estreante" title="Estreante: primeiro domingo no Babinha">E</span>{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %} <span class="muted">(rodam por jogo)</span></p>
+  {% endif %}
+  {% if spot.rows or not goalkeepers %}<ul class="spot__rows">
+    {% for row in spot.rows %}
+      <li>
+        {% if row.picked %}
+          <span class="spot__row is-picked{% if row.unit.players|length > 1 %} spot__row--group{% endif %}" aria-current="true"><span class="spot__who">{% include "board/times/_mates.html" %}</span></span>
+        {% elif row.swap %}
+          <form method="post" action="{{ adjust_url }}" hx-post="{{ adjust_url }}" hx-target="#times" hx-swap="outerHTML" hx-disabled-elt="find button">
+            {% csrf_token %}
+            <input type="hidden" name="modo" value="trocar">
+            <input type="hidden" name="unidade" value="{{ board.picked.key }}">
+            <input type="hidden" name="destino" value="{{ row.unit.key }}">
+            <button class="spot__row is-swap{% if row.unit.players|length > 1 %} spot__row--group{% endif %}"><span class="spot__who">{% include "board/times/_mates.html" %}</span> <span class="spot__act" aria-hidden="true">⇄</span><span class="visually-hidden">trocar</span></button>
+          </form>
+        {% else %}
+          {% with pick_url=teams_url|add:"?unidade="|add:row.unit.key %}
+          <a class="spot__row{% if row.unit.players|length > 1 %} spot__row--group{% endif %}" href="{{ pick_url }}" hx-get="{{ pick_url }}" hx-target="#times" hx-swap="outerHTML" hx-push-url="false"><span class="spot__who">{% include "board/times/_mates.html" %}</span></a>
+          {% endwith %}
+        {% endif %}
+      </li>
+    {% empty %}
+      {% if not goalkeepers %}<li class="spot__empty muted small">Ninguém por aqui.</li>{% endif %}
+    {% endfor %}
+  </ul>{% endif %}
+  {% if spot.receives %}
+    <form method="post" action="{{ adjust_url }}" hx-post="{{ adjust_url }}" hx-target="#times" hx-swap="outerHTML" hx-disabled-elt="find button">
+      {% csrf_token %}
+      <input type="hidden" name="modo" value="mover">
+      <input type="hidden" name="unidade" value="{{ board.picked.key }}">
+      <input type="hidden" name="destino" value="{{ spot.place }}">
+      <button class="btn btn--small btn--block{% if spot.suggested %} btn--primary{% endif %}">Mover para {% if wide %}o gol{% else %}cá{% endif %}</button>
+    </form>
+  {% endif %}
+</section>

@@ -1,0 +1,1 @@
+{% load money %}A <strong>multa de atraso</strong> é fixa: {% for minutes, amount in late_fines %}<strong>{{ minutes }} min custam {{ amount|brl }}</strong>{% if not forloop.last %} e {% endif %}{% endfor %}.

@@ -1,0 +1,36 @@
+{% comment %}Step 1: build and confirm the teams. Open until they are confirmed.{% endcomment %}
+{% url 'board:teams' day=game_day.date.isoformat as teams_url %}
+<details data-keep-state class="card step{% if lineup_state == 'confirmed' %} step--done{% endif %}" id="passo-times"{% if current_step == "times" %} open{% endif %} data-step="times">
+  <summary class="step__head">
+    <span class="step__num" aria-hidden="true">{% if lineup_state == "confirmed" %}✓{% else %}1{% endif %}</span>
+    <span class="step__text">
+      <span class="step__title">{% if lineup_state == "confirmed" %}Times confirmados{% else %}Montar os times{% endif %}</span>
+      <span class="step__sub">
+        {% if lineup_state == "none" %}{{ teams_state.line_count }} de linha · {{ teams_state.goalkeepers|length }} goleiro{{ teams_state.goalkeepers|length|pluralize }}
+        {% elif lineup_state == "draft" %}Rascunho: só a diretoria vê
+        {% elif lineup_state == "stale" %}A lista mudou depois do sorteio
+        {% else %}{{ teams_state.teams|length }} times · os jogadores já veem{% endif %}
+      </span>
+    </span>
+  </summary>
+  <div class="step__body">
+    {% if lineup_state == "confirmed" %}
+      <ul class="step__teams">
+        {% for team in teams_state.teams %}
+          <li><b>{{ team.team.name }}</b><span class="small muted">{% for player in team.players|slice:":3" %}{{ player.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% if team.players|length > 3 %}…{% endif %}</span></li>
+        {% endfor %}
+      </ul>
+      <a class="btn btn--ghost btn--block" href="{{ teams_url }}">Ver ou ajustar os times</a>
+    {% elif lineup_state == "none" %}
+      <a class="btn btn--primary btn--block" href="{{ teams_url }}">Montar times</a>
+    {% elif lineup_state == "draft" %}
+      <a class="btn btn--primary btn--block" href="{{ teams_url }}">Continuar a montagem</a>
+    {% else %}
+      <a class="btn btn--primary btn--block" href="{{ teams_url }}">Ajustar os times</a>
+    {% endif %}
+    <details data-keep-state class="step__list" id="lista-jogadores">
+      <summary>Lista de jogadores ({{ list_total }}){% if roster.waiting_count %} · {{ roster.waiting_count }} na espera{% endif %}</summary>
+      {% include "board/sunday/_list.html" %}
+    </details>
+  </div>
+</details>

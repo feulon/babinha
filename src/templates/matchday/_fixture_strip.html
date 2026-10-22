@@ -1,0 +1,50 @@
+{% comment %}The game table: a scrollable strip with every match in miniature and the selected one open below it.
+Server-side the current match is selected; src/static/js/app.js swaps the selection on tap.{% endcomment %}
+{% with featured=view.featured %}
+<div class="faixa" data-faixa>
+  <div class="faixa__strip" role="tablist" aria-label="Jogos">
+    {% for row in view.matches %}
+      <button type="button" role="tab" id="jogo-tab-{{ row.match.pk }}" class="faixa__tile{% if row.match.is_finished %} is-done{% elif row.goals %} is-live{% endif %}{% if row == view.mine %} is-mine{% endif %}" aria-controls="jogo-{{ row.match.pk }}" aria-selected="{% if row == featured %}true{% else %}false{% endif %}" data-faixa-tab="{{ row.match.pk }}" data-number="{{ row.number }}">
+        <span class="faixa__tile-number">Jogo {{ row.number }}</span>
+        <span class="faixa__tile-teams">
+          <span class="team-dot" data-team="{{ row.match.home_team.number }}"></span>
+          <strong class="faixa__tile-score">{% if row.goals or row.match.is_finished %}{{ row.score.home }} x {{ row.score.away }}{% else %}x{% endif %}</strong>
+          <span class="team-dot" data-team="{{ row.match.away_team.number }}"></span>
+        </span>
+        <span class="visually-hidden">{{ row.match.home_team.name }} contra {{ row.match.away_team.name }}</span>
+      </button>
+    {% endfor %}
+  </div>
+
+  {% for row in view.matches %}
+    <section class="faixa__panel" role="tabpanel" id="jogo-{{ row.match.pk }}" aria-labelledby="jogo-tab-{{ row.match.pk }}" data-faixa-panel="{{ row.match.pk }}"{% if row != featured %} hidden{% endif %}>
+      <p class="faixa__panel-head">
+        <span class="small muted">Jogo {{ row.number }}{% if row == view.mine %} · seu time{% endif %}</span>
+        {% include "matchday/_match_status.html" with match=row.match goals=row.goals %}
+      </p>
+      <div class="faixa__board">
+        <span class="faixa__team"><span class="team-dot team-dot--big" data-team="{{ row.match.home_team.number }}"></span>{{ row.match.home_team.name }}</span>
+        <strong class="faixa__score">{% if row.goals or row.match.is_finished %}{{ row.score.home }}<span>x</span>{{ row.score.away }}{% else %}<span>x</span>{% endif %}</strong>
+        <span class="faixa__team"><span class="team-dot team-dot--big" data-team="{{ row.match.away_team.number }}"></span>{{ row.match.away_team.name }}</span>
+      </div>
+      {% if row.goals %}
+        <ul class="faixa__goals">
+          {% for goal in row.goals %}
+            <li>
+              <span class="team-dot" data-team="{{ goal.team.number }}"></span>
+              <span><strong>{% if goal.own_goal %}Gol contra{% else %}{{ goal.scorer.name }}{% endif %}</strong>{% if goal.assist %} <span class="muted">ass. {{ goal.assist.name }}</span>{% endif %}</span>
+              <span class="faixa__goal-team">{{ goal.team.name }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="small muted faixa__empty">{% if row.match.is_finished %}Sem gols.{% else %}Ainda sem gols.{% endif %}</p>
+      {% endif %}
+      <div class="faixa__nav">
+        {% if not forloop.first %}<button type="button" class="btn btn--ghost btn--small" data-faixa-go="prev">‹ Jogo anterior</button>{% endif %}
+        {% if view.mine and view.mine != row %}<button type="button" class="btn btn--ghost btn--small" data-faixa-go="{{ view.mine.match.pk }}">Seu jogo ›</button>{% endif %}
+      </div>
+    </section>
+  {% endfor %}
+</div>
+{% endwith %}

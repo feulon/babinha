@@ -1,0 +1,313 @@
+from datetime import date
+
+from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import PermissionsMixin
+from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import IntegrityError, models, transaction
+from django.db.models.functions import Lower
+
+from accounts.phone import normalize_phone, validate_phone
+from core import clock
+from games.domain import types
+
+POTE_MIN = 1
+POTE_MAX = 5
+DEFAULT_POTE = 3
+
+
+class PlayerType(models.TextChoices):
+    MENSALISTA = types.PlayerType.MENSALISTA.value, "Mensalista"
+    AVULSO = types.PlayerType.AVULSO.value, "Avulso"
+    AGREGADO = types.PlayerType.AGREGADO.value, "Agregado"
+
+
+# Mensalista is not a standing type: it lasts one calendar month, from the player's
+# MonthlyEnrollment, and the next month everybody starts over (see Player.type_in).
+STANDING_TYPES = [
+    (PlayerType.AVULSO.value, PlayerType.AVULSO.label),
+    (PlayerType.AGREGADO.value, PlayerType.AGREGADO.label),
+]
+
+
+def month_start(day: date) -> date:
+    return day.replace(day=1)
+
+
+def current_month() -> date:
+    return month_start(clock.now().date())
+
+
+class Position(models.TextChoices):
+    LINHA = types.Position.LINHA.value, "Linha"
+    GOLEIRO = types.Position.GOLEIRO.value, "Goleiro"
+
+
+class PlayerQuerySet(models.QuerySet["Player"]):
+    @staticmethod
+    def _enrolled(month: date | None) -> models.Exists:
+        return models.Exists(
+            MonthlyEnrollment.objects.filter(
+                player=models.OuterRef("pk"), month=month or current_month()
+            )
+        )
+
+    def with_enrollment(self, month: date | None = None) -> "PlayerQuerySet":
+        """Annotate `enrolled`: whether each player is a mensalista in `month` (default: now)."""
+        return self.annotate(enrolled=self._enrolled(month))
+
+    def of_type(self, kind: str, month: date | None = None) -> "PlayerQuerySet":
+        """Players whose type in `month` is `kind`: a mensalista outranks the standing type."""
+        if kind == PlayerType.MENSALISTA:
+            return self.filter(self._enrolled(month))
+        return self.filter(~self._enrolled(month), player_type=kind)
+
+
+class PlayerManager(BaseUserManager["Player"].from_queryset(PlayerQuerySet)):
+    def create_player(
+        self,
+        *,
+        phone: str,
+        password: str,
+        name: str,
+        referred_by: "Player | None",
+        email: str | None = None,
+        referrer_text: str = "",
+        **extra: object,
+    ) -> "Player":
+        player = self.model(
+            phone=normalize_phone(phone),
+            email=self.normalize_email(email).lower() if email else None,
+            name=name.strip(),
+            referred_by=referred_by,
+            referrer_text=referrer_text.strip(),
+            **extra,
+        )
+        player.set_password(password)
+        player.full_clean(exclude=["password"])
+        try:
+            with transaction.atomic():
+                player.save(using=self._db)
+        except IntegrityError as exc:  # a concurrent signup took the same phone or e-mail
+            raise ValidationError("Já existe uma conta com este celular ou e-mail.") from exc
+        return player
+
+    def create_superuser(self, phone: str, password: str, name: str, **extra: object) -> "Player":
+        return self.create_player(
+            phone=phone, password=password, name=name, referred_by=None, is_superuser=True, **extra
+        )
+
+    def find_by_login(self, identifier: str | None) -> "Player":
+        """The player who signs in with a phone number (any formatting) or an e-mail."""
+        identifier = (identifier or "").strip()
+        if "@" in identifier:
+            return self.get(email__iexact=identifier)
+        try:
+            return self.get(phone=normalize_phone(identifier))
+        except ValidationError as exc:
+            raise self.model.DoesNotExist from exc
+
+    def get_by_natural_key(self, username: str | None) -> "Player":
+        # Django's ModelBackend authenticates through this: login accepts phone or e-mail.
+        return self.find_by_login(username)
+
+
+class Player(AbstractBaseUser, PermissionsMixin):
+    """A person in the baba. Also the login account."""
+
+    # Both contacts are NULL (never "") when missing, so uniqueness only applies once filled in.
+    phone = models.CharField(
+        "celular",
+        max_length=11,
+        unique=True,
+        null=True,
+        blank=True,
+        validators=[validate_phone],
+        help_text="Celular com DDD, só os dígitos. É o login do jogador.",
+    )
+    email = models.EmailField(
+        "e-mail", max_length=254, unique=True, null=True, blank=True
+    )  # always stored lowercase
+    name = models.CharField("nome ou apelido", max_length=60)
+    referred_by = models.ForeignKey(
+        "self",
+        verbose_name="indicado por",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="referrals",
+        help_text="Vazio apenas para a primeira conta (presidente).",
+    )
+    referrer_text = models.CharField(
+        "indicação (texto livre)",
+        max_length=60,
+        blank=True,
+        default="",
+        help_text="Quem indicou, como o jogador digitou no cadastro, até ele ligar a um jogador.",
+    )
+    player_type = models.CharField(
+        "tipo",
+        max_length=12,
+        choices=STANDING_TYPES,
+        default=PlayerType.AVULSO,
+        help_text="Mensalista não é um tipo fixo: vale por um mês, a partir da adesão.",
+    )
+    position = models.CharField(
+        "posição", max_length=10, choices=Position.choices, default=Position.LINHA
+    )
+    pote = models.PositiveSmallIntegerField(
+        "pote",
+        default=DEFAULT_POTE,
+        validators=[MinValueValidator(POTE_MIN), MaxValueValidator(POTE_MAX)],
+    )
+    is_diretoria = models.BooleanField("diretoria", default=False)
+    is_presidente = models.BooleanField("presidente", default=False)
+    is_active = models.BooleanField("ativo", default=True)
+    password_is_provisional = models.BooleanField(
+        "senha provisória",
+        default=False,
+        help_text="A diretoria definiu a senha: o jogador é convidado a trocá-la.",
+    )
+    created_at = models.DateTimeField("cadastrado em", default=clock.now)
+    rules_accepted_at = models.DateTimeField(
+        "regras aceitas em",
+        null=True,
+        blank=True,
+        help_text=(
+            "Quando marcou que leu as regras no cadastro. Vazio para quem já estava no Babinha."
+        ),
+    )
+    member_since = models.DateField(
+        "no Babinha desde",
+        null=True,
+        blank=True,
+        help_text="Quando entrou no Babinha, se foi antes de ter conta no app. Opcional.",
+    )
+
+    photo = models.CharField(
+        "foto",
+        max_length=200,
+        blank=True,
+        default="",
+        help_text="Nome do arquivo da foto no armazenamento privado (veja accounts.photos).",
+    )
+
+    objects = PlayerManager()
+
+    USERNAME_FIELD = "phone"
+    EMAIL_FIELD = "email"
+    REQUIRED_FIELDS = ["name"]
+
+    class Meta:
+        verbose_name = "jogador"
+        verbose_name_plural = "jogadores"
+        ordering = [Lower("name")]
+        constraints = [
+            models.UniqueConstraint(Lower("email"), name="player_email_unique_ci"),
+            models.UniqueConstraint(
+                fields=["is_presidente"],
+                condition=models.Q(is_presidente=True),
+                name="single_presidente",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(pote__gte=POTE_MIN, pote__lte=POTE_MAX),
+                name="pote_range",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return self.name
+
+    def save(self, *args: object, **kwargs: object) -> None:
+        # "" would collide with the next player who also left the field blank.
+        self.phone = self.phone or None
+        self.email = self.email.lower() if self.email else None
+        super().save(*args, **kwargs)
+
+    @property
+    def is_staff(self) -> bool:
+        """The Django admin is the creator's: only a superuser gets in."""
+        return self.is_active and self.is_superuser
+
+    @property
+    def is_board(self) -> bool:
+        """Diretoria and presidente have the same powers."""
+        return self.is_active and (self.is_diretoria or self.is_presidente)
+
+    @property
+    def joined_on(self) -> date:
+        """When the player joined the baba: the date the diretoria set, else the account date."""
+        return self.member_since or self.created_at.astimezone(clock.SAO_PAULO).date()
+
+    def is_enrolled_in(self, month: date) -> bool:
+        """Whether the player joined the monthly plan for the calendar month of `month`."""
+        return self.enrollments.filter(month=month_start(month)).exists()
+
+    def type_in(self, month: date) -> str:
+        """The type that counts in `month`: mensalista only for whoever joined that month."""
+        return PlayerType.MENSALISTA.value if self.is_enrolled_in(month) else self.player_type
+
+    @property
+    def is_mensalista(self) -> bool:
+        return self.is_enrolled_in(current_month())
+
+    @property
+    def effective_type(self) -> str:
+        """Type right now. Lists of players annotate `enrolled` instead of asking one by one."""
+        return self.type_in(current_month())
+
+    @property
+    def effective_type_label(self) -> str:
+        return PlayerType(self.effective_type).label
+
+    @property
+    def is_goleiro(self) -> bool:
+        return self.position == Position.GOLEIRO
+
+
+class MonthlyEnrollment(models.Model):
+    """A player joined the monthly plan for one calendar month.
+
+    Nothing renews by itself: the month is the reference, so on the 1st nobody has an enrollment
+    for the new month and every player is back to their standing type until they join again.
+    The monthly fee is a finance.Charge created when they join.
+    """
+
+    player = models.ForeignKey(Player, on_delete=models.PROTECT, related_name="enrollments")
+    month = models.DateField("mês", help_text="Sempre o dia 1.")
+    enrolled_at = models.DateTimeField("aderiu em", default=clock.now)
+    enrolled_by = models.ForeignKey(
+        Player,
+        verbose_name="registrado por",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        help_text="Vazio quando o próprio jogador aderiu; a diretoria quando ela registrou.",
+    )
+
+    class Meta:
+        verbose_name = "adesão mensal"
+        verbose_name_plural = "adesões mensais"
+        ordering = ["-month", "enrolled_at", "pk"]
+        constraints = [
+            models.UniqueConstraint(fields=["player", "month"], name="one_enrollment_per_month"),
+            models.CheckConstraint(condition=models.Q(month__day=1), name="enrollment_month_day_1"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.player} - {self.month:%m/%Y}"
+
+
+class ThrottleEvent(models.Model):
+    """One counted event (e.g. a failed login) for rate limiting, keyed by scope and key."""
+
+    scope = models.CharField(max_length=40)
+    key = models.CharField(max_length=320)
+    at = models.DateTimeField(default=clock.now)
+
+    class Meta:
+        indexes = [models.Index(fields=["scope", "key", "at"])]
+
+    def __str__(self) -> str:
+        return f"{self.scope}:{self.key}@{self.at.isoformat()}"

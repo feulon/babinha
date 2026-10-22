@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load money %}
+{% block title %}Dispensar cobrança{% endblock %}
+{% block content %}
+<div class="stack">
+  <h1>Dispensar cobrança</h1>
+  <section class="card">
+    <dl class="kv">
+      <dt>Jogador</dt><dd>{{ charge.player.name }}</dd>
+      <dt>Cobrança</dt><dd>{{ charge.description }}</dd>
+      <dt>Valor</dt><dd>R$ {{ charge.amount|floatformat:"2g" }}</dd>
+    </dl>
+  </section>
+  <p class="small muted">A cobrança deixa de valer e não entra no caixa. Fica registrado quem dispensou e por quê.</p>
+  <form method="post" class="form card" novalidate data-confirm="Dispensar a cobrança de {{ charge.player.name }} ({{ charge.amount|brl }})? Ela deixa de ser cobrada e não entra no caixa.">
+    {% csrf_token %}
+    {% include "includes/form_errors.html" %}
+    {% for field in form %}{% include "includes/field.html" %}{% endfor %}
+    <div class="actions">
+      <button type="submit" class="btn btn--primary">Dispensar</button>
+      <a class="btn btn--ghost" href="{% url 'board:pending' %}">Voltar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

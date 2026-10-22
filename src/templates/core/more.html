@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Mais{% endblock %}
+{% block content %}
+<div class="stack">
+  <header>
+    <p class="eyebrow">Babinha de Domingo</p>
+    <h1>Mais</h1>
+  </header>
+  <section class="more-group" aria-labelledby="mais-conta">
+    <h2 class="tiles__title" id="mais-conta">Minha conta</h2>
+    <nav class="hub" aria-label="Minha conta">
+      <a class="hub__item" href="{% url 'accounts:photo_edit' %}">
+        <span class="hub__text"><strong>Foto</strong><span class="small muted">{% if user.photo %}Trocar ou remover{% else %}Adicionar a sua foto{% endif %}</span></span>
+      </a>
+      <a class="hub__item" href="{% url 'accounts:contact' %}">
+        <span class="hub__text"><strong>Celular e e-mail</strong><span class="small muted">Seus dados de contato</span></span>
+      </a>
+      <a class="hub__item" href="{% url 'accounts:password_change' %}">
+        <span class="hub__text"><strong>Senha</strong><span class="small muted">Troque a senha de acesso</span></span>
+      </a>
+    </nav>
+  </section>
+  <section class="more-group" aria-labelledby="mais-dinheiro">
+    <h2 class="tiles__title" id="mais-dinheiro">Dinheiro</h2>
+    <nav class="hub" aria-label="Dinheiro">
+      <a class="hub__item" href="{% url 'finance:payments' %}">
+        <span class="hub__text"><strong>Pagamentos e Pix</strong><span class="small muted">O que você deve e o envio de comprovantes</span></span>
+      </a>
+      <a class="hub__item" href="{% url 'fines:mine' %}">
+        <span class="hub__text"><strong>Histórico de multas</strong><span class="small muted">Ocorrências, motivos e correções</span></span>
+      </a>
+      <a class="hub__item" href="{% url 'finance:report' %}">
+        <span class="hub__text"><strong>Caixa</strong><span class="small muted">Quanto entrou e saiu no mês</span></span>
+      </a>
+    </nav>
+  </section>
+  <section class="more-group" aria-labelledby="mais-ajuda">
+    <h2 class="tiles__title" id="mais-ajuda">Ajuda</h2>
+    <nav class="hub" aria-label="Ajuda">
+      <a class="hub__item" href="{% url 'tutorial' %}">
+        <span class="hub__text"><strong>Tutorial</strong></span>
+      </a>
+      <a class="hub__item" href="{% url 'rules' %}">
+        <span class="hub__text"><strong>Regras do babinha</strong><span class="small muted">Valores, prazos e prioridades</span></span>
+      </a>
+      <a class="hub__item" href="{% url 'about' %}">
+        <span class="hub__text"><strong>Sobre o app</strong><span class="small muted">Fale com o criador</span></span>
+      </a>
+      <a class="hub__item" href="{% url 'feedback' %}">
+        <span class="hub__text"><strong>Reportar bug ou sugestão</strong></span>
+      </a>
+    </nav>
+  </section>
+  <form method="post" action="{% url 'accounts:logout' %}" class="signout" data-confirm="Sair do Babinha?">
+    {% csrf_token %}
+    <button type="submit" class="signout__button">Sair</button>
+  </form>
+</div>
+{% endblock %}

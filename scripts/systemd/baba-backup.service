@@ -1,0 +1,12 @@
+# Copy to /etc/systemd/system/, replace /home/USUARIO/baba with the repository folder and
+# USUARIO with your Linux user (docs/producao.md).
+[Unit]
+Description=Babinha backup (pg_dump + receipts)
+Wants=network-online.target docker.service
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+User=USUARIO
+WorkingDirectory=/home/USUARIO/baba
+ExecStart=/home/USUARIO/baba/scripts/backup.sh

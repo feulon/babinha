@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load navigation %}{% block title %}Pagamentos{% endblock %}
+{% block content %}
+<div class="stack">
+  <div>
+    {% more_back %}
+    <h1>Pagamentos</h1>
+  </div>
+  {% if payments.open %}
+    {% include "finance/_home_payments.html" with on_payments_page=True %}
+  {% else %}
+    <section class="status status--ok" data-state="em-dia">
+      <p class="status__headline">Tudo em dia</p>
+      <p>Você não tem nada a pagar agora.</p>
+    </section>
+  {% endif %}
+
+  <div id="plano-mensal">{% include "finance/_monthly_card.html" %}</div>
+
+  {% if not payments.open %}
+    <section class="card">{% include "finance/_pix.html" %}</section>
+  {% endif %}
+
+  <section class="card">
+    <h2>Histórico</h2>
+    {% if payments.history %}
+      <ul class="rows">
+        {% for row in payments.history %}
+          <li>
+            <div class="row-head">
+              <strong>{{ row.charge.description }}</strong>
+              <span class="amount">R$ {{ row.charge.amount|floatformat:"2g" }}</span>
+            </div>
+            <div class="charge__meta">
+              {% include "finance/_charge_badge.html" with charge=row.charge overdue=row.overdue %}
+              {% if row.charge.status == "paga" %}<span class="small muted">Confirmado em {{ row.charge.paid_at|date:"d/m/Y" }}</span>{% endif %}
+              {% if row.latest_receipt %}<a class="small" href="{% url 'finance:receipt_file' receipt_id=row.latest_receipt.pk %}" target="_blank" rel="noopener">Ver comprovante</a>{% endif %}
+            </div>
+            {% if row.charge.cancel_reason %}<p class="small muted">{{ row.charge.cancel_reason }}</p>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="roster--empty">Nenhum pagamento ainda.</p>
+    {% endif %}
+  </section>
+
+</div>
+{% endblock %}

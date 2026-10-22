@@ -1,0 +1,5 @@
+<nav class="seg" aria-label="Comunidade">
+  <a href="{% url 'community:gold_ball' %}"{% if current == "gold_ball" %} class="on" aria-current="page"{% endif %}>Bola de Ouro{% if gold_ball_open %}<span class="seg__dot" role="img" aria-label="votação aberta"></span>{% endif %}</a>
+  <a href="{% url 'community:ranking' %}"{% if current == "ranking" %} class="on" aria-current="page"{% endif %}>Ranking</a>
+  <a href="{% url 'community:players' %}"{% if current == "players" %} class="on" aria-current="page"{% endif %}>Turma</a>
+</nav>

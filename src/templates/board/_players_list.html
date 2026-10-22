@@ -1,0 +1,31 @@
+{% load phone avatars navigation %}<div id="board-players" class="stack">
+  <div class="filter-result">
+    <p class="muted small" role="status">{{ count }} de {{ total }} jogador{{ total|pluralize:"es" }}</p>
+    {% if active %}<a class="btn btn--ghost btn--small" href="{% url 'board:players' %}">Limpar filtros</a>{% endif %}
+  </div>
+  <section class="card">
+    <ul class="rows">
+      {% for player in players %}
+        <li>
+          <div class="row-head">
+            <span class="row-who">{% avatar player.name player.pk player.photo "avatar avatar--small" %}<strong>{{ player.name }}</strong></span>
+            <span class="btn-pair">
+              <a class="btn btn--ghost btn--small" href="{% nexturl 'community:player' player_id=player.pk %}">Perfil</a>
+              <a class="btn btn--ghost btn--small" href="{% url 'board:player_edit' player_id=player.pk %}{% if querystring %}?{{ querystring }}{% endif %}">Editar</a>
+            </span>
+          </div>
+          <div class="actions">
+            {% if player.enrolled %}<span class="badge badge--primary">Mensalista</span>{% else %}<span class="badge">{{ player.get_player_type_display }}</span>{% endif %}
+            <span class="badge">{{ player.get_position_display }}</span>
+            {% if player.position == "linha" %}<span class="badge">Pote {{ player.pote }}</span>{% endif %}
+            {% if not player.is_active %}<span class="badge badge--wait">Desativado</span>{% endif %}
+            {% if player.is_presidente %}<span class="badge badge--wait">Presidente</span>{% elif player.is_diretoria %}<span class="badge badge--wait">Diretoria</span>{% endif %}
+          </div>
+          <p class="small muted">{% if player.phone %}{{ player.phone|phone_br }}{% else %}Sem celular{% endif %}{% if player.email %} · {{ player.email }}{% endif %}{% if player.referred_by %} · indicado por <a href="{% nexturl 'community:player' player_id=player.referred_by.pk q_aba='origem' %}">{{ player.referred_by.name }}</a>{% elif player.referrer_text %} · indicado por {{ player.referrer_text }}{% endif %}</p>
+        </li>
+      {% empty %}
+        <li><p class="roster--empty">Nenhum jogador encontrado.</p></li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>

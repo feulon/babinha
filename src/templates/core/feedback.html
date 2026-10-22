@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load navigation %}
+{% block title %}Reportar bug ou sugestão{% endblock %}
+{% block content %}
+<div class="stack">
+  <header>
+    {% more_back %}
+    <p class="eyebrow">Babinha de Domingo</p>
+    <h1>Reportar bug ou sugestão</h1>
+  </header>
+
+  <section class="card" data-about="mensagem">
+    <p class="small muted">Escreva aqui que o criador lê.</p>
+    <form method="post" class="form" novalidate>
+      {% csrf_token %}
+      {% if blocked_until %}<div class="form-errors" role="alert"><ul class="errorlist nonfield"><li>Você já mandou várias mensagens seguidas. Tente de novo daqui a pouco.</li></ul></div>{% endif %}
+      {% include "includes/form_errors.html" %}
+      <div class="field" role="radiogroup" aria-labelledby="kind-label">
+        <label id="kind-label">{{ form.kind.label }}</label>
+        {% for radio in form.kind %}
+          <label class="choice" for="{{ radio.id_for_label }}">
+            {{ radio.tag }}
+            <span class="choice__radio" aria-hidden="true"></span>
+            <span class="choice__title">{{ radio.choice_label }}</span>
+          </label>
+        {% endfor %}
+        {{ form.kind.errors }}
+      </div>
+      {% with field=form.text %}{% include "includes/field.html" %}{% endwith %}
+      <button type="submit" class="btn btn--primary btn--block">Enviar</button>
+    </form>
+  </section>
+</div>
+{% endblock %}

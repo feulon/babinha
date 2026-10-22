@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load money money_nav navigation %}
+{% block title %}A receber{% endblock %}
+{% block content %}
+<div class="stack">
+  {% money_nav "receber" receivable %}
+  <h1>A receber</h1>
+  <nav class="chips" aria-label="Filtrar cobranças">
+    <a class="chip{% if receivable == 'sem-comprovante' %} is-active{% endif %}" href="{% if receivable == 'sem-comprovante' %}{% url 'board:pending' %}{% else %}?filtro=sem-comprovante{% endif %}"{% if receivable == 'sem-comprovante' %} aria-label="Remover filtro Sem comprovante"{% endif %}>Sem comprovante{% if receivable == 'sem-comprovante' %} ×{% endif %}</a>
+  </nav>
+
+  {% if receipts_to_review %}
+    <section class="status status--info" data-state="comprovantes">
+      <p class="status__headline">{{ receipts_to_review }} comprovante{{ receipts_to_review|pluralize }} para conferir</p>
+      <a class="btn btn--primary btn--small" href="{% url 'board:receipts' %}">Conferir comprovantes</a>
+    </section>
+  {% endif %}
+
+  {% if late %}
+    <section class="status status--danger" data-state="mensalidade-atrasada">
+      <p class="status__headline">Mensalidade atrasada</p>
+      <p class="small">A adesão não pode ser retirada. Para dispensar a cobrança, use “Dispensar”.</p>
+      <ul class="rows">
+        {% for row in late %}
+          <li>
+            <div class="row-head">
+              <strong>{{ row.charge.player.name }}</strong>
+            </div>
+            <p class="small">{{ row.charge.description }} · venceu {{ row.charge.due_date|date:"d/m" }}{% if row.charge.status == "em_analise" %} · comprovante em análise{% endif %}</p>
+            <div class="actions">
+              {% if row.charge.status == "em_analise" and row.latest_receipt %}
+                <a class="btn btn--primary btn--small" href="{% nexturl 'board:receipt' receipt_id=row.latest_receipt.pk %}">Conferir comprovante</a>
+              {% endif %}
+              <form method="post" action="{% url 'board:mark_paid' charge_id=row.charge.pk %}" class="inline-form">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" class="btn btn--primary btn--small">Marcar como pago</button></form>
+              <a class="btn btn--ghost btn--small" href="{% url 'board:waive' charge_id=row.charge.pk %}">Dispensar</a>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  <section class="card">
+    <div class="card__title">
+      <h2>Cobranças em aberto</h2>
+      <span class="count">{{ rows|length }}{% if rows %} · {{ total|brl }}{% endif %}</span>
+    </div>
+    {% if rows %}
+      <p class="small muted" data-help="acoes">Marcar como pago registra dinheiro recebido fora do app e entra no Caixa.</p>
+      <ul class="rows">
+        {% for row in rows %}
+          <li>
+            {% if row.charge.status == "em_analise" and row.latest_receipt %}
+              <div class="charge-static">{% include "board/_receivable_row.html" %}</div>
+              <a class="btn btn--primary btn--small" href="{% nexturl 'board:receipt' receipt_id=row.latest_receipt.pk %}">Conferir comprovante</a>
+            {% else %}
+              <details class="charge-actions">
+                <summary>{% include "board/_receivable_row.html" %}</summary>
+                <div class="actions">
+                  <form method="post" action="{% url 'board:mark_paid' charge_id=row.charge.pk %}" class="inline-form">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" class="btn btn--primary btn--small">Marcar como pago</button></form>
+                  {% if row.charge.kind == "multa" %}
+                    <a class="btn btn--ghost btn--small" href="{% url 'board:forgive' fine_id=row.charge.fine_id %}">Perdoar multa</a>
+                  {% else %}
+                    <a class="btn btn--ghost btn--small" href="{% url 'board:waive' charge_id=row.charge.pk %}">Dispensar</a>
+                  {% endif %}
+                </div>
+              </details>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="roster--empty">Ninguém devendo.</p>
+    {% endif %}
+  </section>
+
+  <section class="card stack" aria-labelledby="cobrar-title">
+    <h2 id="cobrar-title">Cobrar</h2>
+    <p class="small muted">Escolha como avisar quem deve.</p>
+    <div class="actions">
+      {% if rows %}<a class="btn btn--ghost" href="{% url 'board:reminders' %}">Avisar por e-mail</a>{% endif %}
+      <a class="btn btn--ghost" href="{% url 'board:group_charge' %}" data-action="cobrar-grupo">Cobrar no grupo</a>
+    </div>
+  </section>
+
+  <section class="status status--info" data-state="mensalistas-do-mes">
+    <p class="status__headline">Mensalistas de {{ month|date:"F"|lower }}</p>
+    <p>{% if members %}{{ members }} ader{{ members|pluralize:"iu,iram" }} · {{ members_paid }} pag{{ members_paid|pluralize:"ou,aram" }} · {{ members_open }} pendente{{ members_open|pluralize }}.{% else %}Ninguém aderiu ainda neste mês.{% endif %}</p>
+    <a class="btn btn--ghost btn--small" href="{% url 'board:cash' %}">Ver no Caixa</a>
+  </section>
+</div>
+{% endblock %}

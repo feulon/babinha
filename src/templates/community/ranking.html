@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load navigation %}{% block title %}Ranking{% endblock %}
+{% block content %}
+<div class="stack">
+  <header>
+    {% back_link %}
+    <p class="eyebrow">Comunidade</p>
+    <h1>Ranking</h1>
+    <p class="muted small">{% if overall %}Todas as temporadas{% else %}Temporada {{ table.season.number }}{% if not table.season.is_open %} (encerrada){% endif %}{% endif %} · {{ table.sundays }} domingo{{ table.sundays|pluralize }} jogado{{ table.sundays|pluralize }}</p>
+  </header>
+
+  {% include "community/_switch.html" with current="ranking" %}
+
+  <nav class="chips" aria-label="Temporada">
+    {% for season in seasons %}
+      <a class="chip{% if not overall and season.number == table.season.number %} is-active{% endif %}" href="?temporada={{ season.number }}&amp;ordem={{ metric }}{% keep_next %}">Temporada {{ season.number }}</a>
+    {% endfor %}
+    <a class="chip{% if overall %} is-active{% endif %}" href="?temporada=geral&amp;ordem={{ metric }}{% keep_next %}">Geral</a>
+  </nav>
+
+  <nav class="chips" aria-label="Ordenar por">
+    {% for key, label in metrics %}
+      <a class="chip chip--small{% if key == metric %} is-active{% endif %}" href="?temporada={{ season_param }}&amp;ordem={{ key }}{% keep_next %}">{{ label }}</a>
+    {% endfor %}
+  </nav>
+
+  <section class="card{% if table.rows %} card--flush{% endif %}">
+    {% if table.rows %}
+      <div class="table-scroll">
+        <table class="ranking">
+          <caption class="visually-hidden">Ranking dos jogadores</caption>
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Jogador</th>
+              <th scope="col" title="Bolas de Ouro"{% if metric == "bolas" %} class="is-sorted"{% endif %}>Bolas</th>
+              <th scope="col"{% if metric == "gols" %} class="is-sorted"{% endif %}>Gols</th>
+              <th scope="col" title="Assistências"{% if metric == "assistencias" %} class="is-sorted"{% endif %}>Assist.</th>
+              <th scope="col" title="Domingos de presença"{% if metric == "presenca" %} class="is-sorted"{% endif %}>Pres.</th>
+              <th scope="col"{% if metric == "vitorias" %} class="is-sorted"{% endif %}>Vit.</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in table.rows %}
+              <tr{% if row.player.pk == user.pk %} class="is-me"{% endif %}>
+                <td>{{ row.position }}</td>
+                <th scope="row"><a href="{% nexturl 'community:player' player_id=row.player.pk %}">{{ row.player.name }}</a></th>
+                <td{% if metric == "bolas" %} class="is-sorted"{% endif %}>{{ row.totals.gold_balls }}</td>
+                <td{% if metric == "gols" %} class="is-sorted"{% endif %}>{{ row.totals.goals }}</td>
+                <td{% if metric == "assistencias" %} class="is-sorted"{% endif %}>{{ row.totals.assists }}</td>
+                <td{% if metric == "presenca" %} class="is-sorted"{% endif %}>{{ row.totals.sundays }}</td>
+                <td{% if metric == "vitorias" %} class="is-sorted"{% endif %}>{{ row.totals.wins }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="roster--empty">Ainda não há jogos {% if overall %}registrados{% else %}nesta temporada{% endif %}.</p>
+    {% endif %}
+  </section>
+
+  <p class="muted small">Contam as partidas encerradas. Empates na ordem desempatam por Bolas de Ouro, gols, assistências, vitórias e presença.</p>
+</div>
+{% endblock %}

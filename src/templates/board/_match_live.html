@@ -1,0 +1,90 @@
+<div id="match-live" class="stack">
+  {% if oob_messages %}{% include "includes/messages.html" with oob=True %}{% include "board/_match_score.html" with oob=True %}{% endif %}
+  {% if can_score and not started %}
+    <section class="status status--wait">
+      <p class="status__headline">O jogo ainda não começou</p>
+      <p>Gols e o encerramento da partida só entram a partir do início do jogo, {{ kickoff|date:"l, d/m, H\hi" }}.</p>
+    </section>
+  {% elif can_score %}
+    {% for side in sides %}
+      <section class="card"{% if side.asking %} data-goal-assist{% endif %}>
+        {% url 'board:add_goal' match_id=match.pk side=side.side as goal_url %}
+        {% if side.asking %}
+          <h2>Gol do {{ side.team.name }}: {{ side.asking.name }}</h2>
+          <form method="post" action="{{ goal_url }}" class="form goal-quick"
+                hx-post="{{ goal_url }}" hx-target="#match-live" hx-swap="outerHTML" hx-disabled-elt="find button">
+            {% csrf_token %}
+            <input type="hidden" name="scorer" value="{{ side.asking.pk }}">
+            <p class="small muted">Quem deu a assistência?</p>
+            <div class="goal-quick__players">
+              {% for player in side.assisters %}
+                {% if player.pk != side.asking.pk %}<button class="btn btn--primary" name="assist" value="{{ player.pk }}">{{ player.name }}</button>{% endif %}
+              {% endfor %}
+              <button class="btn btn--ghost" name="assist" value="">Nenhum</button>
+              <button class="btn btn--ghost" name="assist" value="na">Não se aplica</button>
+            </div>
+          </form>
+          <a class="btn btn--ghost btn--block" href="{% url 'board:match' match_id=match.pk %}">Voltar</a>
+        {% else %}
+          <h2>Gol do {{ side.team.name }}</h2>
+          {% if side.scorers %}
+            {% url 'board:ask_assist' match_id=match.pk side=side.side as assist_url %}
+            <form method="get" action="{{ assist_url }}" class="form goal-quick"
+                  hx-get="{{ assist_url }}" hx-target="#match-live" hx-swap="outerHTML" hx-disabled-elt="find button">
+              <div class="goal-quick__players">
+                {% for player in side.scorers %}
+                  <button class="btn btn--primary" name="scorer" value="{{ player.pk }}">{{ player.name }}</button>
+                {% endfor %}
+              </div>
+            </form>
+            <form method="post" action="{{ goal_url }}" class="form goal-quick"
+                  hx-post="{{ goal_url }}" hx-target="#match-live" hx-swap="outerHTML" hx-disabled-elt="find button">
+              {% csrf_token %}
+              <div class="goal-quick__players">
+                <button class="btn btn--ghost" name="scorer" value="contra">Gol contra</button>
+              </div>
+            </form>
+          {% endif %}
+          <details class="goal-other"{% if not side.scorers %} open{% endif %}>
+            <summary>Outro jogador ou goleiro</summary>
+            <form method="post" action="{{ goal_url }}" class="form"
+                  hx-post="{{ goal_url }}" hx-target="#match-live" hx-swap="outerHTML" hx-disabled-elt="find button">
+              {% csrf_token %}
+              {% for field in side.form %}{% include "includes/field.html" %}{% endfor %}
+              <button class="btn btn--primary btn--block">Registrar gol do {{ side.team.name }}</button>
+            </form>
+          </details>
+        {% endif %}
+      </section>
+    {% endfor %}
+  {% endif %}
+
+  <section class="card">
+    <div class="card__title"><h2>Gols</h2><span class="count">{{ row.goals|length }}</span></div>
+    {% include "matchday/_goals.html" with goals=row.goals empty="Nenhum gol ainda." editable=True %}
+  </section>
+
+  {% if next_up %}
+    <section class="card" data-next-match>
+      <h2>Próximo jogo</h2>
+      <p class="next-match"><strong>{{ next_up.home.name }}</strong> x <strong>{{ next_up.away.name }}</strong></p>
+      <p class="small muted">{% if row.score.home == row.score.away %}Empate: saem os dois times.{% else %}O vencedor fica.{% endif %} Entra quem espera há mais tempo.</p>
+      <form method="post" action="{% url 'board:start_next_match' day=game_day.date.isoformat %}">
+        {% csrf_token %}
+        <button class="btn btn--primary btn--block">Começar {{ next_up.home.name }} x {{ next_up.away.name }}</button>
+      </form>
+    </section>
+  {% endif %}
+
+  {% if match.is_finished %}
+    <form method="post" action="{% url 'board:reopen_match' match_id=match.pk %}" data-confirm="Reabrir a partida para corrigir os gols?">
+      {% csrf_token %}
+      <button class="btn btn--ghost btn--block">Reabrir partida</button>
+    </form>
+  {% elif started %}
+    <form method="post" action="{% url 'board:finish_match' match_id=match.pk %}" data-confirm="Encerrar a partida com {{ row.score.home }} x {{ row.score.away }}?">
+      {% csrf_token %}
+      <button class="btn btn--primary btn--block">Encerrar partida (fim do tempo)</button>
+    </form>
+  {% endif %}
+</div>

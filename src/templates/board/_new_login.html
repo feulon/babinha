@@ -1,0 +1,7 @@
+{% if new_login %}
+  <section class="status status--ok" role="status" data-new-login>
+    <p class="status__headline">Login de {{ new_login.name }}</p>
+    <p class="small muted">Copie e passe ao jogador agora, pelo WhatsApp: a senha provisória não será mostrada de novo. Não enviamos mensagem nem e-mail.</p>
+    {% include "board/_credentials.html" with credentials=new_login %}
+  </section>
+{% endif %}

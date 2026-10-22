@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Turma{% endblock %}
+{% block content %}
+<div class="stack">
+  <header>
+    <p class="eyebrow">Comunidade</p>
+    <h1>Turma</h1>
+  </header>
+
+  {% include "community/_switch.html" with current="players" %}
+
+  <form method="get" action="{% url 'community:players' %}" class="people-search" role="search"
+        hx-get="{% url 'community:players' %}" hx-trigger="input changed delay:300ms, search" hx-target="#people" hx-swap="outerHTML" hx-replace-url="true" hx-include="[name=tipo]">
+    <input type="hidden" name="tipo" value="{{ kind }}">
+    <label class="visually-hidden" for="q">Buscar por nome</label>
+    <input class="search" type="search" id="q" name="q" value="{{ query }}" placeholder="Buscar por nome" autocomplete="off" enterkeyhint="search">
+  </form>
+
+  {% include "community/_people.html" %}
+</div>
+{% endblock %}

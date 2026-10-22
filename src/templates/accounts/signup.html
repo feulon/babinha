@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Criar conta{% endblock %}
+{% block content %}
+<section class="auth">
+  <h1>Criar conta</h1>
+  {% if has_players %}
+    <p class="lead">Você entra como jogador de linha e avulso. A diretoria ajusta depois.</p>
+    <form method="post" class="form card" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+      {% include "includes/form_errors.html" %}
+      {% if blocked %}<div class="form-errors" role="alert"><ul class="errorlist nonfield"><li>Muitos cadastros deste aparelho. Tente mais tarde.</li></ul></div>{% endif %}
+      {% for field in form %}{% if field.name == "accept_rules" %}{% include "accounts/_signup_rules.html" %}{% endif %}{% include "includes/field.html" %}{% if field.name == "photo" %}{% include "includes/photo_preview.html" %}{% endif %}{% endfor %}
+      <button type="submit" class="btn btn--primary btn--block">Criar conta</button>
+    </form>
+  {% else %}
+    <div class="status status--neutral">
+      <p class="status__headline">Ainda não há jogadores</p>
+      <p>O cadastro precisa de uma indicação. Peça para a diretoria criar a primeira conta.</p>
+    </div>
+  {% endif %}
+  <div class="form-links">
+    <p>Já tem conta? <a href="{% url 'accounts:login' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Entrar</a></p>
+  </div>
+</section>
+{% endblock %}

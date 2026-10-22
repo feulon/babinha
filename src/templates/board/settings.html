@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load money_nav %}
+{% block title %}Valores e Pix{% endblock %}
+{% block content %}
+<div class="stack">
+  {% money_nav "configuracoes" %}
+  <h1>Valores e Pix</h1>
+  <p class="muted small">A multa de falta começa no valor da primeira e cada nova custa o multiplicador vezes a anterior (com 1,50: 50, 75, 112,50...). A multa de atraso é fixa por faixa, sem escalonamento. Mudanças valem só para cobranças novas.</p>
+  <form method="post" class="form card" novalidate>
+    {% csrf_token %}
+    {% include "includes/form_errors.html" %}
+    {% include "includes/field.html" with field=form.monthly_fee %}
+    {% include "includes/field.html" with field=form.single_fee %}
+    <div class="field-pair">
+      {% include "includes/field.html" with field=form.fine_base %}
+      {% include "includes/field.html" with field=form.fine_factor %}
+    </div>
+    <div class="field-pair">
+      {% include "includes/field.html" with field=form.late_fine_15 %}
+      {% include "includes/field.html" with field=form.late_fine_30 %}
+    </div>
+    {% include "includes/field.html" with field=form.monthly_due_day %}
+    {% include "includes/field.html" with field=form.pix_key %}
+    {% include "includes/field.html" with field=form.board_contact_phone %}
+    <button type="submit" class="btn btn--primary btn--block">Salvar valores</button>
+  </form>
+  {% if settings.pix_key_changed_by %}<p class="small muted">Chave Pix trocada por {{ settings.pix_key_changed_by.name }} em {{ settings.pix_key_changed_at|date:"d/m/Y H\hi" }}.</p>{% endif %}
+  {% if settings.updated_by %}<p class="small muted">Última alteração por {{ settings.updated_by.name }} em {{ settings.updated_at|date:"d/m/Y H\hi" }}.</p>{% endif %}
+</div>
+{% endblock %}

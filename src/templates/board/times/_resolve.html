@@ -1,0 +1,16 @@
+{% comment %}The ways out of a rules conflict, to choose one: the first is the suggested one.{% endcomment %}
+{% url 'board:resolve_conflict' day=game_day.date.isoformat as resolve_url %}
+<form method="post" action="{{ resolve_url }}" hx-post="{{ resolve_url }}" hx-target="#times" hx-swap="outerHTML" hx-disabled-elt="find button" data-form="resolver">
+  {% csrf_token %}
+  {% for option in resolutions %}
+    <label class="choice{% if option.suggested %} choice--rec{% endif %}">
+      <input type="radio" name="exit" value="{{ option.key }}"{% if forloop.first %} checked{% endif %} required>
+      <span class="choice__radio" aria-hidden="true"></span>
+      <span>
+        <span class="choice__title">{{ option.title }}{% if option.suggested %} <span class="tagline">sugerido</span>{% endif %}</span>
+        <span class="choice__eff">{{ option.effect }}</span>
+      </span>
+    </label>
+  {% endfor %}
+  <button class="btn btn--primary btn--block">Aplicar e sortear</button>
+</form>

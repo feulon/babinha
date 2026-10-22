@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load navigation %}
+{% block title %}Sobre o app{% endblock %}
+{% block content %}
+<div class="stack">
+  <header>
+    {% more_back %}
+    <p class="eyebrow">Babinha de Domingo</p>
+    <h1>Sobre o app</h1>
+  </header>
+
+  <section class="card" data-about="vibe">
+    <p>App 100% vibe codado. Não culpe o desenvolvedor, culpe as big techs.</p>
+  </section>
+
+  {% if creator_email %}
+  <section class="card" data-about="contato">
+    <h2>Fale com o criador</h2>
+    <p>Dúvida, elogio ou reclamação? Manda um e-mail:</p>
+    <p><a href="mailto:{{ creator_email }}">{{ creator_email }}</a></p>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

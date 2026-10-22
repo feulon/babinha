@@ -1,0 +1,120 @@
+{% load navigation %}<div id="day" class="stack" data-live-refresh hx-get="{{ here_url }}" hx-trigger="live-refresh" hx-target="this" hx-swap="outerHTML">
+  <header class="day-head">
+    {% if not is_current %}<p class="eyebrow"><a href="{% url 'matchday:today' %}">‹ Voltar para o domingo atual</a></p>{% endif %}
+    <p class="eyebrow">{% if view.over %}Domingo encerrado{% else %}Acompanhar o domingo{% endif %}</p>
+    <h1>Domingo, {{ view.game_day.date|date:"d/m" }}</h1>
+    {% if not view.over %}<button type="button" class="btn btn--ghost btn--small day-head__refresh" hx-get="{{ here_url }}" hx-target="#day" hx-swap="outerHTML" data-refresh>Atualizar</button>{% endif %}
+  </header>
+
+  {% if not view.game_day.is_cancelled and not view.over %}
+    <p class="small" data-presence>{{ follow.presence }}.</p>
+    {% include "games/_who.html" with week=follow.week compact=True %}
+  {% endif %}
+
+  {% if view.game_day.is_cancelled %}
+    <section class="status status--danger" data-state="cancelado">
+      <p class="status__headline">Domingo cancelado</p>
+    </section>
+  {% elif not view.published %}
+    <section class="status status--neutral" data-state="sem-times">
+      <p class="status__headline">Times ainda não definidos</p>
+      <p>Os times saem por volta das {{ view.teams_out_label }}, quando a diretoria confirmar.</p>
+    </section>
+  {% else %}
+    {% if view.adjusting %}
+      <section class="status status--wait" data-state="em-ajuste">
+        <p class="status__headline">Times em ajuste</p>
+        <p>A lista mudou. A diretoria está acertando os times; confira de novo daqui a pouco.</p>
+      </section>
+    {% endif %}
+    {% if view.my_team %}
+      <section class="status status--ok" data-state="meu-time">
+        <p class="status__headline">Você está no {{ view.my_team }}</p>
+      </section>
+    {% elif view.in_goal_me %}
+      <section class="status status--ok" data-state="meu-time">
+        <p class="status__headline">Você joga no gol</p>
+        <p>Os goleiros rodam: a diretoria escolhe o goleiro de cada partida.</p>
+      </section>
+    {% endif %}
+
+    {% if view.over and view.matches %}
+      <section class="status status--info" data-state="resultado">
+        <p class="status__headline">Resultado do dia</p>
+        <p>{{ view.finished_matches }} de {{ view.matches|length }} jogo{{ view.matches|length|pluralize }} encerrado{{ view.finished_matches|pluralize }}, {{ view.total_goals }} gol{{ view.total_goals|pluralize:",s" }}.</p>
+      </section>
+    {% endif %}
+
+    {% if view.current %}
+      <section class="status {% if view.current_started %}status--wait{% else %}status--info{% endif %}" data-state="agora">
+        <p class="status__headline">{% if view.current_started %}Em andamento{% else %}Próximo jogo{% endif %}{% if view.mine_is_current %} · seu time{% endif %}</p>
+        {% include "matchday/_match_focus.html" with row=view.current %}
+      </section>
+    {% elif view.upcoming %}
+      <section class="status status--info" data-state="proximo">
+        <p class="status__headline">Próximo jogo{% if view.upcoming_mine %} · seu time{% endif %}</p>
+        {% include "matchday/_next_up.html" with upcoming=view.upcoming %}
+      </section>
+    {% endif %}
+    {% if view.mine and not view.mine_is_current %}
+      <section class="status status--ok" data-state="meu-jogo">
+        <p class="status__headline">Seu próximo jogo</p>
+        {% include "matchday/_match_focus.html" with row=view.mine %}
+      </section>
+    {% endif %}
+
+    {% if view.matches %}
+      <details class="card card--games" id="tabela-jogos" data-section="jogos" data-keep-open{% if not view.current %} open{% endif %}>
+        <summary class="who__summary">
+          <span class="who__title">Tabela de jogos</span>
+          <span class="count">{{ view.finished_matches }}/{{ view.matches|length }}</span>
+        </summary>
+        {% include "matchday/_fixture_strip.html" %}
+      </details>
+    {% endif %}
+
+    <div class="teams-acc" data-section="times">
+      {% for team in view.teams_mine_first %}
+        <details class="team{% if team.is_mine %} team--mine{% endif %}" id="time-{{ team.number }}" data-keep-state{% if team.is_mine %} open{% endif %}>
+          <summary class="team__summary">
+            <span class="team-dot team-dot--big" data-team="{{ team.number }}"></span>
+            <span class="team__name">{{ team.name }}{% if team.is_mine %} · seu time{% endif %}</span>
+            {% if team.adjusting %}<span class="badge badge--wait">em ajuste</span>{% endif %}
+            <span class="count">{{ team.players|length }}</span>
+            <span class="team__chev" aria-hidden="true"></span>
+            <span class="team__preview">{% for player in team.players %}{{ player.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
+          </summary>
+          <ul class="team__players">
+            {% for player in team.players %}
+              <li{% if player.pk == user.pk %} class="is-me"{% endif %}>{{ player.name }}{% if player.pk == user.pk %} (você){% endif %}{% if player.pk in view.rookies %} <span class="rookie-dot" title="Estreante" aria-hidden="true">E</span><span class="visually-hidden">(estreante)</span>{% endif %}</li>
+            {% endfor %}
+          </ul>
+        </details>
+      {% endfor %}
+    </div>
+    {% if view.rookies %}<p class="small muted teams-legend"><span class="rookie-dot" aria-hidden="true">E</span> estreante: primeiro Babinha no grupo.</p>{% endif %}
+
+    <p class="goalies" data-section="goleiros">
+      {% if view.goalkeepers or view.in_goal %}
+        <strong>Goleiros:</strong> {% for player in view.goalkeepers %}{{ player.name }}{% if player.pk == user.pk %} (você){% endif %}{% if not forloop.last or view.in_goal %}, {% endif %}{% endfor %}{% for player in view.in_goal %}{{ player.name }}{% if player.pk == user.pk %} (você){% endif %} (linha){% if not forloop.last %}, {% endif %}{% endfor %} <span class="muted">(rodam por jogo)</span>
+      {% else %}
+        <strong>Goleiros:</strong> <span class="muted">nenhum.</span>
+      {% endif %}
+    </p>
+
+    {% if not view.matches %}
+      <p class="small muted" data-section="jogos">Tabela de jogos: ainda não foi montada.</p>
+    {% endif %}
+  {% endif %}
+
+  {% if history %}
+    <section class="card">
+      <h2>Domingos anteriores</h2>
+      <ul class="link-list">
+        {% for past in history %}
+          <li><a href="{% url 'matchday:day' day=past.date.isoformat %}{% if back_url %}?next={{ back_url|urlencode:'' }}{% endif %}">Domingo, {{ past.date|date:"d/m/Y" }}</a></li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+</div>

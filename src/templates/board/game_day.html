@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load text %}
+{% block title %}Montar o domingo {{ game_day.date|date:"d/m" }}{% endblock %}
+{% block content %}
+<div class="stack">
+  <p class="eyebrow">Montar o domingo</p>
+  <nav class="week-nav" aria-label="Semanas">
+    {% if previous_sunday %}<a class="btn btn--ghost btn--small week-nav__arrow" href="{% url 'board:game_day' day=previous_sunday %}" aria-label="Domingo anterior">‹</a>{% else %}<span class="btn btn--ghost btn--small week-nav__arrow week-nav__arrow--off" aria-hidden="true">‹</span>{% endif %}
+    <h1>Domingo {{ game_day.date|date:"d/m/Y" }}</h1>
+    {% if next_sunday %}<a class="btn btn--ghost btn--small week-nav__arrow" href="{% url 'board:game_day' day=next_sunday %}" aria-label="Próximo domingo">›</a>{% else %}<span class="btn btn--ghost btn--small week-nav__arrow week-nav__arrow--off" aria-hidden="true">›</span>{% endif %}
+  </nav>
+
+  {% if game_day.is_cancelled %}
+    <section class="status status--danger">
+      <p class="status__headline">Domingo cancelado</p>
+      <p>Por {{ game_day.cancelled_by.name }}{% if game_day.cancel_reason %}: {{ game_day.cancel_reason|stop }}{% else %}.{% endif %}</p>
+      <form method="post" action="{% url 'board:reopen' day=game_day.date.isoformat %}" data-confirm="Reabrir este domingo?">
+        {% csrf_token %}
+        <button class="btn btn--ghost">Reabrir domingo</button>
+      </form>
+    </section>
+  {% endif %}
+
+  {% if not game_day.is_cancelled %}
+    <ul class="pills" aria-label="Resumo da lista">
+      <li>{{ list_total }} na lista</li>
+      {% if roster.waiting_count %}<li>{{ roster.waiting_count }} na espera</li>{% endif %}
+    </ul>
+  {% endif %}
+
+  {% include "board/_roster_board.html" %}
+
+  {% if not game_day.is_cancelled %}
+    <details class="day-cancel" id="cancelar-domingo">
+      <summary>Cancelar este domingo</summary>
+      <form method="post" action="{% url 'board:cancel' day=game_day.date.isoformat %}" class="form"
+            data-confirm="Cancelar o domingo {{ game_day.date|date:'d/m' }}? As multas pendentes e as cobranças em aberto deste domingo serão anuladas.">
+        {% csrf_token %}
+        {% include "includes/field.html" with field=cancel_form.reason %}
+        <button class="btn btn--danger btn--block">Cancelar domingo</button>
+      </form>
+    </details>
+  {% endif %}
+
+</div>
+{% endblock %}

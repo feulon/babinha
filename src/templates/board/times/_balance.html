@@ -1,0 +1,18 @@
+{% comment %}How even the teams are, once: the pote sum of each side by side, and why when it is not.{% endcomment %}
+<section class="balance{% if imbalances %} balance--warn{% endif %}" data-balance{% if imbalances %} data-alert="imbalance" role="status"{% endif %}>
+  <div class="balance__head">
+    <h2 class="balance__title">Equilíbrio</h2>
+    {% if imbalances %}
+      <span class="balance__pill"><svg class="ic" aria-hidden="true"><use href="#i-warn"/></svg>Times desequilibrados</span>
+    {% else %}
+      <span class="balance__pill balance__pill--ok"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Equilibrado</span>
+    {% endif %}
+  </div>
+  <ul class="balance__bars">
+    {% for bar in board.balance.bars %}
+      <li><svg class="balance__fill" viewBox="0 0 10 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><rect x="0" y="{{ bar.gap }}" width="10" height="{{ bar.height }}"/></svg><span class="balance__num">{{ bar.pote_sum }}</span><span class="balance__name">{{ bar.name }}</span></li>
+    {% endfor %}
+  </ul>
+  {% if imbalances %}<ul class="balance__lines">{% for line in imbalances %}<li>{{ line }}</li>{% endfor %}</ul>{% endif %}
+  <p class="small muted">Soma dos potes: quanto menor, mais forte. Diferença entre os times: {{ board.balance.spread }}.</p>
+</section>

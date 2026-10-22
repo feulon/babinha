@@ -1,0 +1,14 @@
+{% load avatars navigation %}{% if spots %}
+  <ol class="roster roster--chips">
+    {% for spot in spots %}
+      <li{% if spot.is_me %} class="is-me"{% endif %}>
+        <span class="roster__name">{% avatar spot.name spot.player_id spot.photo "avatar avatar--tiny" %}<a class="plain" href="{% nexturl 'community:player' player_id=spot.player_id %}">{{ spot.name }}{% if spot.is_me %} (você){% endif %}</a></span>
+        {% if spot.promoted %}<span class="badge badge--primary">promovido</span>{% endif %}
+        {% if spot.bumped %}<span class="badge badge--wait">prioridade</span>{% endif %}
+        {% if spot.player_type == "mensalista" %}<span class="badge badge--primary" title="Mensalista">M</span>{% endif %}
+      </li>
+    {% endfor %}
+  </ol>
+{% elif empty %}
+  <p class="roster--empty">{{ empty }}</p>
+{% endif %}

@@ -1,0 +1,1 @@
+<p class="vote-count small muted" data-vote-count data-live-refresh hx-get="{% url 'community:gold_ball_day' day=view.game_day.date.isoformat %}" hx-trigger="live-refresh" hx-swap="outerHTML">{{ view.ballots_cast }} de {{ view.voters_total }} votaram</p>

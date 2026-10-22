@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load money_nav %}
+{% block title %}Cobrar no grupo{% endblock %}
+{% block content %}
+<div class="stack">
+  {% money_nav "receber" %}
+  <h1>Cobrar no grupo</h1>
+
+  {% if message %}
+    <p class="muted small">Uma mensagem só para o grupo, marcando quem deve. Nada é enviado sozinho e a cobrança não fica registrada.</p>
+
+    {% if without_phone %}
+      <section class="status status--danger" data-state="sem-telefone">
+        <p class="status__headline">Sem telefone: {{ without_phone|length }}</p>
+        <p class="small">{{ without_phone|join:", " }} não {{ without_phone|length|pluralize:"tem,têm" }} telefone cadastrado e {{ without_phone|length|pluralize:"aparece,aparecem" }} sem marcação.</p>
+      </section>
+    {% endif %}
+
+    <section class="card">
+      <pre class="small email-preview" data-group-message>{{ message }}</pre>
+    </section>
+    <p class="small muted" data-help="marcacoes">O WhatsApp só transforma o @número em marcação de verdade quando ele é digitado lá. Ao colar no grupo, confira se as marcações ficaram azuis; se não, apague o último dígito e digite de novo.</p>
+
+    <div class="actions">
+      <a class="btn btn--primary" href="{{ whatsapp_url }}" target="_blank" rel="noopener" data-native-share="{{ message }}">Compartilhar no WhatsApp</a>
+      <button type="button" class="btn btn--ghost" data-copy="{{ message }}" hidden>Copiar mensagem</button>
+    </div>
+  {% else %}
+    <section class="status status--ok" data-state="tudo-pago">
+      <p class="status__headline">Tudo pago</p>
+    </section>
+  {% endif %}
+  <a class="btn btn--ghost" href="{% url 'board:pending' %}">Voltar</a>
+</div>
+{% endblock %}

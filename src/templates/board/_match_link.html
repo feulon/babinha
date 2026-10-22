@@ -1,0 +1,11 @@
+<a class="match-link" href="{{ href }}">
+  <span class="match-link__number">{{ row.number }}</span>
+  <span class="match-link__body">
+    <span class="match-link__teams">
+      <span>{{ row.match.home_team.name }}</span>
+      <strong class="match-link__score">{% if row.goals or row.match.is_finished %}{{ row.score.home }} x {{ row.score.away }}{% else %}x{% endif %}</strong>
+      <span>{{ row.match.away_team.name }}</span>
+    </span>
+    {% include "matchday/_match_status.html" with match=row.match goals=row.goals %}
+  </span>
+</a>

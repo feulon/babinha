@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load money_nav %}
+{% block title %}Despesas{% endblock %}
+{% block content %}
+<div class="stack">
+  {% money_nav "caixa" %}
+  <nav class="week-nav" aria-label="Meses">
+    <a class="btn btn--ghost btn--small week-nav__arrow" href="{% url 'board:expenses_month' month=previous_month %}" aria-label="Mês anterior">‹</a>
+    <h1>Despesas · {{ month|date:"F/Y" }}</h1>
+    <a class="btn btn--ghost btn--small week-nav__arrow" href="{% url 'board:expenses_month' month=next_month %}" aria-label="Próximo mês">›</a>
+  </nav>
+
+  <section class="card">
+    {% if expenses %}
+      <ul class="rows">
+        {% for expense in expenses %}
+          <li>
+            <div class="row-head">
+              <strong>{{ expense.description }}</strong>
+              <span class="amount">R$ {{ expense.amount|floatformat:"2g" }}</span>
+            </div>
+            <div class="charge__meta">
+              <span class="small muted">{{ expense.date|date:"d/m/Y" }}</span>
+              <a class="btn btn--ghost btn--small" href="{% url 'board:expense_edit' expense_id=expense.pk %}">Editar</a>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="roster--empty">Nenhuma despesa neste mês.</p>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Lançar despesa</h2>
+    <form method="post" action="{% url 'board:expenses' %}" class="form" novalidate>
+      {% csrf_token %}
+      {% include "includes/form_errors.html" %}
+      {% for field in form %}{% include "includes/field.html" %}{% endfor %}
+      <button type="submit" class="btn btn--primary btn--block">Lançar</button>
+    </form>
+  </section>
+  <p class="small"><a href="{% url 'board:cash_month' month=month|date:'Y-m' %}">Ver o caixa do mês</a></p>
+</div>
+{% endblock %}

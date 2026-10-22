@@ -1,0 +1,11 @@
+{% comment %}
+Flash messages. HTMX responses pass oob=True to refresh the same container out of band.
+{% endcomment %}<div id="messages" role="status"{% if oob %} hx-swap-oob="true"{% endif %}>
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li class="message message--{{ message.tags }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>

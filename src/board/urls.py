@@ -1,0 +1,148 @@
+from django.urls import path, re_path
+
+from board import (
+    group_charge_views,
+    matchday_views,
+    money_views,
+    reminder_views,
+    times_views,
+    views,
+)
+
+app_name = "board"
+
+urlpatterns = [
+    path("", views.dashboard, name="dashboard"),
+    path("tutorial/", views.tutorial, name="tutorial"),
+    path("jogadores/", views.players, name="players"),
+    path("jogadores/novo/", views.player_new, name="player_new"),
+    path("jogadores/<int:player_id>/", views.player_edit, name="player_edit"),
+    path(
+        "jogadores/<int:player_id>/nova-senha/",
+        views.reset_player_password,
+        name="reset_player_password",
+    ),
+    path("domingo/<str:day>/", views.game_day, name="game_day"),
+    path("domingo/<str:day>/adicionar/", views.add_to_list, name="add_to_list"),
+    path(
+        "domingo/<str:day>/remover/<int:player_id>/",
+        views.remove_from_list,
+        name="remove_from_list",
+    ),
+    path(
+        "domingo/<str:day>/presenca/<int:player_id>/",
+        views.mark_attendance,
+        name="mark_attendance",
+    ),
+    path(
+        "domingo/<str:day>/presenca/todos/",
+        views.mark_all_present,
+        name="mark_all_present",
+    ),
+    path(
+        "domingo/<str:day>/presenca/<int:player_id>/atraso/",
+        views.mark_late,
+        name="mark_late",
+    ),
+    path("domingo/<str:day>/presenca/multar-atraso/", views.fine_late, name="fine_late"),
+    path("domingo/<str:day>/cancelar/", views.cancel_game_day, name="cancel"),
+    path("domingo/<str:day>/finalizar/", views.finish_game_day, name="finish"),
+    path("domingo/<str:day>/reabrir/", views.reopen_game_day, name="reopen"),
+    path("domingo/<str:day>/times/", times_views.teams, name="teams"),
+    path("domingo/<str:day>/times/estreantes/", times_views.rookie_rule, name="rookie_rule"),
+    path(
+        "domingo/<str:day>/times/estreantes/<int:player_id>/liberar/",
+        times_views.release_rookie,
+        name="release_rookie",
+    ),
+    path(
+        "domingo/<str:day>/times/estreantes/<int:player_id>/prender/",
+        times_views.restore_rookie,
+        name="restore_rookie",
+    ),
+    path("domingo/<str:day>/times/grupos/", times_views.create_group, name="create_group"),
+    path(
+        "domingo/<str:day>/times/grupos/<int:group_id>/desfazer/",
+        times_views.delete_group,
+        name="delete_group",
+    ),
+    path("domingo/<str:day>/times/sortear/", times_views.draw_teams, name="draw_teams"),
+    path(
+        "domingo/<str:day>/times/resolver/", times_views.resolve_conflict, name="resolve_conflict"
+    ),
+    path("domingo/<str:day>/times/ajustar/", times_views.adjust_teams, name="assign_teams"),
+    path("domingo/<str:day>/times/nomes/", times_views.rename_teams, name="rename_teams"),
+    path("domingo/<str:day>/times/confirmar/", times_views.confirm_teams, name="confirm_teams"),
+    path("domingo/<str:day>/times/potes/", times_views.accept_potes, name="accept_potes"),
+    path(
+        "domingo/<str:day>/times/desfazer/",
+        times_views.unconfirm_teams,
+        name="unconfirm_teams",
+    ),
+    path("domingo/<str:day>/jogos/", matchday_views.matches, name="matches"),
+    path(
+        "domingo/<str:day>/jogos/proximo/",
+        matchday_views.start_next_match,
+        name="start_next_match",
+    ),
+    path("partidas/<int:match_id>/", matchday_views.match, name="match"),
+    path(
+        "partidas/<int:match_id>/goleiros/",
+        matchday_views.set_goalkeepers,
+        name="set_goalkeepers",
+    ),
+    path("partidas/<int:match_id>/times/", matchday_views.edit_match, name="edit_match"),
+    path("partidas/<int:match_id>/escalacao/", matchday_views.set_roster, name="set_roster"),
+    path("partidas/<int:match_id>/subir/", matchday_views.move_match_up, name="move_match_up"),
+    path("partidas/<int:match_id>/descer/", matchday_views.move_match_down, name="move_match_down"),
+    path("partidas/<int:match_id>/gol/<str:side>/", matchday_views.add_goal, name="add_goal"),
+    path(
+        "partidas/<int:match_id>/gol/<str:side>/assistencia/",
+        matchday_views.ask_assist,
+        name="ask_assist",
+    ),
+    path(
+        "partidas/<int:match_id>/gols/<int:goal_id>/",
+        matchday_views.edit_goal,
+        name="edit_goal",
+    ),
+    path(
+        "partidas/<int:match_id>/gols/<int:goal_id>/apagar/",
+        matchday_views.delete_goal,
+        name="delete_goal",
+    ),
+    path("partidas/<int:match_id>/encerrar/", matchday_views.finish_match, name="finish_match"),
+    path("partidas/<int:match_id>/reabrir/", matchday_views.reopen_match, name="reopen_match"),
+    path("partidas/<int:match_id>/apagar/", matchday_views.delete_match, name="delete_match"),
+    path("multas/", views.fine_list, name="fines"),
+    path("multas/<int:fine_id>/perdoar/", views.forgive_fine, name="forgive"),
+    path("valores/", views.club_settings, name="settings"),
+    path("comprovantes/", money_views.receipts, name="receipts"),
+    path("comprovantes/<int:receipt_id>/", money_views.receipt_review, name="receipt"),
+    path(
+        "comprovantes/<int:receipt_id>/aprovar/",
+        money_views.approve_receipt,
+        name="approve_receipt",
+    ),
+    path(
+        "comprovantes/<int:receipt_id>/recusar/",
+        money_views.refuse_receipt,
+        name="refuse_receipt",
+    ),
+    path(
+        "comprovantes/<int:receipt_id>/desfazer/",
+        money_views.undo_approval,
+        name="undo_approval",
+    ),
+    path("pendencias/", money_views.pending, name="pending"),
+    path("avisos/", reminder_views.reminders_view, name="reminders"),
+    path("cobrar-grupo/", group_charge_views.group_charge_view, name="group_charge"),
+    path("cobrancas/<int:charge_id>/dispensar/", money_views.waive_charge, name="waive"),
+    path("cobrancas/<int:charge_id>/pagar/", money_views.mark_paid, name="mark_paid"),
+    path("caixa/", money_views.cash, name="cash"),
+    re_path(r"^caixa/(?P<month>\d{4}-\d{2})/$", money_views.cash, name="cash_month"),
+    path("despesas/", money_views.expenses, name="expenses"),
+    re_path(r"^despesas/(?P<month>\d{4}-\d{2})/$", money_views.expenses, name="expenses_month"),
+    path("despesas/<int:expense_id>/editar/", money_views.expense_edit, name="expense_edit"),
+    path("despesas/<int:expense_id>/excluir/", money_views.expense_delete, name="expense_delete"),
+]

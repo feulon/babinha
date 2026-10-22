@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Sem conexão{% endblock %}
+{% block content %}
+<section class="status status--neutral">
+  <p class="status__headline">Sem conexão</p>
+  <p>Não foi possível carregar o Babinha. Confira sua internet e tente de novo.</p>
+  <a class="btn btn--primary" href="/" data-reload>Tentar de novo</a>
+</section>
+{% endblock %}

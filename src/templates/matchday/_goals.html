@@ -1,0 +1,25 @@
+{% if goals %}
+  <ol class="goals">
+    {% for goal in goals %}
+      <li>
+        <span class="goals__text">
+          <strong>{% if goal.own_goal %}Gol contra{% else %}{{ goal.scorer.name }}{% endif %}</strong>{% if goal.assist %} <span class="muted">(assistência de {{ goal.assist.name }})</span>{% endif %}
+          <span class="goals__team">{{ goal.team.name }}</span>
+        </span>
+        {% if editable %}
+          {% url 'board:delete_goal' match_id=goal.match_id goal_id=goal.pk as delete_url %}
+          <span class="goals__tools">
+            <a class="btn btn--ghost btn--small" href="{% url 'board:edit_goal' match_id=goal.match_id goal_id=goal.pk %}">Editar</a>
+            <form method="post" action="{{ delete_url }}" class="inline-form"
+                  hx-post="{{ delete_url }}" hx-target="#match-live" hx-swap="outerHTML" hx-confirm="Apagar este gol?">
+              {% csrf_token %}
+              <button class="icon-btn" title="Apagar gol" aria-label="Apagar gol">✕</button>
+            </form>
+          </span>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ol>
+{% elif empty %}
+  <p class="roster--empty">{{ empty }}</p>
+{% endif %}

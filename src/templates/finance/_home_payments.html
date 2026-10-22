@@ -1,0 +1,21 @@
+{% load navigation %}{# On the Início this is one line pointing at Pagamentos, where the Pix key and the receipt upload live. #}
+{% if payments.open %}
+  {% if payments.payable %}
+    <section class="status {% if payments.has_overdue %}status--danger{% else %}status--wait{% endif %}" data-state="pagamento"{% if on_payments_page %}{% endif %}>
+      <p class="status__headline">{% if payments.has_overdue %}Pagamento atrasado{% else %}Pagamento pendente{% endif %}</p>
+      {% if on_payments_page %}
+        <p>Faça um Pix de <strong>R$ {{ payments.total_payable|floatformat:"2g" }}</strong> e envie o comprovante aqui.</p>
+        {% include "finance/_pix.html" %}
+        {% include "finance/_open_charges.html" %}
+      {% else %}
+        <p><strong>R$ {{ payments.total_payable|floatformat:"2g" }}</strong> a pagar{% with next=payments.payable.0.charge %} · vence {{ next.due_date|date:"d/m" }}{% endwith %} · <a href="{% nexturl 'finance:payments' %}">Ver Pix</a></p>
+      {% endif %}
+    </section>
+  {% else %}
+    <section class="status status--info" data-state="pagamento"{% if on_payments_page %}{% endif %}>
+      <p class="status__headline">Comprovante em análise</p>
+      <p>A diretoria vai conferir seu pagamento.{% if not on_payments_page %} <a href="{% nexturl 'finance:payments' %}">Ver pagamentos</a>{% endif %}</p>
+      {% if on_payments_page %}{% include "finance/_open_charges.html" %}{% endif %}
+    </section>
+  {% endif %}
+{% endif %}

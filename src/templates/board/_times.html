@@ -1,0 +1,17 @@
+{% comment %}
+The swappable block of the team assembly: the draw offer, or the drawn teams to adjust and
+confirm. HTMX replaces it whole (`#times`), so an action never needs more than one request.
+{% endcomment %}<div id="times" class="stack">
+  {% if oob_messages %}{% include "includes/messages.html" with oob=True %}{% endif %}
+  {% if game_day.is_cancelled %}
+    <section class="status status--danger">
+      <p class="status__headline">Domingo cancelado</p>
+      <p>Não há times neste domingo.</p>
+    </section>
+  {% elif state.lineup %}
+    {% include "board/times/_teams.html" %}
+  {% else %}
+    {% include "board/times/_start.html" %}
+  {% endif %}
+  {% include "board/times/_icons.html" %}
+</div>

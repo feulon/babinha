@@ -1,0 +1,41 @@
+{% load money text %}
+<section class="card payment-history" id="historico-pagamentos">
+  <h2>Histórico de pagamentos</h2>
+  <p class="small muted">Todos os pagamentos de {{ player.name }}, do mais recente ao mais antigo. Os comprovantes ficam guardados, mesmo os recusados ou trocados.</p>
+  {% if history %}
+    <ul class="rows">
+      {% for entry in history %}
+        {% with charge=entry.charge %}
+        <li>
+          <div class="row-head">
+            <strong>{{ entry.reason }} · {{ charge.reference_date|date:"d/m/Y" }}</strong>
+            <span class="badge{% if entry.situation == 'Aprovado' %} badge--primary{% elif entry.situation == 'Recusado' %} badge--danger{% elif entry.situation == 'Pendente' %} badge--wait{% endif %}">{{ entry.situation }}</span>
+          </div>
+          <p class="small muted">{{ charge.amount|brl }}</p>
+          {% if charge.status == "paga" and charge.marked_paid_by %}
+            <p class="small muted">Marcado como pago por {{ charge.marked_paid_by.name }}{% if charge.payment_method %} ({{ charge.get_payment_method_display }}){% endif %}{% if charge.paid_at %} em {{ charge.paid_at|date:"d/m/Y H\hi" }}{% endif %}{% if charge.payment_note %}: {{ charge.payment_note }}{% endif %}</p>
+          {% elif charge.cancelled_by %}
+            <p class="small muted">{{ entry.situation }} por {{ charge.cancelled_by.name }}{% if charge.cancelled_at %} em {{ charge.cancelled_at|date:"d/m/Y H\hi" }}{% endif %}{% if charge.cancel_reason %}: {{ charge.cancel_reason }}{% endif %}</p>
+          {% endif %}
+          {% for receipt in entry.receipts %}
+            <div class="payment-history__receipt">
+              <a class="payment-history__file" href="{% url 'finance:receipt_file' receipt_id=receipt.pk %}" target="_blank" rel="noopener" aria-label="Abrir comprovante enviado em {{ receipt.submitted_at|date:'d/m/Y H\hi' }}">
+                {% if receipt.is_image %}<img src="{% url 'finance:receipt_file' receipt_id=receipt.pk %}" alt="" loading="lazy">{% else %}<span class="payment-history__pdf">PDF</span>{% endif %}
+              </a>
+              <div>
+                <p class="small"><span class="badge{% if receipt.status == 'aprovado' %} badge--primary{% elif receipt.status == 'recusado' %} badge--danger{% elif receipt.status == 'em_analise' %} badge--info{% endif %}">{{ receipt.get_status_display }}</span> enviado em {{ receipt.submitted_at|date:"d/m/Y H\hi" }}</p>
+                {% if receipt.reviewed_by %}<p class="small muted">{% if receipt.status == "recusado" %}Recusado{% else %}Aprovado{% endif %} por {{ receipt.reviewed_by.name }} em {{ receipt.reviewed_at|date:"d/m/Y H\hi" }}{% if receipt.refusal_reason %}: {{ receipt.refusal_reason|stop }}{% endif %}</p>{% endif %}
+                <a class="small" href="{% url 'finance:receipt_file' receipt_id=receipt.pk %}" target="_blank" rel="noopener">{% if receipt.is_image %}Abrir comprovante{% else %}Abrir PDF{% endif %}</a>
+              </div>
+            </div>
+          {% empty %}
+            <p class="small muted">Sem comprovante</p>
+          {% endfor %}
+        </li>
+        {% endwith %}
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="small muted">Nenhum pagamento ainda.</p>
+  {% endif %}
+</section>

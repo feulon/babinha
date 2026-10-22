@@ -1,0 +1,15 @@
+{% load money %}{% autoescape off %}Olá, {{ player.name }}!
+
+Você tem pagamento pendente na Babinha de Domingo:
+{% for row in rows %}
+- {{ row.charge.description }}: {{ row.charge.amount|brl }} (vence {{ row.charge.due_date|date:"d/m" }}{% if row.overdue %}, atrasado{% endif %}){% endfor %}
+
+Total: {{ total }}
+{% if pix_key %}
+Pix: {{ pix_key }}{% if pix_holder %} ({{ pix_holder }}){% endif %}
+{% endif %}
+Depois de pagar, envie o comprovante pelo app:
+{{ app_url }}
+
+Se já pagou, desconsidere este aviso.
+{% endautoescape %}

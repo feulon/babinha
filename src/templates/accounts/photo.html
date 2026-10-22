@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load avatars navigation %}
+{% block title %}Minha foto{% endblock %}
+{% block content %}
+<section class="auth">
+  {% more_back %}
+  <h1>Minha foto</h1>
+  <div class="photo-edit">
+    {% avatar user.name user.pk user.photo "profile-head__avatar" %}
+  </div>
+  <form method="post" class="form card" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {% include "includes/form_errors.html" %}
+    {% for field in form %}{% include "includes/field.html" %}{% include "includes/photo_preview.html" %}{% endfor %}
+    <button type="submit" class="btn btn--primary btn--block">Salvar foto</button>
+  </form>
+  {% if user.photo %}
+    <form method="post" action="{% url 'accounts:photo_remove' %}" data-confirm="Remover a sua foto?">
+      {% csrf_token %}
+      <button type="submit" class="btn btn--ghost btn--block">Remover foto</button>
+    </form>
+  {% endif %}
+  <div class="form-links"><p><a href="{% url 'community:player' player_id=user.pk %}">Voltar para o perfil</a></p></div>
+</section>
+{% endblock %}

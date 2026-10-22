@@ -1,0 +1,9 @@
+<section class="card">
+  <div class="card__title"><h2>Domingo a domingo</h2><span class="count">{{ profile.sundays|length }}</span></div>
+  {% if profile.sundays %}
+    {% for sunday in profile.sundays %}{% include "community/player/_sunday.html" %}{% endfor %}
+    <p class="muted small">V vitória · E empate · D derrota · ⚽ gols dele.</p>
+  {% else %}
+    <p class="roster--empty">Ainda não jogou nenhum domingo.</p>
+  {% endif %}
+</section>

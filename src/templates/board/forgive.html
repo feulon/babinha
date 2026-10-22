@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Perdoar multa{% endblock %}
+{% block content %}
+<div class="stack">
+  <h1>Perdoar multa</h1>
+  <section class="card">
+    <dl class="kv">
+      <dt>Jogador</dt><dd>{{ fine.player.name }}</dd>
+      <dt>Motivo</dt><dd>{{ fine.get_reason_display }}</dd>
+      <dt>Domingo</dt><dd>{{ fine.game_day.date|date:"d/m/Y" }}</dd>
+      <dt>Valor</dt><dd>R$ {{ fine.amount|floatformat:"2g" }}</dd>
+    </dl>
+  </section>
+  <p class="small muted">O perdão cancela a cobrança e tira a ocorrência da contagem de multas do jogador.</p>
+  <form method="post" class="form card" novalidate>
+    {% csrf_token %}
+    {% include "includes/form_errors.html" %}
+    {% for field in form %}{% include "includes/field.html" %}{% endfor %}
+    <div class="actions">
+      <button type="submit" class="btn btn--primary">Perdoar</button>
+      <a class="btn btn--ghost" href="{% url 'board:fines' %}">Voltar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

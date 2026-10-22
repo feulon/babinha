@@ -1,0 +1,29 @@
+{% load text %}{# Open charges of the logged-in player, each with its receipt upload. Needs payments, pix. #}
+<ul class="rows">
+  {% for row in payments.open %}
+    <li class="charge" data-charge="{{ row.charge.pk }}">
+      <div class="row-head">
+        <strong>{{ row.charge.description }}</strong>
+        <span class="amount">R$ {{ row.charge.amount|floatformat:"2g" }}</span>
+      </div>
+      <div class="charge__meta">
+        {% include "finance/_charge_badge.html" with charge=row.charge overdue=row.overdue %}
+        <span class="small muted">Vence {{ row.charge.due_date|date:"d/m" }}</span>
+      </div>
+      {% if row.charge.status == "em_analise" %}
+        <p class="small muted">Comprovante enviado em {{ row.latest_receipt.submitted_at|date:"d/m \à\s H\hi" }}. <a href="{% url 'finance:receipt_file' receipt_id=row.latest_receipt.pk %}" target="_blank" rel="noopener">Ver comprovante enviado</a></p>
+      {% elif row.refusal_reason %}
+        <p class="small charge__refusal">Comprovante recusado: {{ row.refusal_reason|stop }} Envie outro.</p>
+      {% endif %}
+      {% if row.charge.status == "em_analise" %}
+        <details class="upload-again">
+          <summary class="btn btn--ghost btn--block">Enviar outro</summary>
+          <p class="small muted">Enviou o arquivo errado? O novo comprovante toma o lugar do anterior.</p>
+          {% include "finance/_upload_form.html" %}
+        </details>
+      {% elif row.charge.is_payable %}
+        {% include "finance/_upload_form.html" %}
+      {% endif %}
+    </li>
+  {% endfor %}
+</ul>

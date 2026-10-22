@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load navigation %}{% block title %}Bola de Ouro{% endblock %}
+{% block content %}
+<div class="stack">
+  <header>
+    {% back_link %}
+    <p class="eyebrow">Comunidade</p>
+    <h1>Bola de Ouro</h1>
+  </header>
+
+  {% include "community/_switch.html" with current="gold_ball" %}
+
+  {% if not view %}
+    <section class="status status--neutral" data-state="sem-votacao">
+      <p class="status__headline">Nada para votar ainda</p>
+      <p>A votação abre quando o futebol do domingo for encerrado, com times e jogos registrados.</p>
+    </section>
+  {% else %}
+    {% with day=view.game_day %}
+    <p class="muted">Domingo, {{ day.date|date:"d/m/Y" }}</p>
+    {% if view.window.phase == "none" %}
+      <section class="status status--neutral" data-state="sem-votacao">
+        <p class="status__headline">Sem votação neste domingo</p>
+        <p>{% if day.is_cancelled %}O domingo foi cancelado.{% else %}Não houve times e jogos registrados.{% endif %}</p>
+      </section>
+    {% elif view.window.phase == "waiting" %}
+      <section class="status status--info" data-state="aguardando">
+        <p class="status__headline">A votação abre quando o futebol for encerrado</p>
+        <p>Quem jogou escolhe três jogadores. {% include "community/_result_when.html" with window=view.window %}</p>
+      </section>
+    {% elif view.window.phase == "open" %}
+      {% if view.has_voted %}
+        <section class="status status--ok" data-state="votou">
+          <p class="status__headline">Voto registrado</p>
+          <p>{% include "community/_result_when.html" with window=view.window %} Ninguém vê em quem você votou.</p>
+          {% include "community/_vote_count.html" %}
+        </section>
+      {% elif not view.played %}
+        <section class="status status--neutral" data-state="nao-jogou">
+          <p class="status__headline">Só quem jogou vota</p>
+          <p>{% include "community/_result_when.html" with window=view.window %} Ele fica aqui.</p>
+        </section>
+      {% elif not view.can_vote %}
+        <section class="status status--neutral" data-state="poucos">
+          <p class="status__headline">Não há jogadores suficientes</p>
+          <p>É preciso ter pelo menos três outros jogadores para votar.</p>
+        </section>
+      {% else %}
+        <section class="card" data-state="votar">
+          <div class="card__title"><h2>Seu voto</h2></div>
+          {% include "community/_vote_count.html" %}
+          <p class="small muted">5 pontos para o 1º, 3 para o 2º, 2 para o 3º. Você não vota em si mesmo. {% include "community/_result_when.html" with window=view.window %}</p>
+          <form method="post" action="{% url 'community:vote' day=day.date.isoformat %}" class="form" data-distinct-selects data-confirm="Confirmar o voto? Ele não pode ser alterado.">
+            {% csrf_token %}
+            {% if back_url %}<input type="hidden" name="next" value="{{ request.GET.next }}">{% endif %}
+            {% for name, label, chosen in places %}
+              <div class="field">
+                <label for="vote-{{ name }}">{{ label }}</label>
+                <select name="{{ name }}" id="vote-{{ name }}" required>
+                  <option value="">Escolha um jogador</option>
+                  {% for nominee in view.nominees %}<option value="{{ nominee.pk }}"{% if nominee.pk == chosen %} selected{% endif %}>{{ nominee.name }}</option>{% endfor %}
+                </select>
+              </div>
+            {% endfor %}
+            {% if vote_error %}<div class="form-errors" role="alert">{{ vote_error }}</div>{% endif %}
+            <button class="btn btn--primary btn--block">Votar</button>
+          </form>
+        </section>
+      {% endif %}
+    {% else %}
+      {% if view.results %}
+        <section class="status status--ok gold" data-state="resultado">
+          <p class="eyebrow">Vencedor{% if view.winners|length > 1 %}es{% endif %} da Bola de Ouro</p>
+          <p class="status__headline">{% for winner in view.winners %}<a href="{% nexturl 'community:player' player_id=winner.pk %}">{{ winner.name }}</a>{% if not forloop.last %} e {% endif %}{% endfor %}</p>
+          {% if view.winners|length > 1 %}<p>Empate: dividem a Bola de Ouro.</p>{% endif %}
+        </section>
+        <section class="card">
+          <div class="card__title"><h2>Contagem de votos</h2><span class="count">fechada</span></div>
+          <p class="small muted">Empates: mais votos em 1º, depois 2º e 3º. Se persistir, a Bola de Ouro é dividida.</p>
+          <ol class="ranking-list ranking-list--podium">
+            {% for result in view.results %}
+              <li{% if result.is_winner %} class="is-winner"{% endif %}>
+                {% if result.position == 1 %}<span class="ball" title="1º lugar"><span aria-hidden="true">★</span><span class="visually-hidden">1º lugar</span></span>
+                {% elif result.position <= 3 %}<span class="ball ball--{% if result.position == 2 %}silver{% else %}bronze{% endif %}" title="{{ result.position }}º lugar">{{ result.position }}<span class="visually-hidden">º lugar</span></span>
+                {% else %}<span class="ranking-list__pos muted small">{{ result.position }}º</span>{% endif %}
+                <a href="{% nexturl 'community:player' player_id=result.player.pk %}">{{ result.player.name }}</a>
+                <strong>{{ result.standing.points }} pt{{ result.standing.points|pluralize:"s" }}</strong>
+                <span class="ranking-list__detail muted small">{{ result.standing.places.0 }}x 1º · {{ result.standing.places.1 }}x 2º · {{ result.standing.places.2 }}x 3º</span>
+              </li>
+            {% endfor %}
+          </ol>
+        </section>
+      {% else %}
+        <section class="status status--neutral" data-state="sem-votos">
+          <p class="status__headline">Ninguém votou</p>
+        </section>
+      {% endif %}
+    {% endif %}
+    {% endwith %}
+  {% endif %}
+
+  {% if past %}
+    <section class="card">
+      <h2>Bolas de Ouro</h2>
+      <ul class="link-list">
+        {% for day, winners in past %}
+          <li><a href="{% url 'community:gold_ball_day' day=day.date.isoformat %}"><span>{{ day.date|date:"d/m/Y" }} · {% for winner in winners %}{{ winner.name }}{% if not forloop.last %} e {% endif %}{% endfor %}</span></a></li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+  <a class="btn btn--ghost btn--block" href="{% nexturl 'community:ranking' %}">Ranking da temporada</a>
+</div>
+{% endblock %}

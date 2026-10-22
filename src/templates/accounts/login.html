@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Entrar{% endblock %}
+{% block content %}
+<section class="auth">
+  <h1>Babinha de Domingo</h1>
+  <form method="post" class="form card" novalidate>
+    {% csrf_token %}
+    {% include "includes/form_errors.html" %}
+    {% for field in form %}{% include "includes/field.html" %}{% endfor %}
+    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+    <button type="submit" class="btn btn--primary btn--block">Entrar</button>
+  </form>
+  <div class="form-links">
+    <p><a href="{% url 'accounts:password_reset' %}">Esqueci minha senha</a></p>
+    <p>Primeira vez? <a href="{% url 'accounts:signup' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Criar conta</a></p>
+    <p><a href="{% url 'rules' %}">Regras do babinha</a></p>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load money_nav %}
+{% block title %}Comprovantes{% endblock %}
+{% block content %}
+<div class="stack">
+  {% money_nav "receber" "conferir" %}
+  <h1>Comprovantes</h1>
+  <p class="muted small">Confira no extrato do Pix. Os mais antigos primeiro.</p>
+  <section class="card">
+    {% if receipts %}
+      <ul class="rows">
+        {% for receipt in receipts %}
+          <li>
+            <div class="row-head">
+              <strong>{{ receipt.charge.player.name }}</strong>
+              <span class="amount">R$ {{ receipt.charge.amount|floatformat:"2g" }}</span>
+            </div>
+            <p class="small muted">{{ receipt.charge.description }} · enviado {{ receipt.submitted_at|date:"d/m \à\s H\hi" }}</p>
+            <a class="btn btn--primary btn--small" href="{% url 'board:receipt' receipt_id=receipt.pk %}">Conferir</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="roster--empty">Nenhum comprovante para conferir.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

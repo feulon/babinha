@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load money money_nav %}
+{% block title %}Caixa{% endblock %}
+{% block content %}
+<div class="stack">
+  {% money_nav "caixa" %}
+  <nav class="week-nav" aria-label="Meses">
+    <a class="btn btn--ghost btn--small week-nav__arrow" href="{% url 'board:cash_month' month=previous_month %}" aria-label="Mês anterior">‹</a>
+    <h1>Caixa · {{ report.month|date:"F/Y" }}</h1>
+    <a class="btn btn--ghost btn--small week-nav__arrow" href="{% url 'board:cash_month' month=next_month %}" aria-label="Próximo mês">›</a>
+  </nav>
+
+  {% include "finance/_report_totals.html" %}
+
+  <section class="card">
+    <div class="card__title">
+      <h2>Despesas</h2>
+      <a class="btn btn--primary btn--small" href="{% url 'board:expenses_month' month=report.month|date:'Y-m' %}">Lançar despesa</a>
+    </div>
+    {% if report.expenses %}
+      <ul class="rows">
+        {% for expense in report.expenses %}
+          <li class="row-head">
+            <span>{{ expense.description }} · {{ expense.date|date:"d/m" }}</span>
+            <span class="amount">R$ {{ expense.amount|floatformat:"2g" }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="roster--empty">Nenhuma despesa neste mês.</p>
+    {% endif %}
+  </section>
+
+  <details class="card fold" data-section="mensalistas">
+    <summary>
+      <h2>Mensalistas do mês</h2>
+      <span class="count">{{ report.members|length }}</span>
+    </summary>
+    {% if report.members %}
+      <p class="small muted">{{ report.members_paid }} pag{{ report.members_paid|pluralize:"ou,aram" }} · {{ report.members_open }} pendente{{ report.members_open|pluralize }}.</p>
+      <ul class="rows">
+        {% for member in report.members %}
+          <li>
+            <div class="row-head">
+              <strong>{{ member.enrollment.player.name }}</strong>
+              {% if member.fee %}{% include "finance/_charge_badge.html" with charge=member.fee.charge overdue=member.fee.overdue %}{% else %}<span class="badge">Sem cobrança</span>{% endif %}
+            </div>
+            <p class="small muted">Aderiu em {{ member.enrollment.enrolled_at|date:"d/m" }}{% if member.enrollment.enrolled_by %} · registrado por {{ member.enrollment.enrolled_by.name }}{% endif %}</p>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="roster--empty">Ninguém aderiu neste mês.</p>
+    {% endif %}
+  </details>
+
+  <details class="card fold" data-section="pendentes">
+    <summary>
+      <h2>Pendentes</h2>
+      <span class="count">{{ report.pending_total|brl }}</span>
+    </summary>
+    {% if report.pending %}
+      <ul class="rows">
+        {% for row in report.pending %}
+          <li>
+            <div class="row-head">
+              <strong>{{ row.charge.player.name }}</strong>
+              <span class="amount">R$ {{ row.charge.amount|floatformat:"2g" }}</span>
+            </div>
+            <div class="charge__meta">
+              <span class="small muted">{{ row.charge.description }}</span>
+              {% include "finance/_charge_badge.html" with charge=row.charge overdue=row.overdue %}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="roster--empty">Ninguém pendente neste mês.</p>
+    {% endif %}
+  </details>
+
+  <details class="card fold" data-section="pagaram">
+    <summary>
+      <h2>Pagaram</h2>
+      <span class="count">{{ report.collected|brl }}</span>
+    </summary>
+    {% if report.paid %}
+      <ul class="rows">
+        {% for row in report.paid %}
+          <li>
+            <div class="row-head">
+              <strong>{{ row.charge.player.name }}</strong>
+              <span class="amount">R$ {{ row.charge.amount|floatformat:"2g" }}</span>
+            </div>
+            <p class="small muted">{{ row.charge.description }} · confirmado em {{ row.charge.paid_at|date:"d/m" }}</p>
+            {% if row.charge.marked_paid_by %}<p class="small muted" data-state="pago-na-mao">Marcado como pago por {{ row.charge.marked_paid_by.name }} · {{ row.charge.get_payment_method_display }}{% if row.charge.payment_note %} · {{ row.charge.payment_note }}{% endif %}</p>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="roster--empty">Nenhum pagamento confirmado neste mês.</p>
+    {% endif %}
+  </details>
+</div>
+{% endblock %}

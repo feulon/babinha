@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Jogadores{% endblock %}
+{% block content %}
+<div class="stack">
+  <div class="row-head">
+    <h1>Jogadores</h1>
+    <a class="btn btn--primary btn--small" href="{% url 'board:player_new' %}">Novo jogador</a>
+  </div>
+  <p class="muted small">O pote só aparece para a diretoria.</p>
+  {% include "board/_new_login.html" %}
+
+  <form method="get" action="{% url 'board:players' %}" class="player-filters" role="search"
+        hx-get="{% url 'board:players' %}" hx-trigger="input changed delay:300ms, search" hx-target="#board-players" hx-swap="outerHTML" hx-replace-url="true">
+    <label class="visually-hidden" for="{{ filters.q.id_for_label }}">Buscar por nome ou apelido</label>
+    <input class="search" type="search" id="{{ filters.q.id_for_label }}" name="q" value="{{ active.q|default:'' }}" placeholder="Buscar por nome ou apelido" autocomplete="off" enterkeyhint="search">
+    <details class="player-filters__more"{% if active.tipo or active.posicao or active.pote or active.sem_indicador or active.inativos %} open{% endif %}>
+      <summary>Mais filtros</summary>
+      <div class="player-filters__grid">
+        <label class="player-filters__field">Tipo
+          <select class="search" name="tipo">
+            {% for value, label in filters.tipo.field.choices %}<option value="{{ value }}"{% if value == active.tipo|default:'' %} selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+        </label>
+        <label class="player-filters__field">Posição
+          <select class="search" name="posicao">
+            {% for value, label in filters.posicao.field.choices %}<option value="{{ value }}"{% if value == active.posicao|default:'' %} selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+        </label>
+        <label class="player-filters__field">Pote
+          <select class="search" name="pote">
+            {% for value, label in filters.pote.field.choices %}<option value="{{ value }}"{% if value == active.pote|default:'' %} selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+        </label>
+        <label class="player-filters__check">
+          <input type="checkbox" name="sem_indicador" value="1"{% if active.sem_indicador %} checked{% endif %}> Sem indicador
+        </label>
+        <label class="player-filters__check">
+          <input type="checkbox" name="inativos" value="1"{% if active.inativos %} checked{% endif %}> Só desativados
+        </label>
+      </div>
+    </details>
+    <noscript><button type="submit" class="btn btn--primary">Filtrar</button></noscript>
+  </form>
+
+  {% include "board/_players_list.html" %}
+</div>
+{% endblock %}

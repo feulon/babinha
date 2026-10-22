@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Editar gol{% endblock %}
+{% block page_back %}{% endblock %}
+{% block content %}
+<div class="stack">
+  <header>
+    <p class="eyebrow"><a href="{% url 'board:match' match_id=match.pk %}">‹ {{ match.home_team.name }} x {{ match.away_team.name }}</a></p>
+    <h1>Editar gol</h1>
+  </header>
+
+  <section class="card">
+    <form method="post" class="form">
+      {% csrf_token %}
+      {% include "includes/form_errors.html" with form=form %}
+      {% for field in form %}{% include "includes/field.html" %}{% endfor %}
+      <button class="btn btn--primary btn--block">Salvar gol</button>
+    </form>
+  </section>
+</div>
+{% endblock %}

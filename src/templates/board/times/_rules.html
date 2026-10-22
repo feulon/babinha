@@ -1,0 +1,59 @@
+{% comment %}The rules the draw keeps: first-timers with whoever invited them, and groups made by hand.{% endcomment %}
+{% url 'board:rookie_rule' day=game_day.date.isoformat as rule_url %}
+<div class="rule" data-rule="estreantes">
+  <div class="rule__body">
+    <p class="rule__title">Estreantes jogam com quem convidou</p>
+    <p class="small muted">{% if grouping.rules.rookies_follow_inviter %}Vale para {{ bound }} estreante{{ bound|pluralize }} hoje.{% else %}Desligado: todos podem jogar em qualquer time.{% endif %}</p>
+  </div>
+  <form method="post" action="{{ rule_url }}" hx-post="{{ rule_url }}" hx-target="#times" hx-swap="outerHTML">
+    {% csrf_token %}
+    <input type="hidden" name="enabled" value="{% if grouping.rules.rookies_follow_inviter %}off{% else %}on{% endif %}">
+    <button class="switch" role="switch" aria-checked="{% if grouping.rules.rookies_follow_inviter %}true{% else %}false{% endif %}"
+            aria-label="Estreantes jogam com quem convidou" title="{% if grouping.rules.rookies_follow_inviter %}Desligar{% else %}Ligar{% endif %}"></button>
+  </form>
+</div>
+
+{% for player in released %}
+  {% url 'board:restore_rookie' day=game_day.date.isoformat player_id=player.pk as restore_url %}
+  <div class="rule" data-released="{{ player.pk }}">
+    <div class="rule__body"><p class="rule__title">{{ player.name }}</p><p class="small muted">Joga em outro time, só neste domingo.</p></div>
+    <form method="post" action="{{ restore_url }}" hx-post="{{ restore_url }}" hx-target="#times" hx-swap="outerHTML">
+      {% csrf_token %}
+      <button class="btn btn--ghost btn--small">Prender de novo</button>
+    </form>
+  </div>
+{% endfor %}
+
+{% for group in grouping.manual %}
+  {% url 'board:delete_group' day=game_day.date.isoformat group_id=group.id as delete_url %}
+  <div class="rule" data-group="{{ group.id }}">
+    <div class="rule__body">
+      <p class="rule__title">{{ group.label }} <span class="muted">({{ group.players|length }})</span></p>
+      <p class="small muted">{% for player in group.players %}{{ player.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+    </div>
+    <form method="post" action="{{ delete_url }}" hx-post="{{ delete_url }}" hx-target="#times" hx-swap="outerHTML">
+      {% csrf_token %}
+      <button class="rule__x" title="Desfazer o grupo {{ group.label }}" aria-label="Desfazer o grupo {{ group.label }}"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </form>
+  </div>
+{% endfor %}
+
+{% if group_form.players.field.choices %}
+  {% url 'board:create_group' day=game_day.date.isoformat as group_url %}
+  <details class="rule-new" id="novo-grupo">
+    <summary>Juntar jogadores no mesmo time</summary>
+    <form method="post" action="{{ group_url }}" hx-post="{{ group_url }}" hx-target="#times" hx-swap="outerHTML" data-group-picker data-min="2" data-max="5">
+      {% csrf_token %}
+      <p class="small muted">Marque de 2 a 5 jogadores, por exemplo quem vai no mesmo carro. <span data-picker-count>0 de 5</span></p>
+      <div class="chipwrap">
+        {% for option in group_form.players %}
+          <label class="pc"><input type="checkbox" name="{{ option.data.name }}" value="{{ option.data.value }}"{% if option.data.selected %} checked{% endif %}><span class="box"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg></span>{{ option.choice_label }}</label>
+        {% endfor %}
+      </div>
+      {{ group_form.name }}
+      <div class="actions">
+        <button class="btn btn--primary" data-picker-submit>Salvar grupo</button>
+      </div>
+    </form>
+  </details>
+{% endif %}

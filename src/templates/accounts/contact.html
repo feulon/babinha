@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load navigation %}{% block title %}Meu contato{% endblock %}
+{% block content %}
+<section class="auth">
+  {% if needs_phone %}
+    <h1>Qual é o seu celular?</h1>
+    <p class="lead">O celular agora é o seu login.</p>
+  {% else %}
+    {% more_back %}
+    <h1>Meu contato</h1>
+  {% endif %}
+  <form method="post" class="form card" novalidate>
+    {% csrf_token %}
+    {% include "includes/form_errors.html" %}
+    {% for field in form %}{% include "includes/field.html" %}{% endfor %}
+    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+    <button type="submit" class="btn btn--primary btn--block">Salvar</button>
+  </form>
+  {% if needs_phone %}
+    <form method="post" action="{% url 'accounts:logout' %}" data-confirm="Sair do Babinha?">
+      {% csrf_token %}
+      <button type="submit" class="btn btn--ghost btn--block">Sair</button>
+    </form>
+  {% else %}
+    <div class="form-links"><p><a href="{% url 'community:player' player_id=user.pk %}">Voltar para o perfil</a></p></div>
+  {% endif %}
+</section>
+{% endblock %}

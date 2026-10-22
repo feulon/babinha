@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Diretoria{% endblock %}
+{% block content %}
+<div class="stack">
+  <h1>Diretoria</h1>
+  {% if not settings.pix_key or not settings.is_configured %}
+    <section class="status status--wait" data-state="configurar">
+      <p class="status__headline">Falta configurar</p>
+      <ul class="plain-list">
+        {% if not settings.is_configured %}<li>Mensalidade, avulso ou multas estão zerados: nada será cobrado.</li>{% endif %}
+        {% if not settings.pix_key %}<li>A chave Pix: sem ela, os jogadores não sabem para onde pagar.</li>{% endif %}
+      </ul>
+    </section>
+  {% endif %}
+  {% if late_mensalistas %}
+    <section class="status status--danger" data-state="mensalidade-atrasada">
+      <p class="status__headline">Mensalidade atrasada</p>
+      <p>{{ late_mensalistas|length }} mensalidade{{ late_mensalistas|length|pluralize }} em atraso. Confira em A receber.</p>
+    </section>
+  {% endif %}
+  {% for group in groups %}
+    <section class="tiles" aria-labelledby="grp-{{ forloop.counter }}">
+      <h2 class="tiles__title" id="grp-{{ forloop.counter }}">{{ group.title }}</h2>
+      <ul class="tiles__grid">
+        {% for tile in group.tiles %}
+          <li>
+            <a class="tile{% if tile.needs_attention %} tile--{{ tile.tone }}{% endif %}" href="{{ tile.url }}"{% if tile.needs_attention %} data-attention="{{ tile.tone }}"{% endif %}>
+              <span class="tile__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#d-{{ tile.icon }}"/></svg></span>
+              <span class="tile__title">{{ tile.title }}</span>
+              {% if tile.note %}<span class="tile__note{% if tile.tone == 'ok' %} tile__note--ok{% endif %}">{{ tile.note }}</span>{% endif %}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endfor %}
+  <p class="small muted"><a href="{% url 'board:tutorial' %}">Tutorial da diretoria</a></p>
+  {% include "board/_dashboard_icons.html" %}
+</div>
+{% endblock %}

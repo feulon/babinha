@@ -1,0 +1,16 @@
+<div id="roster-board" class="stack">
+  {% if oob_messages %}{% include "includes/messages.html" with oob=True %}{% endif %}
+  {% if game_day.is_cancelled %}
+    <details data-keep-state class="card step" id="passo-lista">
+      <summary class="step__head"><span class="step__title">Lista de jogadores</span><span class="count">{{ list_total }}</span></summary>
+      {% include "board/sunday/_list.html" %}
+    </details>
+  {% else %}
+    <div class="stack">
+      {% include "board/sunday/_step_times.html" %}
+      {% include "board/sunday/_step_jogos.html" %}
+      {% include "board/sunday/_step_presenca.html" %}
+      {% include "board/sunday/_step_fim.html" %}
+    </div>
+  {% endif %}
+</div>

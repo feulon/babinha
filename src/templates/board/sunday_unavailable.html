@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Domingo não encontrado{% endblock %}
+{% block content %}
+<div class="stack">
+  <section class="status status--wait" data-state="domingo-indisponivel">
+    <p class="status__headline">Não existe um domingo do Babinha nessa data</p>
+    <p>O endereço não é de um domingo, ou é de um domingo longe demais. Dá para abrir os domingos que já existem, o anterior e os próximos.</p>
+  </section>
+  <a class="btn btn--primary btn--block" href="{{ current_url }}">Ir para o domingo {{ current|date:"d/m" }}</a>
+</div>
+{% endblock %}

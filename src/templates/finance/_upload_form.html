@@ -1,0 +1,8 @@
+{# The receipt upload of one open charge. Needs row, receipt_accept, max_receipt_size. #}
+<form method="post" enctype="multipart/form-data" action="{% url 'finance:upload_receipt' charge_id=row.charge.pk %}" class="upload">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ next_url|default:request.get_full_path }}">
+  <label for="receipt-{{ row.charge.pk }}">Comprovante do Pix (foto ou PDF, até {{ max_receipt_size }})</label>
+  <input type="file" id="receipt-{{ row.charge.pk }}" name="file" accept="{{ receipt_accept }}" required>
+  <button type="submit" class="btn btn--primary btn--block">Enviar comprovante</button>
+</form>

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load fine_rules %}
+{% block title %}Tutorial{% endblock %}
+{% block content %}
+<div class="stack">
+  <h1>Tutorial da diretoria</h1>
+  <p class="small muted">Como usar o Babinha no dia a dia, do convite ao fechamento do domingo. Nada é alterado enquanto você lê.</p>
+  <ol class="guide">
+    <li class="card guide__step">
+      <h2>1. Comece pela aba Diretoria</h2>
+      <p>A barra de baixo é a mesma de todos (<strong>Início</strong>, <strong>Domingo</strong>, <strong>Turma</strong> e <strong>Mais</strong>), com uma aba a mais, <strong>Diretoria</strong>, que só a diretoria vê. Ela abre o Painel: o domingo, o dinheiro, os jogadores e a temporada em atalhos, e um aviso colorido indica o que precisa de você. Com um jogo em andamento, a aba abre direto no placar desse jogo. Conta, regras e ajuda ficam em <strong>Mais</strong>, como para qualquer jogador.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>2. Convide pelo link</h2>
+      <p>{% include "core/help/_invite.html" %}</p>
+    </li>
+    <li class="card guide__step">
+      <h2>3. Lista de presença e faltas</h2>
+      <p>Em <strong>Montar o domingo</strong>, no Painel, ficam a lista, a fila de espera e os times. Marque a presença durante o futebol. Quem estava na lista e não veio recebe <strong>Faltou</strong> e a multa de falta na hora. Se foi engano, corrija para presente e a multa é cancelada.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>4. Jogos pela fila de espera</h2>
+      <p>Com os times confirmados, toque em <strong>Começar</strong> (em <strong>Jogos e placares</strong>) para chamar o primeiro jogo. {% include "core/help/_match_rules.html" %} Encerre o jogo para chamar o próximo.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>5. Gols e assistência</h2>
+      <p>Dentro do jogo, em <strong>Gol do</strong> o time que marcou, toque no jogador autor. Em seguida o Babinha pergunta <strong>Quem deu a assistência?</strong>: escolha o jogador, <strong>Nenhum</strong> ou <strong>Não se aplica</strong>. Para corrigir autor, time ou assistência, abra o gol na lista.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>6. Multa de atraso</h2>
+      <p>No relógio de cada jogador, marque o atraso. {% late_fine_rules %} No fim do domingo, toque em <strong>Multar por atraso</strong> para aplicar todas de uma vez. O valor é fixo e não é a multa de falta.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>7. Multa de falta</h2>
+      <p>Falta e desistência tardia (depois de sábado 23h59) geram a multa de falta. {% fine_progression %} Esse valor fica em <strong>Configurações</strong>. Para tirar uma multa, use <strong>Perdoar</strong> em <strong>A receber &gt; Multas</strong>.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>8. Finalize o domingo</h2>
+      <p>No passo <strong>Finalizar e cobrar</strong> de <strong>Montar o domingo</strong>, confira as faltas e os atrasos e toque em <strong>Finalizar jogo e cobrar</strong>. Isso abre as cobranças dos avulsos.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>9. Bola de Ouro</h2>
+      <p>{% include "core/help/_gold_ball.html" %} Acompanhe em <strong>Bola de Ouro</strong>, no Painel. O encerramento da temporada fica em <strong>Temporada</strong>.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>10. Dinheiro em 3 destinos</h2>
+      <p><strong>A receber</strong>: quem deve, com as visões Todas, A conferir e Multas, e o filtro Sem comprovante na lista. <strong>Caixa</strong>: o que entrou e saiu no mês, com as despesas. <strong>Configurações</strong>: mensalidade, avulso, multas e a chave Pix. Mudanças de valor valem só para cobranças novas.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>11. Pix e comprovante</h2>
+      <p>O jogador segue estes passos: {% include "core/help/_pix.html" %} Em <strong>A receber &gt; A conferir</strong>, toque em <strong>Conferir comprovante</strong> e toque em <strong>Confirmar pagamento</strong> ou em <strong>Recusar comprovante</strong>. Dinheiro recebido fora do app vira pago com <strong>Marcar como pago</strong>.</p>
+    </li>
+  </ol>
+</div>
+{% endblock %}

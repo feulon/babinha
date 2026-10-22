@@ -1,0 +1,9 @@
+{% comment %}Why the rules cannot be dealt, with the ways out; taking one draws the teams.{% endcomment %}
+<div class="alert alert--danger" role="alert" data-alert="rules-conflict">
+  <svg class="ic" aria-hidden="true"><use href="#i-no"/></svg>
+  <div class="alert__body">
+    <p class="alert__title">Com estas regras não dá para sortear</p>
+    {% for line in problem.lines %}<p>{{ line }}</p>{% endfor %}
+    {% include "board/times/_resolve.html" with resolutions=problem.resolutions %}
+  </div>
+</div>

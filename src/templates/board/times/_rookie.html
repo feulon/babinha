@@ -1,0 +1,1 @@
+{% comment %}The "Estreante" seal of `player` (first time in the Babinha); needs `rookie_ids` in the context. Written on one line: it is included inline, so no stray spaces.{% endcomment %}{% if player.pk in rookie_ids %}<span class="badge badge--rookie" title="Nunca teve presença marcada em um domingo anterior">Estreante</span>{% endif %}

@@ -1,0 +1,12 @@
+<div class="pix">
+  {% if pix.is_configured %}
+    <p class="pix__label">Chave Pix</p>
+    <div class="pix__key">
+      <code>{{ pix.key }}</code>
+      <button type="button" class="btn btn--ghost btn--small" data-copy="{{ pix.key }}" hidden>Copiar</button>
+    </div>
+    {% if pix.holder %}<p class="small muted pix__holder">Em nome de {{ pix.holder }}</p>{% endif %}
+  {% else %}
+    <p class="small">A diretoria ainda não cadastrou a chave Pix. Pergunte no grupo como pagar.</p>
+  {% endif %}
+</div>

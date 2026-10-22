@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load money_nav %}
+{% block title %}Multas{% endblock %}
+{% block content %}
+<div class="stack">
+  {% money_nav "receber" "multas" %}
+  <h1>Multas</h1>
+  <section class="card">
+    <h2>Pendentes</h2>
+    {% if pending %}
+      <ul class="rows">
+        {% for fine in pending %}
+          <li>
+            <div class="row-head">
+              <strong>{{ fine.player.name }}</strong>
+              <span class="amount">R$ {{ fine.amount|floatformat:"2g" }}</span>
+            </div>
+            <p class="small muted">{{ fine.get_reason_display }} · domingo {{ fine.game_day.date|date:"d/m" }}{% if fine.escalates %} · {{ fine.ordinal }}ª ocorrência{% endif %}</p>
+            {% if fine.charge.status == "em_analise" %}
+              <span class="badge badge--info">Comprovante em análise</span>
+            {% else %}
+              <a class="btn btn--ghost btn--small" href="{% url 'board:forgive' fine_id=fine.pk %}">Perdoar</a>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="roster--empty">Nenhuma multa pendente.</p>
+    {% endif %}
+  </section>
+  {% if resolved %}
+    <section class="card">
+      <h2>Pagas, perdoadas e canceladas</h2>
+      <ul class="rows">
+        {% for fine in resolved %}
+          <li>
+            <div class="row-head">
+              <strong>{{ fine.player.name }}</strong>
+              <span class="badge">{{ fine.get_status_display }}</span>
+            </div>
+            <p class="small muted">{{ fine.get_reason_display }} · domingo {{ fine.game_day.date|date:"d/m" }}{% if fine.resolved_by %} · por {{ fine.resolved_by.name }}{% endif %}{% if fine.resolution_note %}: {{ fine.resolution_note }}{% endif %}</p>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

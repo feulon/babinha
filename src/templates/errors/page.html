@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{% block heading_title %}{% endblock %}{% endblock %}
+{% block content %}
+<section class="status status--neutral" data-state="erro">
+  <p class="status__headline">{% block heading %}{% endblock %}</p>
+  <p>{% block text %}{% endblock %}</p>
+  <a class="btn btn--primary btn--block" href="{% url 'games:home' %}">Voltar ao início</a>
+</section>
+{% endblock %}

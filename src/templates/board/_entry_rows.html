@@ -1,0 +1,28 @@
+{% if rows %}
+  <ol class="roster">
+    {% for row in rows %}
+      <li>
+        <span class="roster__name">
+          {{ row.player.name }}
+          {% include "board/times/_rookie.html" with player=row.player %}
+          {% if row.enrolled %}<span class="badge badge--primary" title="Mensalista">M</span>{% elif row.player.player_type == "agregado" %}<span class="badge">Agregado</span>{% endif %}
+          {% if row.promoted %}<span class="badge badge--primary">promovido</span>{% endif %}
+          {% if row.bumped %}<span class="badge badge--wait">prioridade</span>{% endif %}
+        </span>
+        <span class="roster__tools">
+          {% if remove_tools %}
+            {% url 'board:remove_from_list' day=game_day.date.isoformat player_id=row.player_id as remove_url %}
+            <form method="post" action="{{ remove_url }}" class="inline-form"
+                  hx-post="{{ remove_url }}" hx-target="#roster-board" hx-swap="outerHTML"
+                  hx-confirm="Retirar {{ row.player.name }}? Retirada pela diretoria não gera multa.">
+              {% csrf_token %}
+              <button class="icon-btn" title="Retirar {{ row.player.name }}" aria-label="Retirar {{ row.player.name }}">✕</button>
+            </form>
+          {% endif %}
+        </span>
+      </li>
+    {% endfor %}
+  </ol>
+{% else %}
+  <p class="roster--empty">{{ empty }}</p>
+{% endif %}
