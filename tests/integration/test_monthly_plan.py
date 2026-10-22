@@ -440,6 +440,22 @@ class TestJoinButton:
         assert "Virar mensalista" not in html
         assert "Pagamento atrasado" in html
 
+    def test_a_non_mensalista_home_offers_the_join_card_without_the_plan_link(
+        self, fees: ClubSettings, player_client: Client
+    ) -> None:
+        html = player_client.get(HOME).content.decode()
+        assert "Vire um mensalista" in html
+        assert "Plano mensal" not in html
+        assert "Você é mensalista" not in html
+
+    def test_a_mensalista_home_shows_the_mensalista_card_only(
+        self, fees: ClubSettings, player_client: Client
+    ) -> None:
+        player_client.post(JOIN)
+        html = player_client.get(HOME).content.decode()
+        assert "Você é mensalista de outubro" in html
+        assert "Vire um mensalista" not in html
+
     def test_the_button_comes_back_on_the_first_of_the_month(
         self, fees: ClubSettings, player_client: Client, clock: FixedClock
     ) -> None:
@@ -447,7 +463,8 @@ class TestJoinButton:
         clock.set(FIRST_OF_NOVEMBER)
         assert "Virar mensalista de novembro" in player_client.get(PAYMENTS).content.decode()
         html = player_client.get(HOME).content.decode()
-        assert "Plano mensal" in html
+        assert "Vire um mensalista" in html
+        assert "Plano mensal" not in html
         assert "Pagamento atrasado" in html  # last month's unpaid fee is still owed
 
     def test_a_double_click_does_not_charge_twice(

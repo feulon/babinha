@@ -1,12 +1,10 @@
-{# Join (or see) this month's plan. Needs plan. Hidden while the monthly fee is off. On the Início (compact) joining is one quiet link to Pagamentos, where the card lives. #}
+{# Join (or see) this month's plan. Needs plan. Hidden while the monthly fee is off. On the Início (compact) only the mensalista card shows; joining there is finance/_join_monthly_home.html. #}
 {% if plan.is_offered %}
   {% if plan.enrolled %}
     <section class="status status--ok" data-state="mensalista">
       <p class="status__headline">Você é mensalista de {{ plan.month|date:"F"|lower }}</p>
     </section>
-  {% elif compact %}
-    <p class="small" data-state="plano-mensal"><a href="{% url 'finance:payments' %}#plano-mensal">Plano mensal</a></p>
-  {% else %}
+  {% elif not compact %}
     <section class="card" data-state="virar-mensalista">
       <h2>Virar mensalista de {{ plan.month|date:"F"|lower }}</h2>
       <p class="small">Prioridade na lista e mensalidade de <strong>R$&nbsp;{{ plan.fee|floatformat:"2g" }}</strong>, em vez de pagar cada domingo. Vale só este mês: no dia 1º é preciso aderir de novo.</p>
