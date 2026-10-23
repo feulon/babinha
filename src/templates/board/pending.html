@@ -31,7 +31,7 @@
               {% if row.charge.status == "em_analise" and row.latest_receipt %}
                 <a class="btn btn--primary btn--small" href="{% nexturl 'board:receipt' receipt_id=row.latest_receipt.pk %}">Conferir comprovante</a>
               {% endif %}
-              <form method="post" action="{% url 'board:mark_paid' charge_id=row.charge.pk %}" class="inline-form">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" class="btn btn--primary btn--small">Marcar como pago</button></form>
+              {% if user.has_presidente_powers %}<form method="post" action="{% url 'board:mark_paid' charge_id=row.charge.pk %}" class="inline-form">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" class="btn btn--primary btn--small">Marcar como pago</button></form>{% endif %}
               <a class="btn btn--ghost btn--small" href="{% url 'board:waive' charge_id=row.charge.pk %}">Dispensar</a>
             </div>
           </li>
@@ -46,7 +46,7 @@
       <span class="count">{{ rows|length }}{% if rows %} · {{ total|brl }}{% endif %}</span>
     </div>
     {% if rows %}
-      <p class="small muted" data-help="acoes">Marcar como pago registra dinheiro recebido fora do app e entra no Caixa.</p>
+      <p class="small muted" data-help="acoes">{% if user.has_presidente_powers %}Marcar como pago registra dinheiro recebido fora do app e entra no Caixa.{% else %}Só o presidente marca uma cobrança como paga.{% endif %}</p>
       <ul class="rows">
         {% for row in rows %}
           <li>
@@ -57,7 +57,7 @@
               <details class="charge-actions">
                 <summary>{% include "board/_receivable_row.html" %}</summary>
                 <div class="actions">
-                  <form method="post" action="{% url 'board:mark_paid' charge_id=row.charge.pk %}" class="inline-form">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" class="btn btn--primary btn--small">Marcar como pago</button></form>
+                  {% if user.has_presidente_powers %}<form method="post" action="{% url 'board:mark_paid' charge_id=row.charge.pk %}" class="inline-form">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" class="btn btn--primary btn--small">Marcar como pago</button></form>{% endif %}
                   {% if row.charge.kind == "multa" %}
                     <a class="btn btn--ghost btn--small" href="{% url 'board:forgive' fine_id=row.charge.fine_id %}">Perdoar multa</a>
                   {% else %}

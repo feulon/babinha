@@ -106,6 +106,7 @@ def screens(world: dict[str, object]) -> list[str]:
         reverse("accounts:password_change"),
         reverse("board:dashboard"),
         reverse("board:tutorial"),
+        reverse("board:sunday_tutorial"),
         reverse("board:players"),
         reverse("board:player_new"),
         reverse("board:player_edit", kwargs={"player_id": other}),

@@ -24,6 +24,7 @@ LATE_TIERS = (15, 30)
 # Futebois an agregado plays before becoming avulso (until the diretoria changes it).
 DEFAULT_AVULSO_AFTER_GAMES = 5
 AVULSO_AFTER_GAMES_MIN = 1
+PIX_HOLDER_MAX_LENGTH = 80
 DEFAULT_LATE_FINE_15 = Decimal("10.00")
 DEFAULT_LATE_FINE_30 = Decimal("25.00")
 
@@ -88,7 +89,13 @@ class ClubSettings(models.Model):
         max_length=77,
         blank=True,
         validators=[validate_pix_key],
-        help_text="E-mail, celular (+55...), CPF, CNPJ ou chave aleatória do presidente.",
+        help_text="E-mail, celular (+55...), CPF, CNPJ ou chave aleatória.",
+    )
+    pix_holder = models.CharField(
+        "nome do titular do Pix",
+        max_length=PIX_HOLDER_MAX_LENGTH,
+        blank=True,
+        help_text="Em nome de quem está a chave. Opcional: vazio, o app não mostra o titular.",
     )
     board_contact_phone = models.CharField(
         "WhatsApp da diretoria",

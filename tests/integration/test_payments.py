@@ -91,20 +91,30 @@ class TestSubmit:
         assert list(Receipt.objects.filter(status=ReceiptStatus.UNDER_REVIEW)) == [second]
 
     def test_a_superseded_receipt_can_no_longer_be_reviewed(
-        self, charge: Charge, player: Player, board_member: Player, receipt_upload
+        self,
+        charge: Charge,
+        player: Player,
+        board_member: Player,
+        receipt_upload,
+        president: Player,
     ) -> None:
         first = payments.submit_receipt(charge.pk, player, receipt_upload())
         payments.submit_receipt(charge.pk, player, receipt_upload())
         with pytest.raises(payments.PaymentError, match="outro comprovante"):
-            payments.approve_receipt(first.pk, board_member)
+            payments.approve_receipt(first.pk, president)
         with pytest.raises(payments.PaymentError, match="outro comprovante"):
             payments.refuse_receipt(first.pk, board_member, "Ilegível")
 
     def test_a_paid_charge_cannot_be_replaced(
-        self, charge: Charge, player: Player, board_member: Player, receipt_upload
+        self,
+        charge: Charge,
+        player: Player,
+        board_member: Player,
+        receipt_upload,
+        president: Player,
     ) -> None:
         receipt = payments.submit_receipt(charge.pk, player, receipt_upload())
-        payments.approve_receipt(receipt.pk, board_member)
+        payments.approve_receipt(receipt.pk, president)
         with pytest.raises(payments.PaymentError, match="já está paga"):
             payments.submit_receipt(charge.pk, player, receipt_upload())
 
@@ -118,19 +128,30 @@ class TestSubmit:
 
 class TestReview:
     def test_approve_marks_paid(
-        self, charge: Charge, player: Player, board_member: Player, receipt_upload, clock
+        self,
+        charge: Charge,
+        player: Player,
+        board_member: Player,
+        receipt_upload,
+        clock,
+        president: Player,
     ) -> None:
         receipt = payments.submit_receipt(charge.pk, player, receipt_upload())
-        payments.approve_receipt(receipt.pk, board_member)
+        payments.approve_receipt(receipt.pk, president)
         charge.refresh_from_db()
         receipt.refresh_from_db()
         assert charge.status == ChargeStatus.PAID
         assert charge.paid_at == clock.now()
         assert receipt.status == ReceiptStatus.APPROVED
-        assert receipt.reviewed_by == board_member
+        assert receipt.reviewed_by == president
 
     def test_refuse_needs_a_reason_and_lets_the_player_resend(
-        self, charge: Charge, player: Player, board_member: Player, receipt_upload
+        self,
+        charge: Charge,
+        player: Player,
+        board_member: Player,
+        receipt_upload,
+        president: Player,
     ) -> None:
         first = payments.submit_receipt(charge.pk, player, receipt_upload())
         with pytest.raises(payments.PaymentError, match="motivo"):
@@ -144,7 +165,7 @@ class TestReview:
         assert row.charge.is_payable
 
         second = payments.submit_receipt(charge.pk, player, receipt_upload())
-        payments.approve_receipt(second.pk, board_member)
+        payments.approve_receipt(second.pk, president)
         charge.refresh_from_db()
         assert charge.status == ChargeStatus.PAID
         assert list(charge.receipts.values_list("status", flat=True)) == [
@@ -153,14 +174,19 @@ class TestReview:
         ]
 
     def test_a_receipt_is_reviewed_once(
-        self, charge: Charge, player: Player, board_member: Player, receipt_upload
+        self,
+        charge: Charge,
+        player: Player,
+        board_member: Player,
+        receipt_upload,
+        president: Player,
     ) -> None:
         receipt = payments.submit_receipt(charge.pk, player, receipt_upload())
-        payments.approve_receipt(receipt.pk, board_member)
+        payments.approve_receipt(receipt.pk, president)
         with pytest.raises(payments.PaymentError, match="já foi analisado"):
             payments.refuse_receipt(receipt.pk, board_member, "Engano")
         with pytest.raises(payments.PaymentError, match="já foi analisado"):
-            payments.approve_receipt(receipt.pk, board_member)
+            payments.approve_receipt(receipt.pk, president)
 
     def test_only_the_board_reviews(self, charge: Charge, player: Player, receipt_upload) -> None:
         receipt = payments.submit_receipt(charge.pk, player, receipt_upload())
@@ -186,84 +212,106 @@ class TestReview:
 
 class TestUndoApproval:
     def test_a_fresh_confirmation_goes_back_to_review(
-        self, charge: Charge, player: Player, board_member: Player, receipt_upload, clock
+        self,
+        charge: Charge,
+        player: Player,
+        board_member: Player,
+        receipt_upload,
+        clock,
+        president: Player,
     ) -> None:
         receipt = payments.submit_receipt(charge.pk, player, receipt_upload())
-        payments.approve_receipt(receipt.pk, board_member)
+        payments.approve_receipt(receipt.pk, president)
         clock.advance(payments.UNDO_WINDOW)
-        payments.undo_approval(receipt.pk, board_member)
+        payments.undo_approval(receipt.pk, president)
         charge.refresh_from_db()
         receipt.refresh_from_db()
         assert charge.status == ChargeStatus.UNDER_REVIEW
         assert charge.paid_at is None
         assert receipt.status == ReceiptStatus.UNDER_REVIEW
         assert receipt.reviewed_by is None
-        payments.approve_receipt(receipt.pk, board_member)  # can be reviewed again
+        payments.approve_receipt(receipt.pk, president)  # can be reviewed again
 
     def test_a_late_undo_is_refused(
-        self, charge: Charge, player: Player, board_member: Player, receipt_upload, clock
+        self,
+        charge: Charge,
+        player: Player,
+        board_member: Player,
+        receipt_upload,
+        clock,
+        president: Player,
     ) -> None:
         receipt = payments.submit_receipt(charge.pk, player, receipt_upload())
-        payments.approve_receipt(receipt.pk, board_member)
+        payments.approve_receipt(receipt.pk, president)
         clock.advance(payments.UNDO_WINDOW + timedelta(seconds=1))
         with pytest.raises(payments.PaymentError, match="10 minutos"):
-            payments.undo_approval(receipt.pk, board_member)
+            payments.undo_approval(receipt.pk, president)
         charge.refresh_from_db()
         assert charge.status == ChargeStatus.PAID
 
     def test_undoing_a_paid_fine_makes_it_pending_again(
-        self, game_day: GameDay, player: Player, board_member: Player, receipt_upload
+        self,
+        game_day: GameDay,
+        player: Player,
+        board_member: Player,
+        receipt_upload,
+        president: Player,
     ) -> None:
         fine = fines.record_fine(player, game_day, FineReason.NO_SHOW)
         receipt = payments.submit_receipt(fine.charge.pk, player, receipt_upload())
-        payments.approve_receipt(receipt.pk, board_member)
-        payments.undo_approval(receipt.pk, board_member)
+        payments.approve_receipt(receipt.pk, president)
+        payments.undo_approval(receipt.pk, president)
         fine.refresh_from_db()
         assert fine.status == FineStatus.PENDING
 
 
 class TestMarkPaid:
     def test_cash_payment_enters_the_cash_book_with_its_audit_trail(
-        self, charge: Charge, board_member: Player, clock
+        self, charge: Charge, board_member: Player, clock, president: Player
     ) -> None:
-        payments.mark_paid(charge.pk, board_member, PaymentMethod.CASH, " na quadra ")
+        payments.mark_paid(charge.pk, president, PaymentMethod.CASH, " na quadra ")
         charge.refresh_from_db()
         assert charge.status == ChargeStatus.PAID
         assert charge.paid_at == clock.now()
         assert charge.payment_method == PaymentMethod.CASH
         assert charge.payment_note == "na quadra"
-        assert charge.marked_paid_by == board_member
+        assert charge.marked_paid_by == president
         report = month_report(charge.reference_date, TODAY, with_people=False)
         assert report.collected == charge.amount
         assert report.pending_total == Decimal("0.00")
 
     def test_a_refused_charge_can_be_marked_paid(
-        self, charge: Charge, player: Player, board_member: Player, receipt_upload
+        self,
+        charge: Charge,
+        player: Player,
+        board_member: Player,
+        receipt_upload,
+        president: Player,
     ) -> None:
         receipt = payments.submit_receipt(charge.pk, player, receipt_upload())
         payments.refuse_receipt(receipt.pk, board_member, "Ilegível")
-        payments.mark_paid(charge.pk, board_member, PaymentMethod.PIX)
+        payments.mark_paid(charge.pk, president, PaymentMethod.PIX)
         charge.refresh_from_db()
         assert charge.status == ChargeStatus.PAID
 
     def test_a_paid_fine_is_marked_paid_too(
-        self, game_day: GameDay, player: Player, board_member: Player
+        self, game_day: GameDay, player: Player, board_member: Player, president: Player
     ) -> None:
         fine = fines.record_fine(player, game_day, FineReason.NO_SHOW)
-        payments.mark_paid(fine.charge.pk, board_member, PaymentMethod.CASH)
+        payments.mark_paid(fine.charge.pk, president, PaymentMethod.CASH)
         fine.refresh_from_db()
         assert fine.status == FineStatus.PAID
 
     def test_rejects_unknown_method_closed_charges_and_players(
-        self, charge: Charge, player: Player, board_member: Player
+        self, charge: Charge, player: Player, board_member: Player, president: Player
     ) -> None:
         with pytest.raises(payments.PaymentError, match="forma de pagamento"):
-            payments.mark_paid(charge.pk, board_member, "cheque")
+            payments.mark_paid(charge.pk, president, "cheque")
         with pytest.raises(PermissionDenied):
             payments.mark_paid(charge.pk, player, PaymentMethod.CASH)
-        payments.mark_paid(charge.pk, board_member, PaymentMethod.CASH)
+        payments.mark_paid(charge.pk, president, PaymentMethod.CASH)
         with pytest.raises(payments.PaymentError, match="paga"):
-            payments.mark_paid(charge.pk, board_member, PaymentMethod.CASH)
+            payments.mark_paid(charge.pk, president, PaymentMethod.CASH)
 
 
 class TestWaive:
@@ -281,12 +329,17 @@ class TestWaive:
             payments.waive_charge(fine.charge.pk, board_member, "Sem motivo")
 
     def test_paid_charge_cannot_be_waived(
-        self, charge: Charge, player: Player, board_member: Player, receipt_upload
+        self,
+        charge: Charge,
+        player: Player,
+        board_member: Player,
+        receipt_upload,
+        president: Player,
     ) -> None:
         receipt = payments.submit_receipt(charge.pk, player, receipt_upload())
         with pytest.raises(payments.PaymentError, match="em análise"):
             payments.waive_charge(charge.pk, board_member, "Engano")
-        payments.approve_receipt(receipt.pk, board_member)
+        payments.approve_receipt(receipt.pk, president)
         with pytest.raises(payments.PaymentError, match="paga"):
             payments.waive_charge(charge.pk, board_member, "Engano")
 
@@ -330,9 +383,10 @@ class TestReports:
         board_member: Player,
         receipt_upload,
         clock: FixedClock,
+        president: Player,
     ) -> None:
         receipt = payments.submit_receipt(charge.pk, player, receipt_upload())
-        payments.approve_receipt(receipt.pk, board_member)
+        payments.approve_receipt(receipt.pk, president)
         make_player("Didi", player_type=PlayerType.MENSALISTA)
         charges.ensure_monthly_charges()
         payments.save_expense(
@@ -363,6 +417,7 @@ class TestReports:
         make_player,
         board_member: Player,
         receipt_upload,
+        president: Player,
     ) -> None:
         mensalista = make_player("Didi", player_type=PlayerType.MENSALISTA)
         charges.ensure_monthly_charges()
@@ -372,7 +427,7 @@ class TestReports:
         unpaid_monthly = monthly.amount
         for owed in (charge, monthly, fine_charge):
             receipt = payments.submit_receipt(owed.pk, owed.player, receipt_upload())
-            payments.approve_receipt(receipt.pk, board_member)
+            payments.approve_receipt(receipt.pk, president)
         # Only confirmed payments count: a pending avulso charge adds nothing.
         other = make_player("Pendente")
         Charge.objects.create(

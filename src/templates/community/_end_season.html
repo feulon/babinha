@@ -4,7 +4,7 @@
     {% if voting %}
       <p class="small"><strong>Atenção:</strong> a votação da Bola de Ouro ainda está aberta ou por abrir em {% for day in voting %}{{ day.date|date:"d/m" }}{% if not forloop.last %}, {% endif %}{% endfor %}. O resultado entra nesta temporada quando fechar.</p>
     {% endif %}
-    {% if user.is_presidente %}
+    {% if user.has_presidente_powers %}
       <form method="post" action="{% url 'community:end_season' %}" data-confirm="Encerrar a temporada {{ season.number }}? Isso não pode ser desfeito.">
         {% csrf_token %}
         <button class="btn btn--danger btn--block">Encerrar temporada {{ season.number }}</button>

@@ -90,8 +90,10 @@ class TestEditAndReceiptBack:
         )
 
     def test_approving_keeps_the_way_back_and_so_does_undoing(
-        self, board_client: Client, receipt: Receipt
+        self, president: Player, receipt: Receipt, clock: FixedClock
     ) -> None:
+        board_client = Client()
+        board_client.force_login(president)
         pending = reverse("board:pending")
         approve = reverse("board:approve_receipt", args=[receipt.pk])
         response = board_client.post(approve, {"next": pending})

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Como montar o domingo{% endblock %}
+{% block content %}
+<div class="stack">
+  <header>
+    <a class="btn btn--ghost btn--small" href="{% url 'board:tutorial' %}">Tutorial da diretoria</a>
+    <h1>Como montar o domingo</h1>
+    <p class="small muted">Do enchimento da lista ao resultado do domingo, do jeito que o app faz. Só a diretoria vê esta página. Nada é alterado enquanto você lê.</p>
+  </header>
+  <ol class="guide">
+    <li class="card guide__step">
+      <h2>1. A lista enche sozinha</h2>
+      <p>A lista abre na segunda de manhã para mensalistas e avulsos, e na quarta às 20h para agregados. Quem entra com vaga livre já fica na lista. Sem vaga, vai para a <strong>fila de espera</strong>, por ordem de chegada.</p>
+      <p>Quando alguém sai, o primeiro da fila daquela posição entra sozinho. Isso vale até o jogo começar, no domingo às 10h.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>2. Vagas de goleiro e de linha</h2>
+      <ul>
+        <li>No máximo <strong>4 goleiros</strong>.</li>
+        <li>A linha tem <strong>20 vagas fixas</strong> e mais <strong>2 vagas flexíveis</strong>.</li>
+        <li>As 2 flexíveis só servem à linha enquanto há <strong>menos de 2 goleiros</strong>. Sem goleiro, a linha tem 22 vagas. Com 1 goleiro, 21. Com 2 ou mais, 20.</li>
+        <li>Com a lista cheia, são de <strong>22 a 24 pessoas</strong>.</li>
+      </ul>
+      <p>Goleiro só ocupa vaga de goleiro, e a fila de goleiros é separada da fila da linha. Quem é de linha nunca pega vaga de goleiro.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>3. Período livre e prioridades</h2>
+      <p>O <strong>período livre</strong> vai até sábado às 23h59. Nele, sair da lista ou recusar a vaga que veio da espera é de graça. Depois disso, quem desiste de uma vaga leva multa. Sair da fila de espera nunca gera multa.</p>
+      <p>Só no período livre valem duas prioridades. Quem perde a vaga vai para o começo da fila, sem multa:</p>
+      <ul>
+        <li>O <strong>mensalista</strong> toma a vaga do último que entrou e não é mensalista, na mesma posição.</li>
+        <li>O <strong>1º e o 2º goleiro</strong> tomam de volta uma vaga flexível do último jogador de linha que entrou.</li>
+      </ul>
+      <p>Na fila, durante o período livre, os mensalistas passam na frente. Depois de sábado 23h59 vale só a ordem de chegada, com quem perdeu a vaga à frente dos outros.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>4. Colocar jogador à mão</h2>
+      <p>Em <strong>Montar o domingo</strong>, no passo 1, abra <strong>Lista de jogadores</strong>. Antes do jogo, o campo <strong>Adicionar</strong> põe um jogador na lista. Toque no nome de alguém para ver os botões:</p>
+      <ul>
+        <li><strong>Subir</strong> e <strong>Descer</strong> mudam o lugar um passo. <strong>Lugar</strong> e <strong>Mover</strong> levam direto para o número escolhido.</li>
+        <li><strong>Para a fila</strong> e <strong>Para a lista</strong> trocam entre a lista e a espera.</li>
+        <li><strong>Para o gol</strong> e <strong>Para a linha</strong> trocam a posição entre linha e goleiro.</li>
+        <li>O <strong>✕</strong> retira o jogador.</li>
+      </ul>
+      <p>A diretoria mexe a qualquer hora e <strong>nunca gera multa</strong>. O lugar que você escolhe vale mais que a ordem automática, e as prioridades não tiram quem você colocou. Se a lista passar do limite, o último vai para o começo da fila. Se ninguém da fila puder ficar com a vaga, o app avisa para usar o ✕.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>5. Montar os times pelos potes</h2>
+      <p>Cada jogador tem um <strong>pote</strong>, de 1 (mais forte) a 5 (mais fraco). O pote se muda na edição do jogador, em <strong>Jogadores</strong>. Um jogador novo começa no pote 3.</p>
+      <p>No passo 1, toque em <strong>Montar times</strong> e depois em <strong>Sortear times</strong>. O sorteio faz 4 times de 5 jogadores de linha, só com quem está na lista:</p>
+      <ul>
+        <li>Os goleiros ficam fora do sorteio e rodam pelos jogos.</li>
+        <li>Quem passa de 20 na linha (1 ou 2 jogadores) vai para o <strong>gol</strong>. O sorteio escolhe quem.</li>
+        <li>Com menos de 20, os times ficam o mais parecidos em tamanho.</li>
+        <li>Os potes são espalhados: cada time recebe quase o mesmo número de cada pote e uma soma de potes parecida. O resto é sorte, então os times mudam toda semana.</li>
+      </ul>
+      <p>O quadro <strong>Equilíbrio</strong> mostra a soma dos potes de cada time (quanto menor, mais forte). Se os times saírem desiguais, o app só avisa. Você pode confirmar mesmo assim.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>6. Regras do sorteio</h2>
+      <p>Em <strong>Regras do sorteio</strong> há duas formas de manter jogadores juntos:</p>
+      <ul>
+        <li><strong>Estreantes jogam com quem convidou</strong>. Fica ligada por padrão e pode ser desligada. O botão <strong>Soltar</strong> libera um estreante só naquele domingo.</li>
+        <li><strong>Juntar jogadores no mesmo time</strong>. Marque de 2 a 5 jogadores, por exemplo quem vai no mesmo carro, e toque em <strong>Salvar grupo</strong>.</li>
+      </ul>
+      <p>Se as regras não deixam sortear, o app explica o motivo e mostra saídas. A sugerida vem marcada. Escolha uma e toque em <strong>Aplicar e sortear</strong>.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>7. Ajustar e confirmar</h2>
+      <p>Os times saem como <strong>rascunho</strong>, que só a diretoria vê. Para ajustar, toque em um jogador e depois em um time (<strong>Mover para cá</strong>) ou em outro jogador, para trocar os dois. Quem joga junto anda junto. <strong>Sortear de novo</strong> refaz tudo e perde os ajustes feitos à mão. Em <strong>Nomes dos times</strong> dá para trocar os nomes.</p>
+      <p>Quando estiver bom, toque em <strong>Confirmar times</strong>. Os jogadores passam a ver os times, sem os potes. Todo time precisa de pelo menos um jogador.</p>
+      <p>Se a lista mudar depois do sorteio, aparece <strong>A lista mudou depois do sorteio</strong>. Ajuste os times para atualizar. Se só o pote de alguém mudou, <strong>Manter os times assim</strong> aceita os novos potes. Para voltar ao rascunho, use <strong>Desfazer confirmação</strong>.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>8. Os jogos</h2>
+      <p>Com os times confirmados, o passo 2 libera a <strong>tabela de jogos</strong>. Toque em <strong>Começar</strong> para chamar o jogo. Cada jogo termina com <strong>2 gols ou 7 minutos</strong>. Quem ganha fica, o empate tira os dois e entra o time que espera há mais tempo.</p>
+      <p>O app sugere os goleiros: o time que fica mantém o seu, e os outros vão para quem ficou mais tempo sem jogar no gol. Você pode trocar em <strong>Goleiros desta partida</strong>. Para cada gol, toque no autor e depois na assistência. Se o tempo acabar sem placar final, use <strong>Encerrar partida (fim do tempo)</strong>.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>9. Presença e faltas</h2>
+      <p>O passo 3 abre às 10h, quando o jogo começa. Toque em <strong>Todos presentes</strong> e corrija só quem faltou ou chegou atrasado. <strong>Faltou</strong> gera a multa de falta na hora, e corrigir para presente cancela a multa. O atraso é marcado em 15 ou 30 minutos. A presença não trava os jogos.</p>
+    </li>
+    <li class="card guide__step">
+      <h2>10. Finalizar e ver o resultado</h2>
+      <p>No passo 4, confira as faltas e os atrasos. Toque em <strong>Multar</strong> para aplicar as multas de atraso de uma vez. Depois toque em <strong>Finalizar jogo e cobrar</strong>. As cobranças dos avulsos abrem às 12h30.</p>
+      <p>Ao finalizar, a votação da <strong>Bola de Ouro</strong> abre para quem jogou. O resultado sai na segunda, quando a lista da semana seguinte abre.</p>
+    </li>
+  </ol>
+  {% if first_time %}
+    <form method="post" action="{% url 'board:sunday_tutorial_seen' %}">
+      {% csrf_token %}
+      {% if day %}<input type="hidden" name="domingo" value="{{ day }}">{% endif %}
+      <button type="submit" class="btn btn--primary btn--block">{% if day %}Entendi, montar o domingo{% else %}Entendi{% endif %}</button>
+      <p class="small muted">Depois disso esta página não abre mais sozinha. Ela fica em Mais, na Ajuda.</p>
+    </form>
+  {% else %}
+    <a class="btn btn--primary btn--block" href="{% url 'board:dashboard' %}">Voltar ao Painel</a>
+  {% endif %}
+</div>
+{% endblock %}

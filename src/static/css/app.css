@@ -4099,6 +4099,9 @@ details.step__list > summary {
 .guide { display: grid; gap: .75rem; list-style: none; margin: 0; padding: 0; }
 .guide__step h2 { font-size: 1.0625rem; margin-bottom: .375rem; }
 .guide__step p { margin: 0; }
+.guide__step p + p,
+.guide__step p + ul,
+.guide__step ul + p { margin-top: .5rem; }
 
 .day-head {
   position: relative;
