@@ -8,6 +8,8 @@
 #   scripts/baba.sh parar        stop everything (data is kept)
 #   scripts/baba.sh atualizar    backup, git pull, rebuild and restart
 #   scripts/baba.sh backup       run scripts/backup.sh
+#   scripts/baba.sh apagar-jogador CELULAR [--confirmar]
+#                                erase a player and all their data (LGPD); simulates by default
 #   scripts/baba.sh init         only create .env.production
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
@@ -58,6 +60,22 @@ compose() {
         files+=(-f compose.prod.tunnel.yaml)
     fi
     docker compose --env-file "$ENV_FILE" "${files[@]}" "$@"
+}
+
+# Where scripts/backup.sh writes, and when it last did: shown before erasing a player.
+last_backup() {
+    local dir file latest=""
+    dir="${BABA_BACKUP_DIR:-$(env_value BABA_BACKUP_DIR)}"
+    dir="${dir:-./backups}"
+    for file in "$dir"/baba-db-*.sql.gz*; do
+        [ -f "$file" ] || continue
+        if [ -z "$latest" ] || [ "$file" -nt "$latest" ]; then latest="$file"; fi
+    done
+    if [ -n "$latest" ]; then
+        echo "Ultimo backup: $(date -r "$latest" '+%d/%m/%Y %H:%M') ($latest)." >&2
+    else
+        echo "Nenhum backup em $dir." >&2
+    fi
 }
 
 main() {
@@ -111,8 +129,17 @@ main() {
         backup)
             scripts/backup.sh
             ;;
+        apagar-jogador)
+            [ -f "$ENV_FILE" ] || die "run scripts/baba.sh subir first"
+            [ "$#" -gt 0 ] || die "usage: scripts/baba.sh apagar-jogador CELULAR [--confirmar]"
+            last_backup
+            # Without a terminal the command refuses --confirmar unless --sim-tenho-certeza.
+            local exec_flags=()
+            [ -t 0 ] || exec_flags=(-T)
+            compose exec "${exec_flags[@]}" app python manage.py apagar_jogador "$@"
+            ;;
         *)
-            sed -n '2,12p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+            sed -n '2,14p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
             [ -z "$command" ] || exit 1
             ;;
     esac

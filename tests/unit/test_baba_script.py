@@ -58,3 +58,53 @@ def test_without_a_known_command_it_prints_the_usage(tmp_path: Path) -> None:
     assert "subir" in run(tmp_path / "x.env").stdout
     result = run(tmp_path / "x.env", "bogus")
     assert result.returncode != 0
+
+
+def fake_docker(tmp_path: Path) -> dict[str, str]:
+    """A `docker` on PATH that only records its arguments, so no stack is needed."""
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    docker = bin_dir / "docker"
+    docker.write_text('#!/bin/sh\necho "docker $*"\n')
+    docker.chmod(0o755)
+    return {"PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}"}
+
+
+def test_apagar_jogador_runs_the_command_in_the_app_and_shows_the_last_backup(
+    tmp_path: Path,
+) -> None:
+    env_file = tmp_path / ".env.production"
+    backups = tmp_path / "backups"
+    backups.mkdir()
+    (backups / "baba-db-20261001T030000Z.sql.gz").write_text("old")
+    newest = backups / "baba-db-20261020T030000Z.sql.gz"
+    newest.write_text("new")
+    os.utime(backups / "baba-db-20261001T030000Z.sql.gz", (1, 1))
+    env_file.write_text(f"BABA_BACKUP_DIR={backups}\n")
+    result = subprocess.run(
+        [str(SCRIPT), "apagar-jogador", "11988887777", "--confirmar"],
+        env={**os.environ, **fake_docker(tmp_path), "BABA_ENV_FILE": str(env_file)},
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    # No terminal here: -T, so the command sees no TTY and asks for --sim-tenho-certeza.
+    assert "exec -T app python manage.py apagar_jogador 11988887777 --confirmar" in result.stdout
+    assert "Ultimo backup: " in result.stderr
+    assert str(newest) in result.stderr
+
+
+def test_apagar_jogador_needs_a_phone(tmp_path: Path) -> None:
+    env_file = tmp_path / ".env.production"
+    env_file.write_text("")
+    result = subprocess.run(
+        [str(SCRIPT), "apagar-jogador"],
+        env={**os.environ, **fake_docker(tmp_path), "BABA_ENV_FILE": str(env_file)},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode != 0
+    assert "docker" not in result.stdout
