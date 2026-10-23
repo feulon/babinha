@@ -35,7 +35,8 @@ def compose(debtors: Iterable[Debtor], pix: PixInfo) -> str:
     total: Decimal = sum((d.total for d in owing), ZERO)
     parts = [TITLE, "\n".join(_line(d) for d in owing), f"Total devido: {brl(total)}"]
     if pix.is_configured:
-        holder = f" (em nome de {pix.holder})" if pix.holder else ""
+        # holder = f" (em nome de {pix.holder})" if pix.holder else ""
+        holder = f" (em nome de Matheus Rodrigues" if pix.holder else ""
         parts.append(f"Pix: {pix.key}{holder}")
     return "\n\n".join(parts)
 
