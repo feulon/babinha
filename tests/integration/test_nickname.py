@@ -219,6 +219,14 @@ class TestBoardMoneyScreensShowTheName:
         html = board_client.get(reverse(url_name)).content.decode()
         assert "Carlos Eduardo Lima" in html
 
+    def test_the_group_message_shows_the_nickname_not_the_name(
+        self, board_client: Client, owing: Player
+    ) -> None:
+        html = board_client.get(reverse("board:group_charge")).content.decode()
+        message = html.split("data-group-message>", 1)[1].split("</pre>", 1)[0]
+        assert "Careca" in message
+        assert "Carlos Eduardo Lima" not in message
+
     def test_the_player_list_shows_the_nickname_with_the_name_beside(
         self, board_client: Client, careca: Player
     ) -> None:

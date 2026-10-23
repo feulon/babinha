@@ -23,7 +23,7 @@ def mention(phone: str | None) -> str:
 def _line(debtor: Debtor) -> str:
     reasons = ", ".join(row.charge.description for row in debtor.rows)
     tag = mention(debtor.player.phone)
-    who = f"{tag} {debtor.player.name}" if tag else debtor.player.name
+    who = f"{tag} {debtor.player.display_name}" if tag else debtor.player.display_name
     return f"{who} - {reasons} - {brl(debtor.total)}"
 
 
