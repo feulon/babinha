@@ -40,8 +40,8 @@ def test_join_the_list_in_place(
 
     expect(page.locator('[data-state="lista"]')).to_be_visible()
     expect(page.get_by_text("Você está na lista deste domingo!")).to_be_visible()
-    expect(page.get_by_text("Quem vai")).to_be_visible()
-    page.get_by_text("Quem vai").click()
+    expect(page.get_by_text("Lista do domingo")).to_be_visible()
+    page.get_by_text("Lista do domingo").click()
     expect(page.locator(".roster__name", has_text="Garrincha (você)")).to_be_visible()
     assert page.evaluate("window.__noReload") is True
     assert ListEntry.objects.filter(player=player).exists()

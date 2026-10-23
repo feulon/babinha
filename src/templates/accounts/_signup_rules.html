@@ -22,13 +22,10 @@
     </ul>
   </div>
 
-  <div class="rule-card" data-signup-rule="prioridade">
-    <h3>Prioridade</h3>
-    <ul class="plain-list">
-      <li>Até <strong>sábado, 23h59</strong>, o mensalista toma a vaga do último não mensalista.</li>
-      <li>Goleiros têm prioridade nas vagas 21 e 22, no lugar dos últimos de linha.</li>
-      <li>Quem perde a vaga assim vai para o topo da fila, <strong>sem multa</strong>.</li>
-    </ul>
+  <div class="rule-card" data-signup-rule="tipos">
+    <h3>Tipos de jogador</h3>
+    {% include "core/_player_types.html" %}
+    <p class="small muted">Mensalista vale por um mês. No dia 1º, volta ao tipo fixo (avulso ou agregado) até aderir de novo.</p>
   </div>
 
   <div class="rule-card" data-signup-rule="valores">
@@ -37,7 +34,7 @@
       <dt>Mensalidade (vencimento: todo dia {{ club.monthly_due_day }})</dt><dd>{{ club.monthly_fee|brl }}</dd>
       <dt>Avulso ou agregado, por domingo</dt><dd>{{ club.single_fee|brl }}</dd>
     </dl>
-    <p class="small muted">A cobrança do domingo sai depois do futebol, com o vencimento no app. Pague por <strong>Pix</strong> e envie o comprovante pelo app. A diretoria confere e atualiza o status.</p>
+    <p class="small muted">Avulsos e agregados pagam a cobrança que aparece depois do futebol, por <strong>Pix</strong>, enviando o comprovante no app.</p>
   </div>
 
   <div class="rule-card" data-signup-rule="multas">
@@ -52,5 +49,5 @@
   </div>
 
   <h3>Confirmação</h3>
-  <p class="small">Ao aceitar, você confirma que leu, compreendeu e concorda com as regras de participação, prioridade, multas e pagamentos do Babinha de Domingo.</p>
+  <p class="small">Ao aceitar, você confirma que leu, compreendeu e concorda com as regras de participação, tipos de jogador, multas e pagamentos do Babinha de Domingo.</p>
 </section>

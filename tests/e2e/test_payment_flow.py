@@ -43,7 +43,7 @@ def test_pay_by_pix_and_board_confirms(
     expect(payment.get_by_text("Pagamento pendente")).to_be_visible()
     expect(payment.get_by_text("R$ 30,00").first).to_be_visible()
     expect(page.get_by_text(PIX_KEY)).to_have_count(0)  # the key and the upload live in Pagamentos
-    payment.get_by_role("link", name="Ver Pix").click()
+    payment.get_by_role("link", name="Pagar").click()
 
     payment = page.locator('[data-state="pagamento"]')
     expect(payment.get_by_text(PIX_KEY)).to_be_visible()

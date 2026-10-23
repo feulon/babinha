@@ -39,7 +39,7 @@ def test_signup_login_and_join_the_list(
     page.get_by_role("button", name="Entrar na lista").click()
     expect(page.get_by_text("Você está na lista deste domingo!")).to_be_visible()
     expect(page.locator('[data-state="lista"]')).to_be_visible()
-    page.get_by_text("Quem vai").click()  # the rosters are folded
+    page.get_by_text("Lista do domingo").click()  # the rosters are folded
     expect(page.get_by_text("Sócrates (você)")).to_be_visible()
 
     player = Player.objects.get(phone="11987654321")

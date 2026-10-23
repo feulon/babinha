@@ -9,6 +9,11 @@
     <p class="muted small">Como funciona a semana. Todos os horários são de Brasília.</p>
   </header>
 
+  <section class="card" data-rules="tipos">
+    <h2>Tipos de jogador</h2>
+    {% include "core/_player_types.html" %}
+  </section>
+
   <ol class="week" data-rules="semana">
     <li class="week__step"><div class="week__when">Seg<br>{{ list_opens_at|time:"H\hi" }}</div><div class="week__what">
       <strong>A lista abre</strong>
@@ -21,7 +26,6 @@
     <li class="week__step"><div class="week__when">Sáb<br>23h59</div><div class="week__what">
       <strong>Último prazo sem multa</strong>
       <p class="small muted">Sair da lista ou recusar a vaga que veio da espera é de graça até aqui. Depois, desistir gera multa. Sair da fila de espera nunca gera.</p>
-      <p class="small muted"><strong>Prioridade:</strong> até aqui o mensalista que entra com a lista cheia toma a vaga do último não mensalista, e o 1º e o 2º goleiro retomam as vagas 21 e 22 do último jogador de linha. Quem perde a vaga assim vai para o topo da fila, sem multa.</p>
     </div></li>
     <li class="week__step"><div class="week__when">Dom<br>10h às 12h</div><div class="week__what">
       <strong>Dia do jogo</strong>
@@ -46,8 +50,9 @@
       <dt>Atraso de 15 min</dt><dd>{{ club.late_fine_15|brl }}</dd>
       <dt>Atraso de 30 min</dt><dd>{{ club.late_fine_30|brl }}</dd>
     </dl>
-    <p class="small muted">A multa de falta é a mesma para todos. {% fine_progression %} Ela vem de faltar quando você estava na lista (se foi engano, a diretoria corrige e a multa some) ou de desistir depois de sábado 23h59.</p>
-    <p class="small muted">Mensalista vale por um mês: você aperta “Virar mensalista” em Pagamentos e, no dia 1º, volta ao tipo fixo (avulso ou agregado) até aderir outra vez. O comprovante da mensalidade pode vir depois. {% include "finance/_when_to_pay.html" %} {% include "core/help/_pix.html" %}</p>
+    <p class="small muted">{% fine_progression %} Faltar quando você está na lista ou desistir depois de sábado 23h59 gera multa.</p>
+    <p class="small muted">Mensalista vale por um mês. No dia 1º, volta ao tipo fixo (avulso ou agregado) até aderir de novo.</p>
+    <p class="small muted">Avulsos e agregados pagam a cobrança que aparece depois do futebol, por Pix, enviando o comprovante no app.</p>
   </section>
 
   {% if not user.is_authenticated %}
