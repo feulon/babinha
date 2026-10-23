@@ -118,3 +118,26 @@ def test_missing_base_argument_fails(repo):
         [sys.executable, str(SCRIPT)], cwd=repo, input="", capture_output=True, text=True
     )
     assert result.returncode == 2
+
+
+@pytest.mark.parametrize(
+    ("old", "new"),
+    [
+        ("<p>Total", "<script>go()</script><p>Total"),
+        ("<h1", "<style>h1{color:red}</style><h1"),
+        ('type="text"', 'type="text" required'),
+        ('name="n"', 'name="n" value="2"'),
+        ('data-x="1"', 'data-x="1" onclick="x()"'),
+        ('data-x="1"', 'data-x="1" hx-on:click="x()"'),
+    ],
+)
+def test_script_style_and_other_attributes_are_full(repo, old, new):
+    assert classify(repo, edit_home(repo, old, new)) == "full"
+
+
+def test_editing_script_body_is_full(repo):
+    path = repo / "src/templates/home.html"
+    path.write_text(HOME + "<script>a = 1</script>\n")
+    git(repo, "commit", "-qam", "script")
+    path.write_text(HOME + "<script>a = 2</script>\n")
+    assert classify(repo, "src/templates/home.html") == "full"

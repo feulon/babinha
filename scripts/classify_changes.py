@@ -4,10 +4,11 @@ Usage: git diff --name-only <base>...HEAD | python scripts/classify_changes.py <
 
 A change is `text-only` when every file is under docs/, a Markdown file, or a screen template
 (src/templates/**/*.html) whose structure is unchanged against <base>: the same template tags and
-interpolations ({% ... %} and {{ ... }}), the same HTML tags and the same behavior attributes
-(hx-*, data-*, href, action, method, name, type, id, class). Only the words between tags may
-differ. Anything else, a new or deleted template, or an empty list is `full`. This is the single
-place that decides how much CI runs (see .github/workflows/ci.yml).
+interpolations ({% ... %} and {{ ... }}), the same HTML tags, the same attributes and values, and
+the same <script> and <style> blocks. Only the words between tags and the human-readable
+attributes (title, alt, placeholder, aria-label) may differ. Anything else, a new or deleted
+template, or an empty list is `full`. This is the single place that decides how much CI runs (see
+.github/workflows/ci.yml).
 """
 
 import re
@@ -18,14 +19,12 @@ from pathlib import Path, PurePosixPath
 TEXT_ONLY = "text-only"
 FULL = "full"
 
-TOKEN = re.compile(r"\{%.*?%\}|\{\{.*?\}\}|<[^>]+>", re.DOTALL)
+TOKEN = re.compile(
+    r"<(script|style)\b.*?</\1\s*>|\{%.*?%\}|\{\{.*?\}\}|<[^>]+>", re.DOTALL | re.IGNORECASE
+)
 CONSTRUCT = re.compile(r"\{%.*?%\}|\{\{.*?\}\}", re.DOTALL)
 ATTRIBUTE = re.compile(r"([\w:@.-]+)(?:\s*=\s*(\"[^\"]*\"|'[^']*'|[^\s>]+))?")
-BEHAVIOR_ATTRIBUTES = {"href", "action", "method", "name", "type", "id", "class"}
-
-
-def is_behavior_attribute(name: str) -> bool:
-    return name in BEHAVIOR_ATTRIBUTES or name.startswith(("hx-", "data-"))
+TEXT_ATTRIBUTES = {"title", "alt", "placeholder", "aria-label"}
 
 
 def tag_signature(tag: str) -> tuple:
@@ -34,15 +33,20 @@ def tag_signature(tag: str) -> tuple:
     attrs = [
         (n.lower(), v)
         for n, v in ATTRIBUTE.findall(rest.replace("\n", " "))
-        if is_behavior_attribute(n.lower())
+        if n.lower() not in TEXT_ATTRIBUTES
     ]
     return (name.lower(), tuple(attrs), tuple(CONSTRUCT.findall(tag)))
 
 
 def skeleton(html: str) -> list:
     tokens = []
-    for token in TOKEN.findall(re.sub(r"<!--.*?-->", "", html, flags=re.DOTALL)):
-        tokens.append(token if token[:2] in ("{%", "{{") else tag_signature(token))
+    source = re.sub(r"<!--.*?-->", "", html, flags=re.DOTALL)
+    for match in TOKEN.finditer(source):
+        token = match.group(0)
+        if match.group(1) or token[:2] in ("{%", "{{"):
+            tokens.append(token)
+        else:
+            tokens.append(tag_signature(token))
     return tokens
 
 

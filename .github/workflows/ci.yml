@@ -49,8 +49,8 @@ jobs:
         with:
           fetch-depth: 0
       # Decides how much runs: scripts/classify_changes.py prints text-only or full. Only a PR
-      # that touches nothing but docs, Markdown and screen templates whose tags, interpolations and
-      # behavior attributes are unchanged against the base (pure text) is text-only; push to main
+      # that touches nothing but docs, Markdown and screen templates whose tags, interpolations,
+      # attributes and script/style blocks are unchanged against the base (pure text) is text-only; push to main
       # is always full.
       - name: Classify the change
         id: classify
@@ -100,8 +100,8 @@ jobs:
         with:
           fetch-depth: 0
       # Decides how much runs: scripts/classify_changes.py prints text-only or full. Only a PR
-      # that touches nothing but docs, Markdown and screen templates whose tags, interpolations and
-      # behavior attributes are unchanged against the base (pure text) is text-only; push to main
+      # that touches nothing but docs, Markdown and screen templates whose tags, interpolations,
+      # attributes and script/style blocks are unchanged against the base (pure text) is text-only; push to main
       # is always full.
       - name: Classify the change
         id: classify
