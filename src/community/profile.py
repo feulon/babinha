@@ -207,7 +207,7 @@ def directory(query: str = "", kind: str = DEFAULT_KIND) -> tuple[DirectoryRow, 
     """The active players, by name, filtered by type or position and by part of the name."""
     people = Player.objects.filter(is_active=True).with_enrollment()
     if query:
-        people = people.filter(name__icontains=query)
+        people = people.filter(nickname__icontains=query)
     if kind in PlayerType.values:
         people = people.of_type(kind)
     elif kind == Position.GOLEIRO.value:

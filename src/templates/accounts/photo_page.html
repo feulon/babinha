@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Foto de {{ subject.name }}{% endblock %}
+{% block title %}Foto de {{ subject.display_name }}{% endblock %}
 {% block content %}
 <section class="photo-view">
-  <h1>{{ subject.name }}</h1>
-  <img class="photo-view__img" src="{% url 'accounts:photo' player_id=subject.pk %}" alt="Foto de {{ subject.name }}">
+  <h1>{{ subject.display_name }}</h1>
+  <img class="photo-view__img" src="{% url 'accounts:photo' player_id=subject.pk %}" alt="Foto de {{ subject.display_name }}">
   <a class="btn btn--primary" href="{% url 'community:player' player_id=subject.pk %}">Fechar</a>
 </section>
 {% endblock %}

@@ -1,4 +1,5 @@
 import random
+import re
 from collections.abc import Callable
 from datetime import datetime, time
 
@@ -322,6 +323,26 @@ class TestResults:
     def test_sunday_with_no_votes(self, sunday: Sunday, clock: FixedClock) -> None:
         clock.set(MONDAY_LIST_OPENS)
         assert 'data-state="sem-votos"' in text(login(sunday.line[0]).get(VOTE))
+
+
+class TestNicknamesInTheCommunity:
+    def test_ranking_goals_and_gold_ball_show_nicknames_not_names(self, sunday: Sunday) -> None:
+        for player in (*sunday.line, *sunday.goalkeepers):
+            Player.objects.filter(pk=player.pk).update(
+                nickname=player.name.replace("Linha", "Apelido").replace("Goleiro", "Manopla")
+            )
+        client = login(sunday.line[0])
+        for url in (RANKING, VOTE, reverse("community:players")):
+            page = text(client.get(url))
+            assert "Apelido " in page, url
+            assert not re.search(r"Linha \d\d", page), url
+
+    def test_the_match_report_names_scorers_by_nickname(self, sunday: Sunday) -> None:
+        for player in sunday.line:
+            Player.objects.filter(pk=player.pk).update(nickname=player.name.replace("Linha", "Ap"))
+        page = text(login(sunday.line[0]).get(reverse("matchday:today")))
+        assert re.search(r"Ap \d\d", page)
+        assert not re.search(r"Linha \d\d", page)
 
 
 class TestRanking:

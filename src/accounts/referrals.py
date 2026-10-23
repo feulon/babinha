@@ -1,6 +1,7 @@
 """Connecting a player's referral to a registered player, from the profile."""
 
 from django.db.models import QuerySet
+from django.db.models.functions import Lower
 
 from accounts.models import Player
 
@@ -19,13 +20,13 @@ def descendant_ids(player: Player) -> set[int]:
 
 
 def candidates(player: Player, query: str = "") -> QuerySet[Player]:
-    """Active players the person can pick as their referrer, filtered by name."""
+    """Active players the person can pick as their referrer, filtered by nickname."""
     blocked = descendant_ids(player) | {player.pk}
     found = Player.objects.filter(is_active=True).exclude(pk__in=blocked)
     query = query.strip()
     if query:
-        found = found.filter(name__icontains=query)
-    return found.order_by("name", "pk")
+        found = found.filter(nickname__icontains=query)
+    return found.order_by(Lower("nickname"), "pk")
 
 
 def connect(player: Player, referrer: Player) -> None:

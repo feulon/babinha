@@ -34,6 +34,7 @@ def edit_url(player: Player) -> str:
 def form_data(player: Player, **changes: object) -> dict[str, object]:
     data = {
         "name": player.name,
+        "nickname": player.nickname,
         "phone": player.phone,
         "email": player.email or "",
         "player_type": player.player_type,
@@ -66,29 +67,29 @@ class TestRename:
 
 
 class TestSameName:
-    def test_taking_a_name_somebody_has_asks_to_confirm(
+    def test_taking_a_nickname_somebody_has_asks_to_confirm(
         self, board_client: Client, make_player
     ) -> None:
         make_player("Careca")
         other = make_player("Carlos")
 
-        refused = board_client.post(edit_url(other), form_data(other, name="careca"))
+        refused = board_client.post(edit_url(other), form_data(other, nickname="careca"))
 
         assert refused.status_code == 200
         html = refused.content.decode()
-        assert "Já existe um jogador chamado careca" in html
+        assert "Já existe um jogador com o apelido careca" in html
         assert "Salvar assim mesmo" in html
         other.refresh_from_db()
-        assert other.name == "Carlos"
+        assert other.nickname == "Carlos"
 
         accepted = board_client.post(
-            edit_url(other), form_data(other, name="careca", same_name_ok="on")
+            edit_url(other), form_data(other, nickname="careca", same_name_ok="on")
         )
         assert accepted.status_code == 302
         other.refresh_from_db()
-        assert other.name == "careca"
+        assert other.nickname == "careca"
 
-    def test_a_player_already_sharing_a_name_is_not_nagged_when_the_name_stays(
+    def test_a_player_already_sharing_a_nickname_is_not_nagged_when_it_stays(
         self, board_client: Client, make_player
     ) -> None:
         make_player("Careca")
@@ -140,6 +141,7 @@ class TestNewPlayer:
     def data(self, **changes: object) -> dict[str, object]:
         return {
             "name": "Zé Novo",
+            "nickname": "Zé Novo",
             "phone": "(11) 98765-4321",
             "email": "ze@example.com",
             "player_type": PlayerType.AVULSO,
@@ -162,11 +164,11 @@ class TestNewPlayer:
         assert "data-new-login" in shown.content.decode()
         assert "data-new-login" not in board_client.get(PLAYERS).content.decode()
 
-    def test_warns_when_the_name_is_taken(self, board_client: Client, make_player) -> None:
+    def test_warns_when_the_nickname_is_taken(self, board_client: Client, make_player) -> None:
         make_player("Zé Novo")
         response = board_client.post(reverse("board:player_new"), self.data())
         assert response.status_code == 200
-        assert "Já existe um jogador chamado Zé Novo" in response.content.decode()
+        assert "Já existe um jogador com o apelido Zé Novo" in response.content.decode()
         assert Player.objects.filter(name="Zé Novo").count() == 1
         again = board_client.post(reverse("board:player_new"), self.data(same_name_ok="on"))
         assert again.status_code == 302

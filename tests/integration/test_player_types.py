@@ -126,6 +126,7 @@ class TestPromotion:
             reverse("board:player_edit", args=[agregado.pk]),
             {
                 "name": agregado.name,
+                "nickname": agregado.nickname,
                 "phone": agregado.phone,
                 "email": agregado.email,
                 "player_type": PlayerType.AGREGADO,
@@ -150,6 +151,7 @@ class TestPromotion:
             reverse("board:player_edit", args=[agregado.pk]),
             {
                 "name": agregado.name,
+                "nickname": agregado.nickname,
                 "phone": agregado.phone,
                 "email": agregado.email,
                 "player_type": PlayerType.AVULSO,

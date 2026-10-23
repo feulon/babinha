@@ -35,7 +35,7 @@ class Unit:
 
     @property
     def label(self) -> str:
-        return " + ".join(player.name for player in self.players)
+        return " + ".join(player.display_name for player in self.players)
 
 
 @dataclass(frozen=True)
@@ -301,7 +301,9 @@ def _rows(
             and picked.place not in (NEW, SPLIT)
             and unit.place not in (NEW, SPLIT, picked.place)
         )
-        rows.append(Row(unit, " + ".join(p.name for p in here), tuple(here), is_picked, swap))
+        rows.append(
+            Row(unit, " + ".join(p.display_name for p in here), tuple(here), is_picked, swap)
+        )
     return tuple(rows)
 
 

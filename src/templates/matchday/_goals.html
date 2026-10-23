@@ -3,7 +3,7 @@
     {% for goal in goals %}
       <li>
         <span class="goals__text">
-          <strong>{% if goal.own_goal %}Gol contra{% else %}{{ goal.scorer.name }}{% endif %}</strong>{% if goal.assist %} <span class="muted">(assistência de {{ goal.assist.name }})</span>{% endif %}
+          <strong>{% if goal.own_goal %}Gol contra{% else %}{{ goal.scorer.display_name }}{% endif %}</strong>{% if goal.assist %} <span class="muted">(assistência de {{ goal.assist.display_name }})</span>{% endif %}
           <span class="goals__team">{{ goal.team.name }}</span>
         </span>
         {% if editable %}

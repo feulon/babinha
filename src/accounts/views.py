@@ -19,6 +19,7 @@ from accounts.forms import (
     PasswordChangeForm4,
     PasswordResetSetForm,
     PhotoForm,
+    ProfileForm,
     SignupForm,
     ThrottledPasswordResetForm,
 )
@@ -128,7 +129,7 @@ def signup_view(request: HttpRequest) -> HttpResponse:
             else:
                 throttle.SIGNUP_CLIENT.hit(client)
                 login(request, player, backend="django.contrib.auth.backends.ModelBackend")
-                messages.success(request, f"Bem-vindo ao Babinha, {player.name}!")
+                messages.success(request, f"Bem-vindo ao Babinha, {player.display_name}!")
                 if not form.photo_saved:
                     messages.warning(
                         request, "Sua foto não foi salva. Envie de novo pelo seu perfil."
@@ -153,6 +154,18 @@ def contact_view(request: HttpRequest) -> HttpResponse:
         return redirect(_safe_next(request) or "more")
     context = {"form": form, "needs_phone": needs_phone, "next": _safe_next(request)}
     return render(request, "accounts/contact.html", context)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def profile_view(request: HttpRequest) -> HttpResponse:
+    """The signed-in player edits their own name and nickname."""
+    form = ProfileForm(request.POST or None, instance=request.user)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Dados salvos.")
+        return redirect("more")
+    return render(request, "accounts/profile.html", {"form": form})
 
 
 @login_required
@@ -202,7 +215,7 @@ def photo_file(request: HttpRequest, player_id: int) -> FileResponse:
 @require_GET
 def photo_page(request: HttpRequest, player_id: int) -> HttpResponse:
     """A player's photo, enlarged, with a way back to their profile."""
-    player = get_object_or_404(Player.objects.only("name", "photo"), pk=player_id)
+    player = get_object_or_404(Player.objects.only("name", "nickname", "photo"), pk=player_id)
     if not player.photo:
         raise Http404
     return render(request, "accounts/photo_page.html", {"subject": player})
@@ -265,7 +278,7 @@ def referrer_view(request: HttpRequest) -> HttpResponse:
             messages.error(request, "Não achamos esse jogador. Busque o nome de novo.")
             return redirect("accounts:referrer")
         referrals.connect(me, chosen)
-        messages.success(request, f"Indicação ligada a {chosen.name}.")
+        messages.success(request, f"Indicação ligada a {chosen.display_name}.")
         return redirect("community:player", player_id=me.pk)
     query = request.GET.get("q", "").strip()[:60]
     found = referrals.candidates(me, query)

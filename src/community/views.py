@@ -194,7 +194,7 @@ def player(request: HttpRequest, player_id: int) -> HttpResponse:
     elif tab == "origem":
         context["origin"] = profile.origin()
         if is_self:
-            context["invite_link"] = invite_link(request, subject.name)
+            context["invite_link"] = invite_link(request, subject.display_name)
     return _render_variant(request, "community/player.html", "community/player/_tabs.html", context)
 
 

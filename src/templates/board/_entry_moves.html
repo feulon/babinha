@@ -7,7 +7,7 @@
       {% csrf_token %}
       <input type="hidden" name="section" value="{{ section }}">
       <input type="hidden" name="index" value="{{ forloop.counter|add:-1 }}">
-      <button class="btn btn--ghost btn--small" aria-label="Subir {{ row.player.name }}">▲ Subir</button>
+      <button class="btn btn--ghost btn--small" aria-label="Subir {{ row.player.display_name }}">▲ Subir</button>
     </form>
   {% endif %}
   {% if not forloop.last %}
@@ -16,21 +16,21 @@
       {% csrf_token %}
       <input type="hidden" name="section" value="{{ section }}">
       <input type="hidden" name="index" value="{{ forloop.counter|add:1 }}">
-      <button class="btn btn--ghost btn--small" aria-label="Descer {{ row.player.name }}">▼ Descer</button>
+      <button class="btn btn--ghost btn--small" aria-label="Descer {{ row.player.display_name }}">▼ Descer</button>
     </form>
   {% endif %}
   <form method="post" action="{{ move_url }}" class="inline-form"
         hx-post="{{ move_url }}" hx-target="#roster-board" hx-swap="outerHTML" hx-disabled-elt="find button"
-        {% if on_list %}hx-confirm="Mandar {{ row.player.name }} para a fila de espera? A vaga fica com o próximo da fila, sem multa."{% elif full %}hx-confirm="A lista está cheia. {{ row.player.name }} entra no último lugar e o último da lista vai para a fila, sem multa."{% endif %}>
+        {% if on_list %}hx-confirm="Mandar {{ row.player.display_name }} para a fila de espera? A vaga fica com o próximo da fila, sem multa."{% elif full %}hx-confirm="A lista está cheia. {{ row.player.display_name }} entra no último lugar e o último da lista vai para a fila, sem multa."{% endif %}>
     {% csrf_token %}
     <input type="hidden" name="section" value="{% if on_list %}espera{% else %}lista{% endif %}-{% if keeper %}goleiro{% else %}linha{% endif %}">
-    <button class="btn btn--ghost btn--small" aria-label="{% if on_list %}Mandar {{ row.player.name }} para a fila{% else %}Pôr {{ row.player.name }} na lista{% endif %}">{% if on_list %}Para a fila{% else %}Para a lista{% endif %}</button>
+    <button class="btn btn--ghost btn--small" aria-label="{% if on_list %}Mandar {{ row.player.display_name }} para a fila{% else %}Pôr {{ row.player.display_name }} na lista{% endif %}">{% if on_list %}Para a fila{% else %}Para a lista{% endif %}</button>
   </form>
   <form method="post" action="{{ move_url }}" class="inline-form"
         hx-post="{{ move_url }}" hx-target="#roster-board" hx-swap="outerHTML" hx-disabled-elt="find button">
     {% csrf_token %}
     <input type="hidden" name="section" value="{% if on_list %}lista{% else %}espera{% endif %}-{% if keeper %}linha{% else %}goleiro{% endif %}">
-    <button class="btn btn--ghost btn--small" aria-label="{% if keeper %}Passar {{ row.player.name }} para a linha{% else %}Passar {{ row.player.name }} para o gol{% endif %}">{% if keeper %}Para a linha{% else %}Para o gol{% endif %}</button>
+    <button class="btn btn--ghost btn--small" aria-label="{% if keeper %}Passar {{ row.player.display_name }} para a linha{% else %}Passar {{ row.player.display_name }} para o gol{% endif %}">{% if keeper %}Para a linha{% else %}Para o gol{% endif %}</button>
   </form>
   {% if rows|length > 2 %}
     <form method="post" action="{{ move_url }}" class="roster__place"
@@ -39,7 +39,7 @@
       <input type="hidden" name="section" value="{{ section }}">
       <label class="small" for="lugar-{{ row.player_id }}">Lugar</label>
       <input type="number" name="index" id="lugar-{{ row.player_id }}" value="{{ forloop.counter }}" min="1" max="{{ rows|length }}" inputmode="numeric" required>
-      <button class="btn btn--ghost btn--small" aria-label="Mover {{ row.player.name }} para o lugar escolhido">Mover</button>
+      <button class="btn btn--ghost btn--small" aria-label="Mover {{ row.player.display_name }} para o lugar escolhido">Mover</button>
     </form>
   {% endif %}
 </div>

@@ -85,7 +85,7 @@ class TestScenarios:
         assert counts[(EntryStatus.LISTA.value, "goleiro")] == 2
         assert counts[(EntryStatus.ESPERA.value, "linha")] == 2
         bumped = ListEntry.objects.filter(game_day=game_day, bumped=True)
-        assert [e.player.name for e in bumped] == ["Sabiá"]
+        assert [e.player.nickname for e in bumped] == ["Sabiá"]
 
     def test_the_teams_are_drawn_then_confirmed(self) -> None:
         now = MOMENTS[0]
@@ -172,7 +172,7 @@ class TestScenarios:
         with use_clock(FixedClock(now)):
             run_demo("borda-novato")
             lineup = Lineup.objects.get(game_day=sunday_of(now))
-        team_of = dict(lineup.spots.values_list("player__name", "team_id"))
+        team_of = dict(lineup.spots.values_list("player__nickname", "team_id"))
         assert team_of["Tatu"] == team_of["Fumaça"]
 
     def test_a_late_dropout_after_the_teams_costs_a_fine(self) -> None:
@@ -181,7 +181,7 @@ class TestScenarios:
             run_demo("borda-desistencia-tardia")
             game_day = sunday_of(now)
         assert Fine.objects.filter(
-            game_day=game_day, player__name="Formiga", reason=FineReason.LATE_DROPOUT
+            game_day=game_day, player__nickname="Formiga", reason=FineReason.LATE_DROPOUT
         ).exists()
         assert not matchday.in_sync(Lineup.objects.get(game_day=game_day))
 

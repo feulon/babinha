@@ -93,11 +93,11 @@
             {% if team.adjusting %}<span class="badge badge--wait">em ajuste</span>{% endif %}
             <span class="count">{{ team.players|length }}</span>
             <span class="team__chev" aria-hidden="true"></span>
-            <span class="team__preview">{% for player in team.players %}{{ player.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
+            <span class="team__preview">{% for player in team.players %}{{ player.display_name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
           </summary>
           <ul class="team__players">
             {% for player in team.players %}
-              <li{% if player.pk == user.pk %} class="is-me"{% endif %}>{{ player.name }}{% if player.pk == user.pk %} (você){% endif %}{% if player.pk in view.rookies %} <span class="rookie-dot" title="Estreante" aria-hidden="true">E</span><span class="visually-hidden">(estreante)</span>{% endif %}</li>
+              <li{% if player.pk == user.pk %} class="is-me"{% endif %}>{{ player.display_name }}{% if player.pk == user.pk %} (você){% endif %}{% if player.pk in view.rookies %} <span class="rookie-dot" title="Estreante" aria-hidden="true">E</span><span class="visually-hidden">(estreante)</span>{% endif %}</li>
             {% endfor %}
           </ul>
         </details>
@@ -107,7 +107,7 @@
 
     <p class="goalies" data-section="goleiros">
       {% if view.goalkeepers or view.in_goal %}
-        <strong>Goleiros:</strong> {% for player in view.goalkeepers %}{{ player.name }}{% if player.pk == user.pk %} (você){% endif %}{% if not forloop.last or view.in_goal %}, {% endif %}{% endfor %}{% for player in view.in_goal %}{{ player.name }}{% if player.pk == user.pk %} (você){% endif %} (linha){% if not forloop.last %}, {% endif %}{% endfor %} <span class="muted">(rodam por jogo)</span>
+        <strong>Goleiros:</strong> {% for player in view.goalkeepers %}{{ player.display_name }}{% if player.pk == user.pk %} (você){% endif %}{% if not forloop.last or view.in_goal %}, {% endif %}{% endfor %}{% for player in view.in_goal %}{{ player.display_name }}{% if player.pk == user.pk %} (você){% endif %} (linha){% if not forloop.last %}, {% endif %}{% endfor %} <span class="muted">(rodam por jogo)</span>
       {% else %}
         <strong>Goleiros:</strong> <span class="muted">nenhum.</span>
       {% endif %}

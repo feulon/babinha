@@ -57,7 +57,7 @@
                 <label for="vote-{{ name }}">{{ label }}</label>
                 <select name="{{ name }}" id="vote-{{ name }}" required>
                   <option value="">Escolha um jogador</option>
-                  {% for nominee in view.nominees %}<option value="{{ nominee.pk }}"{% if nominee.pk == chosen %} selected{% endif %}>{{ nominee.name }}</option>{% endfor %}
+                  {% for nominee in view.nominees %}<option value="{{ nominee.pk }}"{% if nominee.pk == chosen %} selected{% endif %}>{{ nominee.display_name }}</option>{% endfor %}
                 </select>
               </div>
             {% endfor %}
@@ -70,7 +70,7 @@
       {% if view.results %}
         <section class="status status--ok gold" data-state="resultado">
           <p class="eyebrow">Vencedor{% if view.winners|length > 1 %}es{% endif %} da Bola de Ouro</p>
-          <p class="status__headline">{% for winner in view.winners %}<a href="{% nexturl 'community:player' player_id=winner.pk %}">{{ winner.name }}</a>{% if not forloop.last %} e {% endif %}{% endfor %}</p>
+          <p class="status__headline">{% for winner in view.winners %}<a href="{% nexturl 'community:player' player_id=winner.pk %}">{{ winner.display_name }}</a>{% if not forloop.last %} e {% endif %}{% endfor %}</p>
           {% if view.winners|length > 1 %}<p>Empate: dividem a Bola de Ouro.</p>{% endif %}
         </section>
         <section class="card">
@@ -82,7 +82,7 @@
                 {% if result.position == 1 %}<span class="ball" title="1º lugar"><span aria-hidden="true">★</span><span class="visually-hidden">1º lugar</span></span>
                 {% elif result.position <= 3 %}<span class="ball ball--{% if result.position == 2 %}silver{% else %}bronze{% endif %}" title="{{ result.position }}º lugar">{{ result.position }}<span class="visually-hidden">º lugar</span></span>
                 {% else %}<span class="ranking-list__pos muted small">{{ result.position }}º</span>{% endif %}
-                <a href="{% nexturl 'community:player' player_id=result.player.pk %}">{{ result.player.name }}</a>
+                <a href="{% nexturl 'community:player' player_id=result.player.pk %}">{{ result.player.display_name }}</a>
                 <strong>{{ result.standing.points }} pt{{ result.standing.points|pluralize:"s" }}</strong>
                 <span class="ranking-list__detail muted small">{{ result.standing.places.0 }}x 1º · {{ result.standing.places.1 }}x 2º · {{ result.standing.places.2 }}x 3º</span>
               </li>
@@ -103,7 +103,7 @@
       <h2>Bolas de Ouro</h2>
       <ul class="link-list">
         {% for day, winners in past %}
-          <li><a href="{% url 'community:gold_ball_day' day=day.date.isoformat %}"><span>{{ day.date|date:"d/m/Y" }} · {% for winner in winners %}{{ winner.name }}{% if not forloop.last %} e {% endif %}{% endfor %}</span></a></li>
+          <li><a href="{% url 'community:gold_ball_day' day=day.date.isoformat %}"><span>{{ day.date|date:"d/m/Y" }} · {% for winner in winners %}{{ winner.display_name }}{% if not forloop.last %} e {% endif %}{% endfor %}</span></a></li>
         {% endfor %}
       </ul>
     </section>

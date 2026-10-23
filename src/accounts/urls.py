@@ -15,6 +15,7 @@ urlpatterns = [
     path("fotos/<int:player_id>/ver/", views.photo_page, name="photo_page"),
     path("indicacao/", views.referrer_view, name="referrer"),
     path("contato/", views.contact_view, name="contact"),
+    path("dados/", views.profile_view, name="profile"),
     path("senha/alterar/", views.password_change_view, name="password_change"),
     path("senha/recuperar/", views.PasswordResetView.as_view(), name="password_reset"),
     path(

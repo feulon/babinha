@@ -38,6 +38,7 @@ def page(response) -> str:
 def edit_data(player: Player, **overrides: object) -> dict:
     data = {
         "name": player.name,
+        "nickname": player.nickname,
         "is_active": "on",
         "phone": player.phone or "",
         "email": player.email or "",

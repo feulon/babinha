@@ -10,7 +10,7 @@ The goal shows the goalkeepers on one line, and a head only when line players ar
     {% if not wide and spot.uneven %}<p class="spot__count">{{ spot.count }} jogador{{ spot.count|pluralize:"es" }}</p>{% endif %}
   {% endif %}
   {% if goalkeepers %}
-    <p class="small spot__keepers">Goleiros: {% for player in goalkeepers %}{{ player.name }}{% if player.pk in grouping.rookie_ids %}<span class="rk" role="img" aria-label="Estreante" title="Estreante: primeiro domingo no Babinha">E</span>{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %} <span class="muted">(rodam por jogo)</span></p>
+    <p class="small spot__keepers">Goleiros: {% for player in goalkeepers %}{{ player.display_name }}{% if player.pk in grouping.rookie_ids %}<span class="rk" role="img" aria-label="Estreante" title="Estreante: primeiro domingo no Babinha">E</span>{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %} <span class="muted">(rodam por jogo)</span></p>
   {% endif %}
   {% if spot.rows or not goalkeepers %}<ul class="spot__rows">
     {% for row in spot.rows %}

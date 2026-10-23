@@ -26,7 +26,7 @@
           <ul class="rows">
             {% for row in no_show_rows %}
               <li class="late-row">
-                <span>{{ row.entry.player.name }}{% if row.fine %} <span class="badge badge--wait">{{ row.fine.ordinal }}ª ocorrência</span>{% if row.fine.status == "perdoada" %} <span class="badge">perdoada</span>{% else %} <span class="badge badge--danger">multado</span>{% endif %}{% else %} <span class="badge">sem multa</span>{% endif %}</span>
+                <span>{{ row.entry.player.display_name }}{% if row.fine %} <span class="badge badge--wait">{{ row.fine.ordinal }}ª ocorrência</span>{% if row.fine.status == "perdoada" %} <span class="badge">perdoada</span>{% else %} <span class="badge badge--danger">multado</span>{% endif %}{% else %} <span class="badge">sem multa</span>{% endif %}</span>
                 {% if row.fine %}<b>{{ row.fine.amount|brl }}</b>{% endif %}
               </li>
             {% endfor %}
@@ -39,7 +39,7 @@
           <ul class="rows">
             {% for row in late_rows %}
               <li class="late-row">
-                <span>{{ row.entry.player.name }} <span class="badge badge--wait">{{ row.entry.late_minutes }} min</span>{% if row.fined %} <span class="badge badge--danger">multado</span>{% endif %}</span>
+                <span>{{ row.entry.player.display_name }} <span class="badge badge--wait">{{ row.entry.late_minutes }} min</span>{% if row.fined %} <span class="badge badge--danger">multado</span>{% endif %}</span>
                 <b>{{ row.amount|brl }}</b>
               </li>
             {% endfor %}

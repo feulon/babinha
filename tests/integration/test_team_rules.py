@@ -109,7 +109,7 @@ class TestFirstTimers:
     def test_an_inviter_off_the_list_leaves_the_first_timer_free(self, sunday: Sunday) -> None:
         bruno = sunday.line[7]
         outsider = Player.objects.create_player(
-            phone="11988880001", password="ab12", name="Marcos", referred_by=None
+            phone="11988880001", password="ab12", name="Marcos", nickname="Marcos", referred_by=None
         )
         invite(bruno, outsider)
         assert grouping(sunday).groups == ()
@@ -200,7 +200,7 @@ class TestManualGroups:
 
     def test_only_line_players_on_the_list(self, sunday: Sunday, board_member: Player) -> None:
         stranger = Player.objects.create_player(
-            phone="11988880002", password="ab12", name="Fora", referred_by=None
+            phone="11988880002", password="ab12", name="Fora", nickname="Fora", referred_by=None
         )
         for other in (sunday.goalkeepers[0], stranger):
             with pytest.raises(MatchdayError, match="linha da lista"):

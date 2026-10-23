@@ -25,6 +25,7 @@ class Command(BaseCommand):
         parser.add_argument("--telefone", required=True, help="celular com DDD, é o login")
         parser.add_argument("--email", required=True, help="e-mail, para recuperar a senha")
         parser.add_argument("--nome", required=True)
+        parser.add_argument("--apelido", help="como aparece nas listas; sem ele, usa o nome")
 
     def handle(self, *args: object, **options: str) -> None:
         if Player.objects.filter(is_presidente=True).exists():
@@ -43,11 +44,14 @@ class Command(BaseCommand):
                 email=email,
                 password=password,
                 name=options["nome"],
+                nickname=options["apelido"] or options["nome"],
                 referred_by=None,
                 is_presidente=True,
             )
         except ValidationError as exc:
             raise CommandError("; ".join(exc.messages)) from exc
         self.stdout.write(
-            self.style.SUCCESS(f"Presidente {player.name} ({format_phone(player.phone)}) criado.")
+            self.style.SUCCESS(
+                f"Presidente {player.display_name} ({format_phone(player.phone)}) criado."
+            )
         )

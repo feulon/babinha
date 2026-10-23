@@ -28,7 +28,7 @@
     </a>
     {% if user.is_authenticated %}
       <a class="topbar__user" href="{% url 'community:player' player_id=user.pk %}" title="Meu perfil" aria-label="Meu perfil{% if viewer_is_monthly %}, mensalista{% endif %}">
-        <span class="avwrap">{% avatar user.name user.pk user.photo %}{% if viewer_is_monthly %}<span class="mbadge" aria-hidden="true">M</span>{% endif %}</span>
+        <span class="avwrap">{% avatar user.display_name user.pk user.photo %}{% if viewer_is_monthly %}<span class="mbadge" aria-hidden="true">M</span>{% endif %}</span>
       </a>
     {% endif %}
   </header>

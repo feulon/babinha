@@ -30,7 +30,7 @@
             <li>
               {% url 'board:match' match_id=row.match.pk as href %}
               {% include "board/_match_link.html" %}
-              <p class="match-list__keepers small muted">Gol: {{ row.match.home_goalkeeper.name|default:"a definir" }} · {{ row.match.away_goalkeeper.name|default:"a definir" }}</p>
+              <p class="match-list__keepers small muted">Gol: {{ row.match.home_goalkeeper.display_name|default:"a definir" }} · {{ row.match.away_goalkeeper.display_name|default:"a definir" }}</p>
               <div class="actions match-list__moves">
                 {% if not forloop.first %}
                   <form method="post" action="{% url 'board:move_match_up' match_id=row.match.pk %}" class="inline-form">

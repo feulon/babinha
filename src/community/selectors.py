@@ -79,7 +79,7 @@ def window_of(game_day: GameDay, now: datetime | None = None) -> voting.Window:
 def eligible_voters(game_day: GameDay) -> list[Player]:
     """Who played the Sunday: they vote and can be voted for."""
     attendees = {pk for fact in load_days([game_day]) for pk in fact.attendees}
-    return sorted(Player.objects.filter(pk__in=attendees), key=lambda p: p.name.casefold())
+    return sorted(Player.objects.filter(pk__in=attendees), key=lambda p: p.nickname.casefold())
 
 
 def day_standings(game_day_ids: Iterable[int]) -> dict[int, tuple[voting.Standing, ...]]:
@@ -274,7 +274,7 @@ def totals_for(season: Season | None) -> tuple[dict[int, stats.Totals], int]:
 def season_table(season: Season | None, metric: ranking.Metric) -> SeasonTable:
     table, played = totals_for(season)
     players = Player.objects.in_bulk(table.keys())
-    names = {pk: player.name for pk, player in players.items()}
+    names = {pk: player.display_name for pk, player in players.items()}
     rows = tuple(
         TableRow(row.position, players[row.player_id], row.totals)
         for row in ranking.rank(table, metric, names)

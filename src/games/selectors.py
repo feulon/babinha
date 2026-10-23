@@ -98,7 +98,7 @@ def build_week_view(game_day: GameDay, viewer: Player) -> WeekView:
     ctx = context_for(game_day)
     rows = entry_rows(game_day)
     roster = to_roster(rows)
-    names = {row.player_id: row.player.name for row in rows}
+    names = {row.player_id: row.player.display_name for row in rows}
     photos = {row.player_id: row.player.photo for row in rows}
     me = roster.get(viewer.pk)
     my_entry = me if me is not None and me.is_active else None

@@ -5,7 +5,7 @@
 <section class="auth">
   <h1>Minha foto</h1>
   <div class="photo-edit">
-    {% avatar user.name user.pk user.photo "profile-head__avatar" %}
+    {% avatar user.display_name user.pk user.photo "profile-head__avatar" %}
   </div>
   <form method="post" class="form card" enctype="multipart/form-data" novalidate>
     {% csrf_token %}

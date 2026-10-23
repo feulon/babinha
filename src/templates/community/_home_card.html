@@ -11,7 +11,7 @@
         <a class="btn btn--primary btn--block" href="{% nexturl 'community:gold_ball_day' day=view.game_day.date.isoformat %}">Votar</a>
       {% endif %}
     {% else %}
-      <p>Domingo, {{ view.game_day.date|date:"d/m" }}: <strong>{% for winner in view.winners %}{{ winner.name }}{% if not forloop.last %} e {% endif %}{% endfor %}</strong>.</p>
+      <p>Domingo, {{ view.game_day.date|date:"d/m" }}: <strong>{% for winner in view.winners %}{{ winner.display_name }}{% if not forloop.last %} e {% endif %}{% endfor %}</strong>.</p>
       <a class="btn btn--ghost btn--block" href="{% nexturl 'community:gold_ball_day' day=view.game_day.date.isoformat %}">Ver a votação</a>
     {% endif %}
   </section>

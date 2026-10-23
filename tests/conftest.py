@@ -48,6 +48,7 @@ def make_player(db: None) -> Callable[..., Player]:
     def make(
         name: str | None = None,
         *,
+        nickname: str | None = None,
         player_type: str = PlayerType.AVULSO,
         position: str = Position.LINHA,
         referred_by: Player | None = None,
@@ -59,9 +60,11 @@ def make_player(db: None) -> Callable[..., Player]:
         # Fixture players are veterans: only the first-login tests start with the rules unseen.
         extra.setdefault("rules_seen_at", TUESDAY)
         mensalista = player_type == PlayerType.MENSALISTA
+        name = name or f"Jogador {n}"
         player = Player.objects.create_player(
             password=TEST_PASSWORD,
-            name=name or f"Jogador {n}",
+            name=name,
+            nickname=nickname or name,
             referred_by=referred_by,
             # Mensalista is a month's enrollment, not a stored type: this one joined for the
             # month the test clock is in (no fee opened until the test asks for it).

@@ -1,4 +1,4 @@
-{% load money %}{% autoescape off %}Olá, {{ player.name }}!
+{% load money %}{% autoescape off %}Olá, {{ player.display_name }}!
 
 Você tem pagamento pendente na Babinha de Domingo:
 {% for row in rows %}

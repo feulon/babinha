@@ -5,7 +5,7 @@
       <li>
         {% if section and not game_day.is_cancelled %}
           <details class="roster__edit" id="mover-{{ row.player_id }}" data-keep-open>
-            <summary class="roster__name" title="Mover {{ row.player.name }}">
+            <summary class="roster__name" title="Mover {{ row.player.display_name }}">
               {% include "board/_entry_name.html" %}
             </summary>
             {% include "board/_entry_moves.html" %}
@@ -18,9 +18,9 @@
             {% url 'board:remove_from_list' day=game_day.date.isoformat player_id=row.player_id as remove_url %}
             <form method="post" action="{{ remove_url }}" class="inline-form"
                   hx-post="{{ remove_url }}" hx-target="#roster-board" hx-swap="outerHTML"
-                  hx-confirm="Retirar {{ row.player.name }}? Retirada pela diretoria não gera multa.">
+                  hx-confirm="Retirar {{ row.player.display_name }}? Retirada pela diretoria não gera multa.">
               {% csrf_token %}
-              <button class="icon-btn" title="Retirar {{ row.player.name }}" aria-label="Retirar {{ row.player.name }}">✕</button>
+              <button class="icon-btn" title="Retirar {{ row.player.display_name }}" aria-label="Retirar {{ row.player.display_name }}">✕</button>
             </form>
           {% endif %}
         </span>

@@ -1,12 +1,12 @@
   <section id="match-score" class="card scoreboard"{% if oob %} hx-swap-oob="true"{% endif %} data-match-state="{% if match.is_finished %}encerrada{% else %}aberta{% endif %}">
     <div class="scoreboard__team">
       <strong>{{ match.home_team.name }}</strong>
-      <span class="small muted">Gol: {{ match.home_goalkeeper.name|default:"a definir" }}</span>
+      <span class="small muted">Gol: {{ match.home_goalkeeper.display_name|default:"a definir" }}</span>
     </div>
     <div class="scoreboard__score" aria-label="Placar">{{ row.score.home }}<span>x</span>{{ row.score.away }}</div>
     <div class="scoreboard__team">
       <strong>{{ match.away_team.name }}</strong>
-      <span class="small muted">Gol: {{ match.away_goalkeeper.name|default:"a definir" }}</span>
+      <span class="small muted">Gol: {{ match.away_goalkeeper.display_name|default:"a definir" }}</span>
     </div>
     <p class="scoreboard__status">{% include "matchday/_match_status.html" with goals=row.goals %}</p>
   </section>

@@ -45,24 +45,25 @@ def sunday_warnings(before: Snapshot, player: Player) -> list[str]:
     if after.position != before.position:
         position = entry.get_position_display().lower()
         warnings.append(
-            f"{player.name} está {where} do domingo {day} como {position}. "
+            f"{player.display_name} está {where} do domingo {day} como {position}. "
             "Mudar a posição não o move na lista nem nos times: retire e coloque de novo."
         )
     if (after.player_type, after.is_mensalista) != (before.player_type, before.is_mensalista):
         warnings.append(
-            f"{player.name} está {where} do domingo {day}. A cobrança do domingo só é refeita "
-            "com o tipo novo quando ele sair e entrar de novo."
+            f"{player.display_name} está {where} do domingo {day}. A cobrança do domingo só é "
+            "refeita com o tipo novo quando ele sair e entrar de novo."
         )
     if (
         after.pote != before.pote
         and LineupSpot.objects.filter(lineup__game_day__date=sunday, player=player).exists()
     ):
         warnings.append(
-            f"{player.name} já está nos times do domingo {day}. O pote novo só vale em um novo "
-            "sorteio; os times ficam marcados para ajuste."
+            f"{player.display_name} já está nos times do domingo {day}. O pote novo só vale em um "
+            "novo sorteio; os times ficam marcados para ajuste."
         )
     if not after.is_active and before.is_active:
         warnings.append(
-            f"{player.name} continua {where} do domingo {day}. Retire-o da lista se não vem."
+            f"{player.display_name} continua {where} do domingo {day}. "
+            "Retire-o da lista se não vem."
         )
     return warnings

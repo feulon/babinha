@@ -83,6 +83,7 @@ class TestSignupPrefill:
         data = {
             "invite_code": CODE,
             "name": "Falcao",
+            "nickname": "Falcao",
             "phone": "(11) 98765-4321",
             "email": "falcao@example.com",
             "referrer_name": "Zico da Silva",

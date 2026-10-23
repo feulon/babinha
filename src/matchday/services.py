@@ -685,7 +685,7 @@ def _ensure_participant(match: Match, team: Team, *player_ids: int | None) -> No
 
 def match_roster(match: Match) -> dict[Side, list[Player]]:
     """The line players who played the match for each side, by name."""
-    rows = match.players.select_related("player").order_by("player__name")
+    rows = match.players.select_related("player").order_by("player__nickname")
     return {
         Side.HOME: [row.player for row in rows if row.team_id == match.home_team_id],
         Side.AWAY: [row.player for row in rows if row.team_id == match.away_team_id],
@@ -698,7 +698,7 @@ def roster_candidates(match: Match) -> list[Player]:
     keepers = _keeper_ids(match)
     everyone = {p.pk: p for p in [*kept, *line_players(match.lineup.game_day)]}
     return sorted(
-        (p for p in everyone.values() if p.pk not in keepers), key=lambda p: p.name.casefold()
+        (p for p in everyone.values() if p.pk not in keepers), key=lambda p: p.nickname.casefold()
     )
 
 
@@ -743,14 +743,14 @@ def side_players(match: Match, side: Side) -> list[Player]:
     }
     game_day = match.lineup.game_day
     playing = [*line_players(game_day), *list_goalkeepers(game_day)]
-    return sorted(playing, key=lambda p: (p.pk not in on_side, p.name.casefold()))
+    return sorted(playing, key=lambda p: (p.pk not in on_side, p.nickname.casefold()))
 
 
 def side_scorers(match: Match, side: Side) -> list[Player]:
     """The line players who played the match for `side`, by name: the quick picks of a goal."""
     team_id = match.home_team_id if side == Side.HOME else match.away_team_id
     rows = match.players.filter(team_id=team_id).select_related("player")
-    return sorted((row.player for row in rows), key=lambda p: p.name.casefold())
+    return sorted((row.player for row in rows), key=lambda p: p.nickname.casefold())
 
 
 def _check_goal(

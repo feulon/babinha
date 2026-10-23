@@ -12,6 +12,9 @@
       <a class="hub__item" href="{% url 'accounts:photo_edit' %}">
         <span class="hub__text"><strong>Foto</strong><span class="small muted">{% if user.photo %}Trocar ou remover{% else %}Adicionar a sua foto{% endif %}</span></span>
       </a>
+      <a class="hub__item" href="{% url 'accounts:profile' %}">
+        <span class="hub__text"><strong>Nome e apelido</strong><span class="small muted">Como você aparece para os outros</span></span>
+      </a>
       <a class="hub__item" href="{% url 'accounts:contact' %}">
         <span class="hub__text"><strong>Celular e e-mail</strong><span class="small muted">Seus dados de contato</span></span>
       </a>

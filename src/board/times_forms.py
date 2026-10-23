@@ -28,7 +28,9 @@ class GroupForm(forms.Form):
 
     def __init__(self, *args: object, candidates: Sequence[Player], **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
-        self.fields["players"].choices = [(str(player.pk), player.name) for player in candidates]
+        self.fields["players"].choices = [
+            (str(player.pk), player.board_label) for player in candidates
+        ]
 
     def clean_players(self) -> list[int]:
         ids = [int(value) for value in self.cleaned_data["players"]]

@@ -32,7 +32,7 @@ Server-side the current match is selected; src/static/js/app.js swaps the select
           {% for goal in row.goals %}
             <li>
               <span class="team-dot" data-team="{{ goal.team.number }}"></span>
-              <span><strong>{% if goal.own_goal %}Gol contra{% else %}{{ goal.scorer.name }}{% endif %}</strong>{% if goal.assist %} <span class="muted">ass. {{ goal.assist.name }}</span>{% endif %}</span>
+              <span><strong>{% if goal.own_goal %}Gol contra{% else %}{{ goal.scorer.display_name }}{% endif %}</strong>{% if goal.assist %} <span class="muted">ass. {{ goal.assist.display_name }}</span>{% endif %}</span>
               <span class="faixa__goal-team">{{ goal.team.name }}</span>
             </li>
           {% endfor %}

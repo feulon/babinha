@@ -16,6 +16,7 @@ LINHA, GOLEIRO = Position.LINHA, Position.GOLEIRO
 class DemoPlayer:
     key: str
     name: str
+    nickname: str
     player_type: PlayerType
     position: Position
     pote: int
@@ -41,30 +42,34 @@ def is_demo_email(email: str | None) -> bool:
 
 # Referrers always come before the players they referred.
 PLAYERS = (
-    DemoPlayer("presidente", "Careca", M, LINHA, 2, None, is_presidente=True),
-    DemoPlayer("diretoria", "Tiozão", M, LINHA, 3, "presidente", is_diretoria=True),
-    DemoPlayer("paredao", "Paredão", M, GOLEIRO, 2, "presidente"),
-    DemoPlayer("maodealface", "Mão de Alface", A, GOLEIRO, 4, "diretoria"),
-    DemoPlayer("gatinho", "Gatinho", G, GOLEIRO, 3, "paredao"),
-    DemoPlayer("baixinho", "Baixinho", M, LINHA, 1, "presidente"),
-    DemoPlayer("magrao", "Magrão", M, LINHA, 2, "presidente"),
-    DemoPlayer("alemao", "Alemão", M, LINHA, 1, "diretoria"),
-    DemoPlayer("bigode", "Bigode", M, LINHA, 3, "diretoria"),
-    DemoPlayer("cabecao", "Cabeção", M, LINHA, 4, "baixinho"),
-    DemoPlayer("dentinho", "Dentinho", M, LINHA, 2, "magrao"),
-    DemoPlayer("pezao", "Pezão", M, LINHA, 5, "alemao"),
-    DemoPlayer("juninho", "Juninho", M, LINHA, 1, "bigode"),
-    DemoPlayer("toquinho", "Toquinho", A, LINHA, 3, "baixinho"),
-    DemoPlayer("bochecha", "Bochecha", A, LINHA, 4, "magrao"),
-    DemoPlayer("canhota", "Canhota", A, LINHA, 2, "alemao"),
-    DemoPlayer("formiga", "Formiga", A, LINHA, 3, "cabecao"),
-    DemoPlayer("ratinho", "Ratinho", A, LINHA, 5, "dentinho"),
-    DemoPlayer("fumaca", "Fumaça", A, LINHA, 3, "pezao"),
-    DemoPlayer("mineiro", "Mineiro", A, LINHA, 4, "toquinho"),
-    DemoPlayer("pastel", "Pastel", G, LINHA, 5, "toquinho"),
-    DemoPlayer("batata", "Batata", G, LINHA, 4, "bochecha"),
-    DemoPlayer("xerife", "Xerife", G, LINHA, 3, "canhota"),
-    DemoPlayer("sabia", "Sabiá", G, LINHA, 2, "formiga"),
-    DemoPlayer("chiclete", "Chiclete", G, LINHA, 5, "ratinho"),
-    DemoPlayer("tatu", "Tatu", A, LINHA, 4, "fumaca", rookie=True),
+    DemoPlayer(
+        "presidente", "Carlos Eduardo Lima", "Careca", M, LINHA, 2, None, is_presidente=True
+    ),
+    DemoPlayer(
+        "diretoria", "Antônio Marcos Souza", "Tiozão", M, LINHA, 3, "presidente", is_diretoria=True
+    ),
+    DemoPlayer("paredao", "Paulo Roberto Alves", "Paredão", M, GOLEIRO, 2, "presidente"),
+    DemoPlayer("maodealface", "Rogério Santana", "Mão de Alface", A, GOLEIRO, 4, "diretoria"),
+    DemoPlayer("gatinho", "Gabriel Ferreira", "Gatinho", G, GOLEIRO, 3, "paredao"),
+    DemoPlayer("baixinho", "Lucas Pereira", "Baixinho", M, LINHA, 1, "presidente"),
+    DemoPlayer("magrao", "Marcelo Ribeiro", "Magrão", M, LINHA, 2, "presidente"),
+    DemoPlayer("alemao", "Felipe Schneider", "Alemão", M, LINHA, 1, "diretoria"),
+    DemoPlayer("bigode", "José Carlos Barbosa", "Bigode", M, LINHA, 3, "diretoria"),
+    DemoPlayer("cabecao", "Ricardo Nascimento", "Cabeção", M, LINHA, 4, "baixinho"),
+    DemoPlayer("dentinho", "Thiago Oliveira", "Dentinho", M, LINHA, 2, "magrao"),
+    DemoPlayer("pezao", "André Luiz Martins", "Pezão", M, LINHA, 5, "alemao"),
+    DemoPlayer("juninho", "Pedro Henrique Costa", "Juninho", M, LINHA, 1, "bigode"),
+    DemoPlayer("toquinho", "Bruno Teixeira", "Toquinho", A, LINHA, 3, "baixinho"),
+    DemoPlayer("bochecha", "Diego Rocha", "Bochecha", A, LINHA, 4, "magrao"),
+    DemoPlayer("canhota", "Rafael Gomes", "Canhota", A, LINHA, 2, "alemao"),
+    DemoPlayer("formiga", "Vinícius Araújo", "Formiga", A, LINHA, 3, "cabecao"),
+    DemoPlayer("ratinho", "Leandro Cardoso", "Ratinho", A, LINHA, 5, "dentinho"),
+    DemoPlayer("fumaca", "Eduardo Moreira", "Fumaça", A, LINHA, 3, "pezao"),
+    DemoPlayer("mineiro", "Sérgio Duarte", "Mineiro", A, LINHA, 4, "toquinho"),
+    DemoPlayer("pastel", "Fábio Mendes", "Pastel", G, LINHA, 5, "toquinho"),
+    DemoPlayer("batata", "Renato Freitas", "Batata", G, LINHA, 4, "bochecha"),
+    DemoPlayer("xerife", "Cláudio Nogueira", "Xerife", G, LINHA, 3, "canhota"),
+    DemoPlayer("sabia", "Matheus Carvalho", "Sabiá", G, LINHA, 2, "formiga"),
+    DemoPlayer("chiclete", "Gustavo Ramos", "Chiclete", G, LINHA, 5, "ratinho"),
+    DemoPlayer("tatu", "Henrique Pinto", "Tatu", A, LINHA, 4, "fumaca", rookie=True),
 )

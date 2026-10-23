@@ -90,4 +90,4 @@ def for_board(result: ListResult, name: str) -> list[Message]:
 
 
 def _name_of(player_id: int) -> str:
-    return Player.objects.values_list("name", flat=True).get(pk=player_id)
+    return Player.objects.values_list("nickname", flat=True).get(pk=player_id)

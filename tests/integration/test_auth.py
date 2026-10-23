@@ -32,6 +32,7 @@ class TestSignup:
     def form(self, referrer: Player, **overrides: str) -> dict:
         data = {
             "name": "Zico",
+            "nickname": "Zico",
             "phone": "(21) 98888-7777",
             "email": "Zico@Example.com",
             "referrer_name": referrer.name,

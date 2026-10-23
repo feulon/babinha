@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {% load avatars %}
-{% block title %}{{ subject.name }}{% endblock %}
+{% block title %}{{ subject.display_name }}{% endblock %}
 {% block content %}
 <div class="stack">
   <header>
     <div class="profile-head" data-profile-photo>
       {% if subject.photo %}
-        <a class="profile-head__photo-link" href="{% url 'accounts:photo_page' player_id=subject.pk %}" aria-label="Ver a foto de {{ subject.name }}">{% avatar subject.name subject.pk subject.photo "profile-head__avatar" %}</a>
+        <a class="profile-head__photo-link" href="{% url 'accounts:photo_page' player_id=subject.pk %}" aria-label="Ver a foto de {{ subject.display_name }}">{% avatar subject.display_name subject.pk subject.photo "profile-head__avatar" %}</a>
       {% else %}
-        {% avatar subject.name subject.pk subject.photo "profile-head__avatar" %}
+        {% avatar subject.display_name subject.pk subject.photo "profile-head__avatar" %}
       {% endif %}
       <div class="profile-head__text">
-        <h1>{{ subject.name }}{% if is_self %} <span class="muted small">(você)</span>{% endif %}</h1>
+        <h1>{{ subject.display_name }}{% if is_self %} <span class="muted small">(você)</span>{% endif %}</h1>
         <p class="muted small">{{ subject.effective_type_label }} · {{ subject.get_position_display }} · no Babinha desde {{ subject.joined_on|date:"m/Y" }}</p>
       </div>
       <p class="profile-head__ball" title="Bolas de Ouro"><span class="ball" aria-hidden="true">★</span> <strong>{{ profile.overall.gold_balls }}</strong><span class="visually-hidden"> Bolas de Ouro</span></p>

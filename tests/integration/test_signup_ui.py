@@ -23,6 +23,7 @@ def test_the_csp_allows_the_local_preview_image(client: Client) -> None:
 def test_more_than_11_digits_are_refused_by_the_server(client: Client, president: Player) -> None:
     data = {
         "name": "Zico",
+        "nickname": "Zico",
         "phone": "(11) 98765-43210",
         "email": "zico@example.com",
         "password": "gol1",
@@ -40,6 +41,7 @@ class TestRulesAcknowledgement:
     def data(**extra: str) -> dict[str, str]:
         return {
             "name": "Zico",
+            "nickname": "Zico",
             "phone": "(11) 98765-4321",
             "email": "zico@example.com",
             "password": "gol1",

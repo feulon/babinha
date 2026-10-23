@@ -22,7 +22,7 @@
     <details data-keep-state id="lista-saiu">
       <summary>Saíram ({{ roster.gone|length }})</summary>
       <ul class="rows">
-        {% for row in roster.gone %}<li class="small">{{ row.player.name }}</li>{% endfor %}
+        {% for row in roster.gone %}<li class="small">{{ row.player.display_name }}</li>{% endfor %}
       </ul>
     </details>
   {% endif %}

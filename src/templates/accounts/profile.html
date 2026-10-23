@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Nome e apelido{% endblock %}
+{% block content %}
+<section class="auth">
+  <h1>Nome e apelido</h1>
+  <form method="post" class="form card" novalidate>
+    {% csrf_token %}
+    {% include "includes/form_errors.html" %}
+    {% for field in form %}{% include "includes/field.html" %}{% endfor %}
+    <button type="submit" class="btn btn--primary btn--block">Salvar</button>
+  </form>
+</section>
+{% endblock %}

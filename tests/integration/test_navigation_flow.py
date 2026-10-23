@@ -120,6 +120,7 @@ class TestEditAndReceiptBack:
         pending = reverse("board:pending")
         form = {
             "name": player.name,
+            "nickname": player.nickname,
             "phone": player.phone,
             "email": player.email or "",
             "player_type": player.player_type,

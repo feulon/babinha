@@ -25,7 +25,7 @@
           {% url 'board:release_rookie' day=game_day.date.isoformat player_id=bond.rookie.pk as release_url %}
           <form method="post" action="{{ release_url }}" hx-post="{{ release_url }}" hx-target="#times" hx-swap="outerHTML" class="inline-form">
             {% csrf_token %}
-            <button class="btn btn--ghost btn--small">Soltar {{ bond.rookie.name }}</button>
+            <button class="btn btn--ghost btn--small">Soltar {{ bond.rookie.display_name }}</button>
           </form>
         {% endfor %}
       </p>

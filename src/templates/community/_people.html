@@ -7,9 +7,9 @@
   <section class="card card--tight">
     {% for row in rows %}
       <a class="person" href="{% nexturl 'community:player' player_id=row.player.pk %}">
-        {% avatar row.player.name row.player.pk row.player.photo %}
+        {% avatar row.player.display_name row.player.pk row.player.photo %}
         <span>
-          <strong>{{ row.player.name }}</strong>{% if row.player.pk == user.pk %} <span class="muted small">(você)</span>{% endif %}<br>
+          <strong>{{ row.player.display_name }}</strong>{% if row.player.pk == user.pk %} <span class="muted small">(você)</span>{% endif %}<br>
           <span class="muted small">{% if row.player.enrolled %}Mensalista{% else %}{{ row.player.get_player_type_display }}{% endif %} · {{ row.player.get_position_display }}</span>
         </span>
         <span class="person__meta">{% if row.gold_balls %}<span class="ball" aria-hidden="true">★</span> {{ row.gold_balls }}<span class="visually-hidden"> Bola{{ row.gold_balls|pluralize:"s" }} de Ouro</span> · {% endif %}{{ row.sundays }} dom.</span>
