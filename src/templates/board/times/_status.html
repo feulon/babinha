@@ -19,9 +19,9 @@
 {% if lineup_state == "stale" %}
   <section class="status status--danger" data-lineup="stale">
     <p class="status__headline">{% if state.gone or state.unassigned %}A lista mudou depois do sorteio{% else %}Os potes mudaram depois do sorteio{% endif %}</p>
-    {% if state.gone %}<p>Saíram ou faltaram: {% for player in state.gone %}{{ player.name }}{% if not forloop.last %}, {% endif %}{% endfor %}.</p>{% endif %}
-    {% if state.unassigned %}<p>Entraram: {% for player in state.unassigned %}{{ player.name }}{% if not forloop.last %}, {% endif %}{% endfor %}. Escolha o time deles abaixo.</p>{% endif %}
-    {% if state.repoted %}<p>Mudaram de pote: {% for player, old in state.repoted %}{{ player.name }} (P{{ old }} para P{{ player.pote }}){% if not forloop.last %}, {% endif %}{% endfor %}.</p>{% endif %}
+    {% if state.gone %}<p>Saíram ou faltaram: {% for player in state.gone %}{{ player.display_name }}{% if not forloop.last %}, {% endif %}{% endfor %}.</p>{% endif %}
+    {% if state.unassigned %}<p>Entraram: {% for player in state.unassigned %}{{ player.display_name }}{% if not forloop.last %}, {% endif %}{% endfor %}. Escolha o time deles abaixo.</p>{% endif %}
+    {% if state.repoted %}<p>Mudaram de pote: {% for player, old in state.repoted %}{{ player.display_name }} (P{{ old }} para P{{ player.pote }}){% if not forloop.last %}, {% endif %}{% endfor %}.</p>{% endif %}
     <p class="small">Ajuste os times{% if not state.lineup.is_confirmed %} ou sorteie de novo{% endif %} para atualizar.</p>
     {% if state.repoted %}
       {% url 'board:accept_potes' day=game_day.date.isoformat as accept_url %}

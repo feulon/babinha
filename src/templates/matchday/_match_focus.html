@@ -4,4 +4,4 @@
   <strong class="match-link__score">{% if row.goals %}{{ row.score.home }} x {{ row.score.away }}{% else %}x{% endif %}</strong>
   <span>{{ row.match.away_team.name }}</span>
 </p>
-<p class="small muted">Jogo {{ row.number }} · Gol: {{ row.match.home_goalkeeper.name|default:"a definir" }} · {{ row.match.away_goalkeeper.name|default:"a definir" }}</p>
+<p class="small muted">Jogo {{ row.number }} · Gol: {{ row.match.home_goalkeeper.display_name|default:"a definir" }} · {{ row.match.away_goalkeeper.display_name|default:"a definir" }}</p>

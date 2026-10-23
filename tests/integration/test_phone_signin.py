@@ -30,6 +30,7 @@ def sign_in(client: Client, identifier: str, password: str = TEST_PASSWORD, ip: 
 def signup_data(referrer: Player, **overrides: str) -> dict:
     data = {
         "name": "Zico",
+        "nickname": "Zico",
         "phone": "(21) 98888-7777",
         "email": "zico@example.com",
         "referrer_name": referrer.name,
@@ -130,7 +131,9 @@ class TestUniqueness:
         from django.core.exceptions import ValidationError
 
         with pytest.raises(ValidationError):
-            Player.objects.create_player(phone="", password="abcd", name="X", referred_by=president)
+            Player.objects.create_player(
+                phone="", password="abcd", name="X", nickname="X", referred_by=president
+            )
 
 
 class TestSigningIn:

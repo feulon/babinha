@@ -36,7 +36,7 @@ def _render_home(
         "hero_follow_open": services.sunday_arrived(followed),
         "venue_name": ClubSettings.load().venue_name,
         "next_url": reverse("games:home"),
-        "invite_link": invite_link(request, request.user.name),
+        "invite_link": invite_link(request, request.user.display_name),
         **payments_context(request),
     }
     if partial:

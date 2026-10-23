@@ -16,7 +16,8 @@ def test_signup_login_and_join_the_list(
     page: Page, live_server, president: Player, clock: FixedClock
 ) -> None:
     page.goto(f"{live_server.url}/cadastro/")
-    page.get_by_label("Nome ou apelido").fill("Sócrates")
+    page.get_by_label("Nome", exact=True).fill("Sócrates Brasileiro")
+    page.get_by_label("Apelido").fill("Sócrates")
     phone = page.get_by_label("Celular (com DDD)")
     phone.press_sequentially("1198765432199")  # the mask shows the DDD and stops at 11 digits
     expect(phone).to_have_value("(11) 98765-4321")

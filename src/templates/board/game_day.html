@@ -13,7 +13,7 @@
   {% if game_day.is_cancelled %}
     <section class="status status--danger">
       <p class="status__headline">Domingo cancelado</p>
-      <p>Por {{ game_day.cancelled_by.name }}{% if game_day.cancel_reason %}: {{ game_day.cancel_reason|stop }}{% else %}.{% endif %}</p>
+      <p>Por {{ game_day.cancelled_by.display_name }}{% if game_day.cancel_reason %}: {{ game_day.cancel_reason|stop }}{% else %}.{% endif %}</p>
       <form method="post" action="{% url 'board:reopen' day=game_day.date.isoformat %}" data-confirm="Reabrir este domingo?">
         {% csrf_token %}
         <button class="btn btn--ghost">Reabrir domingo</button>

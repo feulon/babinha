@@ -17,7 +17,7 @@
     {% if lineup_state == "confirmed" %}
       <ul class="step__teams">
         {% for team in teams_state.teams %}
-          <li><b>{{ team.team.name }}</b><span class="small muted">{% for player in team.players|slice:":3" %}{{ player.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% if team.players|length > 3 %}…{% endif %}</span></li>
+          <li><b>{{ team.team.name }}</b><span class="small muted">{% for player in team.players|slice:":3" %}{{ player.display_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% if team.players|length > 3 %}…{% endif %}</span></li>
         {% endfor %}
       </ul>
       <a class="btn btn--ghost btn--block" href="{{ teams_url }}">Ver ou ajustar os times</a>

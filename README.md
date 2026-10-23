@@ -27,7 +27,7 @@ da temporada.
 ```sh
 cp .env.example .env          # ajuste se quiser; o compose ja tem padroes locais
 docker compose up -d --build
-docker compose exec app python manage.py criar_presidente --telefone "(11) 98765-4321" --email voce@exemplo.com --nome "Seu nome"
+docker compose exec app python manage.py criar_presidente --telefone "(11) 98765-4321" --email voce@exemplo.com --nome "Seu nome" --apelido "Seu apelido"
 ```
 
 - App: http://localhost:8000
@@ -35,7 +35,7 @@ docker compose exec app python manage.py criar_presidente --telefone "(11) 98765
 - S3 dos comprovantes: http://localhost:7070 (so com assinatura; o app e o unico cliente)
 
 O comando `criar_presidente` cria a primeira conta (sem indicacao); o celular (`--telefone`) e o
-e-mail (`--email`, validado) sao obrigatorios. Ele pede a senha de 4 caracteres no terminal, ou le de
+e-mail (`--email`, validado) sao obrigatorios; `--apelido` e opcional (sem ele, o apelido e o nome). Ele pede a senha de 4 caracteres no terminal, ou le de
 `BABA_BOOTSTRAP_PASSWORD`. Os outros jogadores se cadastram em `/cadastro/` com o celular e o
 e-mail, com o nome de quem os indicou em texto livre (depois, no perfil, ligam a indicacao a um jogador da lista). Na aba **Origem** do proprio perfil, **Enviar convite** compartilha um link para `/cadastro/` que ja vem com o nome de quem convidou e o codigo do grupo preenchidos. O cadastro termina com as regras (multas, prioridade e demais) e a caixa "Li e estou ciente das regras", obrigatoria; a data do aceite fica no jogador. Quem se cadastra pode enviar uma foto (opcional, mas recomendada para a turma saber quem e quem; da para colocar depois). Em **Diretoria > Jogadores**, "Novo jogador" cadastra alguem sem coloca-lo na lista de nenhum domingo
 (o login, com o celular e a senha provisoria de 4 caracteres, aparece uma unica vez para ser repassado
@@ -126,7 +126,7 @@ export DJANGO_DEBUG=true
 export BABA_S3_ENDPOINT_URL=http://localhost:7070
 export BABA_S3_ACCESS_KEY_ID=baba BABA_S3_SECRET_ACCESS_KEY=baba-local-secret
 uv run python manage.py migrate
-uv run python manage.py criar_presidente --telefone "(11) 98765-4321" --email voce@exemplo.com --nome "Seu nome"
+uv run python manage.py criar_presidente --telefone "(11) 98765-4321" --email voce@exemplo.com --nome "Seu nome" --apelido "Seu apelido"
 uv run python manage.py runserver
 ```
 

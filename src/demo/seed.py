@@ -161,6 +161,7 @@ class _Seeder:
                 email=spec.email,
                 password=DEMO_PASSWORD,
                 name=spec.name,
+                nickname=spec.nickname,
                 referred_by=self.players[spec.referred_by] if spec.referred_by else None,
                 # Mensalista is a month's enrollment, not a type (see enroll_mensalistas).
                 player_type=(

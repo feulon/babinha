@@ -3,7 +3,7 @@
 from urllib.parse import urlencode
 
 from django import forms
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 
 from accounts.models import POTE_MAX, POTE_MIN, Player, PlayerType, Position
 
@@ -13,7 +13,7 @@ POTES = [(str(n), f"Pote {n}") for n in range(POTE_MIN, POTE_MAX + 1)]
 class PlayerFilterForm(forms.Form):
     """Every field is optional and a value that makes no sense is simply ignored."""
 
-    q = forms.CharField(label="Buscar por nome", required=False, max_length=60)
+    q = forms.CharField(label="Buscar por nome ou apelido", required=False, max_length=60)
     tipo = forms.ChoiceField(
         label="Tipo", required=False, choices=[("", "Todos"), *PlayerType.choices]
     )
@@ -41,7 +41,9 @@ class PlayerFilterForm(forms.Form):
         values = self.values()
         players = players.filter(is_active="inativos" not in values)
         if "q" in values:
-            players = players.filter(name__icontains=values["q"])
+            players = players.filter(
+                Q(name__icontains=values["q"]) | Q(nickname__icontains=values["q"])
+            )
         if "tipo" in values:
             players = players.of_type(values["tipo"])
         if "posicao" in values:

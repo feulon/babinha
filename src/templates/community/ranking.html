@@ -43,7 +43,7 @@
             {% for row in table.rows %}
               <tr{% if row.player.pk == user.pk %} class="is-me"{% endif %}>
                 <td>{{ row.position }}</td>
-                <th scope="row"><a href="{% nexturl 'community:player' player_id=row.player.pk %}">{{ row.player.name }}</a></th>
+                <th scope="row"><a href="{% nexturl 'community:player' player_id=row.player.pk %}">{{ row.player.display_name }}</a></th>
                 <td{% if metric == "bolas" %} class="is-sorted"{% endif %}>{{ row.totals.gold_balls }}</td>
                 <td{% if metric == "gols" %} class="is-sorted"{% endif %}>{{ row.totals.goals }}</td>
                 <td{% if metric == "assistencias" %} class="is-sorted"{% endif %}>{{ row.totals.assists }}</td>

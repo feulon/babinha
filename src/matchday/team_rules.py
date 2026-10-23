@@ -126,7 +126,7 @@ def release_rookie(game_day_id: int, actor: Player, player_id: int) -> None:
     game_day = lock_game_day(game_day_id)
     row = _rookie_row(grouping_of(game_day), player_id)
     if row.state != "applies":
-        raise MatchdayError(f"{row.player.name} já está livre neste domingo.")
+        raise MatchdayError(f"{row.player.display_name} já está livre neste domingo.")
     _apply_release(game_day_id, actor, player_id)
 
 
@@ -268,12 +268,12 @@ def _remove_member(grouping: Grouping, involved: set[int]) -> Resolution | None:
             for g in grouping.manual
         }
         if not _conflicts(grouping, _after(grouping, manual, _bonds(grouping))):
-            done = f"{member.name} saiu do grupo."
+            done = f"{member.display_name} saiu do grupo."
             if len(group.players) <= 2:
                 done += " O grupo foi desfeito."
             return Resolution(
                 f"{REMOVE}:{member.pk}",
-                f"Tirar {member.name} do grupo",
+                f"Tirar {member.display_name} do grupo",
                 f"Sorteio possível: {_sizes_text(team_sizes(len(grouping.line)))}.",
                 done,
             )

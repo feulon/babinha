@@ -53,7 +53,7 @@ class Grouping:
 
     @property
     def names(self) -> dict[int, str]:
-        return {player.pk: player.name for player in self.line}
+        return {player.pk: player.display_name for player in self.line}
 
     def group_of(self, player_id: int) -> Group | None:
         return next((group for group in self.groups if player_id in group.player_ids), None)

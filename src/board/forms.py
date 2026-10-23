@@ -42,8 +42,9 @@ def place_after(form: forms.Form, name: str, after: str) -> None:
 
 
 class SameNameMixin:
-    """Two players with the same name are hard to tell apart on the lists and the teams: ask to
-    confirm before saving a name somebody already has. The box only exists once it is needed."""
+    """Two players with the same nickname are hard to tell apart on the lists and the teams: ask
+    to confirm before saving a nickname somebody already has. The box only exists once it is
+    needed."""
 
     instance: Player
 
@@ -52,14 +53,18 @@ class SameNameMixin:
         self.fields["same_name_ok"] = forms.BooleanField(
             required=False, label="Salvar assim mesmo, são pessoas diferentes"
         )
-        if not (self.is_bound and self._name_is_taken(self.data.get(self.add_prefix("name")))):
+        if not (
+            self.is_bound and self._nickname_is_taken(self.data.get(self.add_prefix("nickname")))
+        ):
             del self.fields["same_name_ok"]
 
-    def _name_is_taken(self, raw: str | None) -> bool:
-        name = " ".join((raw or "").split())
-        if not name or (self.instance.pk and name == self.instance.name):
+    def _nickname_is_taken(self, raw: str | None) -> bool:
+        nickname = " ".join((raw or "").split())
+        if not nickname or (self.instance.pk and nickname == self.instance.nickname):
             return False
-        return Player.objects.filter(name__iexact=name).exclude(pk=self.instance.pk).exists()
+        return (
+            Player.objects.filter(nickname__iexact=nickname).exclude(pk=self.instance.pk).exists()
+        )
 
     def player_data(self) -> dict:
         """The cleaned values that are player fields (not the confirmation box)."""
@@ -72,13 +77,20 @@ class SameNameMixin:
     def clean_name(self) -> str:
         name = " ".join(self.cleaned_data["name"].split())
         if not name:
-            raise forms.ValidationError("Informe o nome ou apelido.")
-        if self._name_is_taken(name) and not self.data.get(self.add_prefix("same_name_ok")):
-            raise forms.ValidationError(
-                f"Já existe um jogador chamado {name}. Use um apelido para diferenciar "
-                "(por exemplo, Careca da Zaga) ou marque a opção abaixo para salvar assim mesmo."
-            )
+            raise forms.ValidationError("Informe o nome.")
         return name
+
+    def clean_nickname(self) -> str:
+        nickname = " ".join(self.cleaned_data["nickname"].split())
+        if not nickname:
+            raise forms.ValidationError("Informe o apelido.")
+        if self._nickname_is_taken(nickname) and not self.data.get(self.add_prefix("same_name_ok")):
+            raise forms.ValidationError(
+                f"Já existe um jogador com o apelido {nickname}. Use outro apelido para "
+                "diferenciar (por exemplo, Careca da Zaga) ou marque a opção abaixo para "
+                "salvar assim mesmo."
+            )
+        return nickname
 
 
 class PlayerForm(PhotoFormMixin, SameNameMixin, ContactCleanMixin, forms.ModelForm):
@@ -86,7 +98,7 @@ class PlayerForm(PhotoFormMixin, SameNameMixin, ContactCleanMixin, forms.ModelFo
         label="Foto (opcional)",
     )
     remove_photo = forms.BooleanField(required=False, label="Remover a foto atual")
-    field_order = ["name", "photo", "remove_photo"]
+    field_order = ["name", "nickname", "photo", "remove_photo"]
     # Optional only for players from before the phone existed, who have none to keep.
     phone = PhoneField(required=False)
     # Optional only for players from before the e-mail was required.
@@ -106,6 +118,7 @@ class PlayerForm(PhotoFormMixin, SameNameMixin, ContactCleanMixin, forms.ModelFo
         model = Player
         fields = [
             "name",
+            "nickname",
             "phone",
             "email",
             "player_type",
@@ -121,7 +134,6 @@ class PlayerForm(PhotoFormMixin, SameNameMixin, ContactCleanMixin, forms.ModelFo
             "member_since": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
         }
         labels = {
-            "name": "Nome ou apelido",
             "is_diretoria": "Faz parte da diretoria",
             "is_active": "Ativo",
         }
@@ -270,7 +282,7 @@ class AddToListForm(forms.Form):
         self.fields["player"].queryset = Player.objects.filter(is_active=True).exclude(
             pk__in=exclude_ids
         )
-        self.fields["player"].label_from_instance = lambda p: p.name
+        self.fields["player"].label_from_instance = lambda p: p.board_label
 
 
 SECTIONS = {
@@ -301,11 +313,20 @@ class NewPlayerForm(PhotoFormMixin, SameNameMixin, ContactCleanMixin, forms.Mode
     photo = PhotoField(
         label="Foto (opcional)",
     )
-    field_order = ["name", "photo"]
+    field_order = ["name", "nickname", "photo"]
 
     class Meta:
         model = Player
-        fields = ["name", "phone", "email", "player_type", "position", "pote", "member_since"]
+        fields = [
+            "name",
+            "nickname",
+            "phone",
+            "email",
+            "player_type",
+            "position",
+            "pote",
+            "member_since",
+        ]
         widgets = {
             "name": forms.TextInput(attrs={"autocomplete": "off"}),
             "pote": forms.Select(choices=[(i, f"Pote {i}") for i in range(1, 6)]),

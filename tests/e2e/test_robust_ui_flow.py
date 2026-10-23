@@ -30,7 +30,8 @@ def test_double_tap_on_a_plain_form_creates_one_player(
 ) -> None:
     log_in(page, live_server.url, board_member)
     page.goto(f"{live_server.url}/diretoria/jogadores/novo/")
-    page.get_by_label("Nome").fill("Duplo Clique")
+    page.get_by_label("Nome", exact=True).fill("Duplo Clique")
+    page.get_by_label("Apelido").fill("Duplo")
     page.get_by_label("Celular").fill("(11) 91234-5678")
     page.get_by_label("E-mail").fill("duplo@example.com")
 
@@ -42,7 +43,7 @@ def test_double_tap_on_a_plain_form_creates_one_player(
         "b => { b.click(); setTimeout(() => b.click(), 40); }"
     )
 
-    expect(page.locator("[data-new-login]")).to_contain_text("Login de Duplo Clique")
+    expect(page.locator("[data-new-login]")).to_contain_text("Login de Duplo (Duplo Clique)")
     assert len(posts) == 1
     assert Player.objects.filter(name="Duplo Clique").count() == 1
 
@@ -81,7 +82,8 @@ def test_form_error_is_brought_into_view(
     taken = make_player("Já Existe")
     log_in(page, live_server.url, board_member)
     page.goto(f"{live_server.url}/diretoria/jogadores/novo/")
-    page.get_by_label("Nome").fill("Outro Nome")
+    page.get_by_label("Nome", exact=True).fill("Outro Nome")
+    page.get_by_label("Apelido").fill("Outro")
     page.get_by_label("Celular").fill(taken.phone)
     page.get_by_label("E-mail").fill("outro@example.com")
 

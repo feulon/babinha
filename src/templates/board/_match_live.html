@@ -10,7 +10,7 @@
       <section class="card"{% if side.asking %} data-goal-assist{% endif %}>
         {% url 'board:add_goal' match_id=match.pk side=side.side as goal_url %}
         {% if side.asking %}
-          <h2>Gol do {{ side.team.name }}: {{ side.asking.name }}</h2>
+          <h2>Gol do {{ side.team.name }}: {{ side.asking.display_name }}</h2>
           <form method="post" action="{{ goal_url }}" class="form goal-quick"
                 hx-post="{{ goal_url }}" hx-target="#match-live" hx-swap="outerHTML" hx-disabled-elt="find button">
             {% csrf_token %}
@@ -18,7 +18,7 @@
             <p class="small muted">Quem deu a assistência?</p>
             <div class="goal-quick__players">
               {% for player in side.assisters %}
-                {% if player.pk != side.asking.pk %}<button class="btn btn--primary" name="assist" value="{{ player.pk }}">{{ player.name }}</button>{% endif %}
+                {% if player.pk != side.asking.pk %}<button class="btn btn--primary" name="assist" value="{{ player.pk }}">{{ player.display_name }}</button>{% endif %}
               {% endfor %}
               <button class="btn btn--ghost" name="assist" value="">Nenhum</button>
               <button class="btn btn--ghost" name="assist" value="na">Não se aplica</button>
@@ -33,7 +33,7 @@
                   hx-get="{{ assist_url }}" hx-target="#match-live" hx-swap="outerHTML" hx-disabled-elt="find button">
               <div class="goal-quick__players">
                 {% for player in side.scorers %}
-                  <button class="btn btn--primary" name="scorer" value="{{ player.pk }}">{{ player.name }}</button>
+                  <button class="btn btn--primary" name="scorer" value="{{ player.pk }}">{{ player.display_name }}</button>
                 {% endfor %}
               </div>
             </form>

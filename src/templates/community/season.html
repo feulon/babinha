@@ -12,7 +12,7 @@
     {% if table.rows %}
       <ol class="ranking-list">
         {% for row in table.rows|slice:":3" %}
-          <li><a href="{% nexturl 'community:player' player_id=row.player.pk %}">{{ row.player.name }}</a><span class="ranking-list__detail muted small">{{ row.totals.gold_balls }} Bola{{ row.totals.gold_balls|pluralize:",s" }} de Ouro · {{ row.totals.goals }} gol{{ row.totals.goals|pluralize:",s" }} · {{ row.totals.assists }} assist.</span></li>
+          <li><a href="{% nexturl 'community:player' player_id=row.player.pk %}">{{ row.player.display_name }}</a><span class="ranking-list__detail muted small">{{ row.totals.gold_balls }} Bola{{ row.totals.gold_balls|pluralize:",s" }} de Ouro · {{ row.totals.goals }} gol{{ row.totals.goals|pluralize:",s" }} · {{ row.totals.assists }} assist.</span></li>
         {% endfor %}
       </ol>
     {% else %}

@@ -32,6 +32,7 @@ def signup_data(referrer: Player, **overrides: str) -> dict:
     data = {
         "invite_code": CODE,
         "name": "Zico",
+        "nickname": "Zico",
         "phone": "(21) 98888-7777",
         "email": "zico@example.com",
         "referrer_name": referrer.name,
@@ -280,6 +281,7 @@ class TestHandedOutCredentials:
             reverse("board:player_new"),
             {
                 "name": "Novato",
+                "nickname": "Novato",
                 "phone": "(21) 98888-7777",
                 "email": "zico@example.com",
                 "player_type": "avulso",

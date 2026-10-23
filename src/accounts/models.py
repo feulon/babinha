@@ -14,6 +14,7 @@ from games.domain import types
 POTE_MIN = 1
 POTE_MAX = 5
 DEFAULT_POTE = 3
+NICKNAME_MAX_LENGTH = 30
 
 
 class PlayerType(models.TextChoices):
@@ -70,6 +71,7 @@ class PlayerManager(BaseUserManager["Player"].from_queryset(PlayerQuerySet)):
         phone: str,
         password: str,
         name: str,
+        nickname: str,
         referred_by: "Player | None",
         email: str | None = None,
         referrer_text: str = "",
@@ -79,6 +81,7 @@ class PlayerManager(BaseUserManager["Player"].from_queryset(PlayerQuerySet)):
             phone=normalize_phone(phone),
             email=self.normalize_email(email).lower() if email else None,
             name=name.strip(),
+            nickname=nickname.strip(),
             referred_by=referred_by,
             referrer_text=referrer_text.strip(),
             **extra,
@@ -92,9 +95,17 @@ class PlayerManager(BaseUserManager["Player"].from_queryset(PlayerQuerySet)):
             raise ValidationError("Já existe uma conta com este celular ou e-mail.") from exc
         return player
 
-    def create_superuser(self, phone: str, password: str, name: str, **extra: object) -> "Player":
+    def create_superuser(
+        self, phone: str, password: str, name: str, nickname: str, **extra: object
+    ) -> "Player":
         return self.create_player(
-            phone=phone, password=password, name=name, referred_by=None, is_superuser=True, **extra
+            phone=phone,
+            password=password,
+            name=name,
+            nickname=nickname,
+            referred_by=None,
+            is_superuser=True,
+            **extra,
         )
 
     def find_by_login(self, identifier: str | None) -> "Player":
@@ -128,7 +139,8 @@ class Player(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(
         "e-mail", max_length=254, unique=True, null=True, blank=True
     )  # always stored lowercase
-    name = models.CharField("nome ou apelido", max_length=60)
+    name = models.CharField("nome", max_length=60)
+    nickname = models.CharField("apelido", max_length=NICKNAME_MAX_LENGTH)
     referred_by = models.ForeignKey(
         "self",
         verbose_name="indicado por",
@@ -209,12 +221,12 @@ class Player(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = "phone"
     EMAIL_FIELD = "email"
-    REQUIRED_FIELDS = ["name"]
+    REQUIRED_FIELDS = ["name", "nickname"]
 
     class Meta:
         verbose_name = "jogador"
         verbose_name_plural = "jogadores"
-        ordering = [Lower("name")]
+        ordering = [Lower("nickname"), Lower("name")]
         constraints = [
             models.UniqueConstraint(Lower("email"), name="player_email_unique_ci"),
             models.UniqueConstraint(
@@ -229,7 +241,19 @@ class Player(AbstractBaseUser, PermissionsMixin):
         ]
 
     def __str__(self) -> str:
-        return self.name
+        return self.display_name
+
+    @property
+    def display_name(self) -> str:
+        """What other players see: the nickname (the name if there is none)."""
+        return self.nickname.strip() or self.name
+
+    @property
+    def board_label(self) -> str:
+        """For the diretoria's pickers, where homonyms must be told apart: "Apelido (Nome)"."""
+        if self.display_name == self.name:
+            return self.name
+        return f"{self.display_name} ({self.name})"
 
     def save(self, *args: object, **kwargs: object) -> None:
         # "" would collide with the next player who also left the field blank.

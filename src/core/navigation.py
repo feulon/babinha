@@ -109,6 +109,7 @@ _TABS = {
     "feedback": MAIS,
     "accounts:photo_edit": MAIS,
     "accounts:contact": MAIS,
+    "accounts:profile": MAIS,
     "accounts:password_change": MAIS,
     "accounts:referrer": MAIS,
     "community:season": DIRETORIA,

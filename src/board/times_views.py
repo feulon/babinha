@@ -131,7 +131,8 @@ def rookie_rule(request: HttpRequest, day: str) -> HttpResponse:
 def release_rookie(request: HttpRequest, day: str, player_id: int) -> HttpResponse:
     current = _sunday_or_404(day)
     name = (
-        Player.objects.filter(pk=player_id).values_list("name", flat=True).first() or "O estreante"
+        Player.objects.filter(pk=player_id).values_list("nickname", flat=True).first()
+        or "O estreante"
     )
     _attempt(
         request,

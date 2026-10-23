@@ -16,7 +16,7 @@ NOT_APPLICABLE_LABEL = "Não se aplica"
 
 
 def _player_choices(players: Sequence[Player], empty: str) -> list[tuple[str, str]]:
-    return [("", empty), *((str(p.pk), p.name) for p in players)]
+    return [("", empty), *((str(p.pk), p.board_label) for p in players)]
 
 
 def _optional_id(value: str) -> int | None:
@@ -93,12 +93,12 @@ class RosterForm(forms.Form):
         choices = [("", "Não jogou"), (Side.HOME.value, home.name), (Side.AWAY.value, away.name)]
         for player in players:
             self.fields[self.field_name(player)] = forms.ChoiceField(
-                label=player.name,
+                label=player.display_name,
                 choices=choices,
                 required=False,
                 initial=current[player.pk].value if player.pk in current else "",
                 widget=forms.Select(
-                    attrs={"class": "select-inline", "aria-label": f"Time de {player.name}"}
+                    attrs={"class": "select-inline", "aria-label": f"Time de {player.display_name}"}
                 ),
             )
         self.players = tuple(players)

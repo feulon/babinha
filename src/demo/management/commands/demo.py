@@ -90,7 +90,7 @@ class Command(BaseCommand):
             f"\nContas de teste (senha {DEMO_PASSWORD}; entre com o celular ou o e-mail):"
         )
         for spec in PLAYERS:
-            self.stdout.write(f"  {format_phone(spec.phone):<16} {spec.email:<26} {spec.name}")
+            self.stdout.write(f"  {format_phone(spec.phone):<16} {spec.email:<26} {spec.nickname}")
 
     def _check_database(self, *, reset: bool, force: bool) -> None:
         emails = list(Player.objects.values_list("email", flat=True))
@@ -137,4 +137,6 @@ class Command(BaseCommand):
         for login in result.scenario.logins:
             player = result.players[login.key]
             phone = format_phone(player.phone)
-            self.stdout.write(f"  {phone:<16} {player.email:<26} {player.name} - {login.role}")
+            self.stdout.write(
+                f"  {phone:<16} {player.email:<26} {player.display_name} - {login.role}"
+            )

@@ -261,6 +261,7 @@ class TestBoardScreens:
             url,
             {
                 "name": player.name,
+                "nickname": player.nickname,
                 "is_active": "on",
                 "phone": player.phone,
                 "player_type": PlayerType.AGREGADO,
@@ -287,6 +288,7 @@ class TestBoardScreens:
             url,
             {
                 "name": player.name,
+                "nickname": player.nickname,
                 "is_active": "on",
                 "phone": player.phone,
                 "player_type": "avulso",
@@ -354,6 +356,7 @@ class TestBoardScreens:
             url,
             {
                 "name": president.name,
+                "nickname": president.nickname,
                 "is_active": "on",
                 "phone": president.phone,
                 "player_type": "avulso",
@@ -368,6 +371,7 @@ class TestBoardScreens:
     def edit(self, client: Client, player: Player, **fields: object):
         data = {
             "name": player.name,
+            "nickname": player.nickname,
             "is_active": "on",
             "phone": player.phone,
             "player_type": "avulso",

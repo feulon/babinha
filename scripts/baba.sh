@@ -106,7 +106,9 @@ main() {
                 read -r -p "Celular com DDD (e o login): " phone
                 read -r -p "E-mail: " email
                 read -r -p "Nome: " name
+                read -r -p "Apelido (vazio usa o nome): " nickname
                 set -- --telefone "$phone" --email "$email" --nome "$name"
+                [ -z "$nickname" ] || set -- "$@" --apelido "$nickname"
             fi
             compose exec app python manage.py criar_presidente "$@"
             ;;

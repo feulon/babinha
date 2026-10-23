@@ -147,10 +147,28 @@ class PhotoFormMixin:
 
 class ReferrerField(forms.ModelChoiceField):
     def label_from_instance(self, obj: Player) -> str:
-        return obj.name
+        return obj.board_label
 
 
-class SignupForm(PhotoFormMixin, ContactCleanMixin, forms.ModelForm):
+class NameCleanMixin:
+    """Name and nickname are both required and kept as one line of single-spaced words."""
+
+    cleaned_data: dict
+
+    def clean_name(self) -> str:
+        name = " ".join(self.cleaned_data["name"].split())
+        if not name:
+            raise forms.ValidationError("Informe seu nome.")
+        return name
+
+    def clean_nickname(self) -> str:
+        nickname = " ".join(self.cleaned_data["nickname"].split())
+        if not nickname:
+            raise forms.ValidationError("Informe seu apelido.")
+        return nickname
+
+
+class SignupForm(NameCleanMixin, PhotoFormMixin, ContactCleanMixin, forms.ModelForm):
     photo = PhotoField(
         label="Foto (opcional, mas recomendada)",
         help_text="Você pode trocar depois.",
@@ -185,6 +203,7 @@ class SignupForm(PhotoFormMixin, ContactCleanMixin, forms.ModelForm):
     field_order = [
         "invite_code",
         "name",
+        "nickname",
         "photo",
         "phone",
         "email",
@@ -196,8 +215,11 @@ class SignupForm(PhotoFormMixin, ContactCleanMixin, forms.ModelForm):
 
     class Meta:
         model = Player
-        fields = ["name", "phone", "email"]
-        widgets = {"name": forms.TextInput(attrs={"autocomplete": "nickname"})}
+        fields = ["name", "nickname", "phone", "email"]
+        widgets = {
+            "name": forms.TextInput(attrs={"autocomplete": "name"}),
+            "nickname": forms.TextInput(attrs={"autocomplete": "nickname"}),
+        }
 
     def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
@@ -230,12 +252,6 @@ class SignupForm(PhotoFormMixin, ContactCleanMixin, forms.ModelForm):
     def clean_invite_code(self) -> str:
         return self.cleaned_data["invite_code"].strip()
 
-    def clean_name(self) -> str:
-        name = self.cleaned_data["name"].strip()
-        if not name:
-            raise forms.ValidationError("Informe seu nome ou apelido.")
-        return name
-
     def clean_referrer_name(self) -> str:
         return " ".join(self.cleaned_data["referrer_name"].split())
 
@@ -262,6 +278,7 @@ class SignupForm(PhotoFormMixin, ContactCleanMixin, forms.ModelForm):
             email=self.cleaned_data["email"],
             password=self.cleaned_data["password"],
             name=self.cleaned_data["name"],
+            nickname=self.cleaned_data["nickname"],
             referred_by=None,
             referrer_text=self.cleaned_data["referrer_name"],
             rules_accepted_at=clock.now(),
@@ -283,6 +300,18 @@ class ContactForm(ContactCleanMixin, forms.ModelForm):
     class Meta:
         model = Player
         fields = ["phone", "email"]
+
+
+class ProfileForm(NameCleanMixin, forms.ModelForm):
+    """How a player edits their own name and nickname."""
+
+    class Meta:
+        model = Player
+        fields = ["name", "nickname"]
+        widgets = {
+            "name": forms.TextInput(attrs={"autocomplete": "name"}),
+            "nickname": forms.TextInput(attrs={"autocomplete": "nickname"}),
+        }
 
 
 class PhotoForm(PhotoFormMixin, forms.Form):

@@ -54,6 +54,7 @@ def signed_in(make_player: Callable[..., Player], president: Player) -> tuple[Cl
 def signup_data(referrer: Player, **extra: object) -> dict:
     return {
         "name": "Zico",
+        "nickname": "Zico",
         "phone": "(21) 98888-7777",
         "email": "zico@example.com",
         "referrer_name": referrer.name,
@@ -251,6 +252,7 @@ class TestBoard:
     def test_creating_a_player_with_a_photo(self, board_client: Client) -> None:
         data = {
             "name": "Novato",
+            "nickname": "Novato",
             "phone": "21999990000",
             "email": "novato@example.com",
             "player_type": "avulso",
@@ -264,6 +266,7 @@ class TestBoard:
     def test_creating_a_player_without_a_photo_still_works(self, board_client: Client) -> None:
         data = {
             "name": "Novato",
+            "nickname": "Novato",
             "phone": "21999990000",
             "email": "novato@example.com",
             "player_type": "avulso",
@@ -276,6 +279,7 @@ class TestBoard:
     def edit(self, client: Client, player: Player, **extra: object):
         data = {
             "name": player.name,
+            "nickname": player.nickname,
             "phone": player.phone,
             "email": player.email or "",
             "player_type": player.player_type,

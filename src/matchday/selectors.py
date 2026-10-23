@@ -62,7 +62,7 @@ def teams_of(game_day: GameDay) -> Teams:
     spots = list(
         LineupSpot.objects.filter(lineup=lineup)
         .select_related("player")
-        .order_by("player__pote", "player__name")
+        .order_by("player__pote", "player__nickname")
     )
     drawn_ids = {spot.player_id for spot in spots}
     current = [spot for spot in spots if spot.player_id in playing_ids]
@@ -218,7 +218,9 @@ def day_view(game_day: GameDay, viewer: Player) -> DayView:
 
     playing_ids = {player.pk for player in line_players(game_day)}
     all_spots = list(
-        LineupSpot.objects.filter(lineup=lineup).select_related("player").order_by("player__name")
+        LineupSpot.objects.filter(lineup=lineup)
+        .select_related("player")
+        .order_by("player__nickname")
     )
     spots = [spot for spot in all_spots if spot.player_id in playing_ids]
     gone = [spot for spot in all_spots if spot.player_id not in playing_ids]

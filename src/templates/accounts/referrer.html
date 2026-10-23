@@ -5,7 +5,7 @@
 <section class="auth">
   <h1>Quem me indicou</h1>
   {% if user.referred_by %}
-    <p class="lead">Hoje está ligado a <strong>{{ user.referred_by.name }}</strong>. Busque outro nome para trocar.</p>
+    <p class="lead">Hoje está ligado a <strong>{{ user.referred_by.display_name }}</strong>. Busque outro nome para trocar.</p>
   {% elif user.referrer_text %}
     <p class="lead">No cadastro você escreveu <strong>{{ user.referrer_text }}</strong>. Busque essa pessoa na lista e ligue.</p>
   {% else %}
@@ -23,7 +23,7 @@
       <form method="post" class="person-pick">
         {% csrf_token %}
         <input type="hidden" name="player" value="{{ candidate.pk }}">
-        <span class="row-who">{% avatar candidate.name candidate.pk candidate.photo %}<strong>{{ candidate.name }}</strong></span>
+        <span class="row-who">{% avatar candidate.display_name candidate.pk candidate.photo %}<strong>{{ candidate.display_name }}</strong></span>
         <button type="submit" class="btn btn--ghost btn--small">Foi essa pessoa</button>
       </form>
     {% empty %}

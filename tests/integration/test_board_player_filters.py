@@ -123,6 +123,7 @@ class TestEditingKeepsTheFilter:
             url,
             {
                 "name": careca.name,
+                "nickname": careca.nickname,
                 "is_active": "on",
                 "phone": careca.phone,
                 "player_type": "avulso",
@@ -143,6 +144,7 @@ class TestEditingKeepsTheFilter:
             f"{url}?next=https://evil.example&tipo=avulso",
             {
                 "name": careca.name,
+                "nickname": careca.nickname,
                 "is_active": "on",
                 "phone": careca.phone,
                 "player_type": "avulso",

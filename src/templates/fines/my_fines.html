@@ -23,7 +23,7 @@
               <span class="badge badge--primary">Paga</span>
             {% elif fine.status == "perdoada" %}
               <span class="badge badge--primary">Perdoada</span>
-              <p class="small muted">Por {{ fine.resolved_by.name }}: {{ fine.resolution_note }}</p>
+              <p class="small muted">Por {{ fine.resolved_by.display_name }}: {{ fine.resolution_note }}</p>
             {% else %}
               <span class="badge">Cancelada</span>
               <p class="small muted">{{ fine.resolution_note }}</p>

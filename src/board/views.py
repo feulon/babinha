@@ -136,12 +136,12 @@ def player_new(request: HttpRequest) -> HttpResponse:
             _apply_monthly(request, form, player)
             # Shown once on the next page load, never stored beyond that.
             request.session[NEW_LOGIN_SESSION_KEY] = {
-                "name": player.name,
+                "name": player.board_label,
                 "phone": player.phone,
                 "email": player.email,
                 "password": password,
             }
-            messages.success(request, f"{player.name} cadastrado.")
+            messages.success(request, f"{player.board_label} cadastrado.")
             return redirect("board:players")
     return render(
         request, "board/player_new.html", {"form": form, "back": reverse("board:players")}
@@ -180,7 +180,7 @@ def player_edit(request: HttpRequest, player_id: int) -> HttpResponse:
         if not form.apply_photo(player):
             messages.warning(request, "A foto não foi salva. Tente enviar de novo.")
         _apply_monthly(request, form, player)
-        messages.success(request, f"{player.name} atualizado.")
+        messages.success(request, f"{player.board_label} atualizado.")
         for warning in sunday_warnings(before, player):
             messages.warning(request, warning)
         return redirect(navigation.requested_next(request) or _players_url(filters))
@@ -329,7 +329,7 @@ def add_to_list(request: HttpRequest, day: str) -> HttpResponse:
     except ListError as error:
         messages.error(request, error.message)
     else:
-        for level, text in for_board(result, player.name):
+        for level, text in for_board(result, player.display_name):
             messages.add_message(request, level, text)
     return _roster_changed(request, current)
 
@@ -344,7 +344,7 @@ def remove_from_list(request: HttpRequest, day: str, player_id: int) -> HttpResp
     except ListError as error:
         messages.error(request, error.message)
     else:
-        for level, text in for_board(result, player.name):
+        for level, text in for_board(result, player.display_name):
             messages.add_message(request, level, text)
     return _roster_changed(request, current)
 
@@ -370,7 +370,7 @@ def place_on_list(request: HttpRequest, day: str, player_id: int) -> HttpRespons
     except ListError as error:
         messages.error(request, error.message)
     else:
-        for level, text in for_board(result, player.name):
+        for level, text in for_board(result, player.display_name):
             messages.add_message(request, level, text)
     return _roster_changed(request, current)
 
@@ -388,7 +388,7 @@ def mark_attendance(request: HttpRequest, day: str, player_id: int) -> HttpRespo
         messages.error(request, error.message)
     else:
         if fine is not None:
-            messages.warning(request, f"Falta registrada: multa para {player.name}.")
+            messages.warning(request, f"Falta registrada: multa para {player.display_name}.")
     return _roster_changed(request, current)
 
 

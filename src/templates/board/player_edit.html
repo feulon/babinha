@@ -1,16 +1,16 @@
 {% extends "base.html" %}
-{% block title %}{{ player.name }}{% endblock %}
+{% block title %}{{ player.board_label }}{% endblock %}
 {% load phone %}
 {% block content %}
 <div class="stack">
   <div>
     <p class="eyebrow">Jogador</p>
-    <h1>{{ player.name }}</h1>
-    <p class="muted small">{% if player.phone %}{{ player.phone|phone_br }}{% else %}Sem celular{% endif %}{% if player.email %} · {{ player.email }}{% endif %}{% if player.referred_by %} · indicado por {{ player.referred_by.name }}{% elif player.referrer_text %} · indicado por {{ player.referrer_text }}{% endif %}</p>
+    <h1>{{ player.board_label }}</h1>
+    <p class="muted small">{% if player.phone %}{{ player.phone|phone_br }}{% else %}Sem celular{% endif %}{% if player.email %} · {{ player.email }}{% endif %}{% if player.referred_by %} · indicado por {{ player.referred_by.board_label }}{% elif player.referrer_text %} · indicado por {{ player.referrer_text }}{% endif %}</p>
   </div>
   {% if new_password %}
     <section class="status status--ok" role="status" data-new-password>
-      <p class="status__headline">Nova senha de {{ player.name }}</p>
+      <p class="status__headline">Nova senha de {{ player.board_label }}</p>
       <p class="small muted">Copie e passe ao jogador agora, pelo WhatsApp: a senha não será mostrada de novo. A senha antiga deixou de valer.</p>
       {% include "board/_credentials.html" with credentials=new_password %}
     </section>
@@ -30,7 +30,7 @@
     <section class="card">
       <h2>Nova senha</h2>
       <p class="small muted">Para quem esqueceu a senha e não tem e-mail. Gera uma senha provisória, mostrada uma única vez.</p>
-      <form method="post" action="{% url 'board:reset_player_password' player_id=player.pk %}{% if query %}?{{ query }}{% endif %}" data-confirm="Definir uma nova senha para {{ player.name }}? A senha atual deixa de valer.">
+      <form method="post" action="{% url 'board:reset_player_password' player_id=player.pk %}{% if query %}?{{ query }}{% endif %}" data-confirm="Definir uma nova senha para {{ player.board_label }}? A senha atual deixa de valer.">
         {% csrf_token %}
         <button type="submit" class="btn btn--ghost btn--block">Definir nova senha</button>
       </form>
