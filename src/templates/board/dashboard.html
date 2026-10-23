@@ -34,6 +34,7 @@
       </ul>
     </section>
   {% endfor %}
+  <a class="btn btn--ghost btn--block" href="{% url 'accounts:welcome_board' step=1 %}">Boas-vindas da diretoria</a>
   <a class="btn btn--ghost btn--block" href="{% url 'board:tutorial' %}">Tutorial da diretoria</a>
   <a class="btn btn--ghost btn--block" href="{% url 'board:sunday_tutorial' %}">Como montar o domingo</a>
   {% include "board/_dashboard_icons.html" %}

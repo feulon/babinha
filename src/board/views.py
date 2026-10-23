@@ -13,7 +13,7 @@ from django.urls import reverse
 from django.utils.cache import patch_vary_headers
 from django.views.decorators.http import require_http_methods, require_POST
 
-from accounts import throttle
+from accounts import throttle, welcome
 from accounts.models import Player
 from accounts.passwords import generate_provisional_password
 from board import sunday, tiles
@@ -56,6 +56,10 @@ NEW_PASSWORD_SESSION_KEY = "board_new_password"
 
 @board_required
 def dashboard(request: HttpRequest) -> HttpResponse:
+    if not welcome.is_seen(request.user, welcome.BOARD):
+        # First visit to the Painel as diretoria: their welcome once (it opens even for someone
+        # who was a player long before).
+        return redirect(welcome.board_start_url())
     game_day = services.matchday_game_day()
     today = clock.now().date()
     charges.ensure_monthly_charges(today)

@@ -206,11 +206,20 @@ class Player(AbstractBaseUser, PermissionsMixin):
             "Quando marcou que leu as regras no cadastro. Vazio para quem já estava no Babinha."
         ),
     )
-    rules_seen_at = models.DateTimeField(
-        "regras vistas em",
+    welcome_seen_at = models.DateTimeField(
+        "boas-vindas vistas em",
         null=True,
         blank=True,
-        help_text="Quando viu as regras no primeiro login. Quem já existia entra como visto.",
+        help_text="Quando abriu as boas-vindas do jogador. Quem já existia entra como visto.",
+    )
+    board_welcome_seen_at = models.DateTimeField(
+        "boas-vindas da diretoria vistas em",
+        null=True,
+        blank=True,
+        help_text=(
+            "Quando abriu as boas-vindas da diretoria, na primeira visita ao Painel. "
+            "Quem já era da diretoria entra como visto."
+        ),
     )
     player_type_set_at = models.DateTimeField(
         "tipo definido em",

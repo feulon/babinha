@@ -40,6 +40,9 @@
   <section class="more-group" aria-labelledby="mais-ajuda">
     <h2 class="tiles__title" id="mais-ajuda">Ajuda</h2>
     <nav class="hub" aria-label="Ajuda">
+      <a class="hub__item" href="{% url 'accounts:welcome' step=1 %}">
+        <span class="hub__text"><strong>Boas-vindas</strong><span class="small muted">A semana e o Pix em 4 telas</span></span>
+      </a>
       <a class="hub__item" href="{% url 'tutorial' %}">
         <span class="hub__text"><strong>Tutorial</strong></span>
       </a>

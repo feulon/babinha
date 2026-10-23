@@ -16,11 +16,12 @@
   <script src="{% static 'js/htmx.min.js' %}" defer></script>
   <script src="{% static 'js/app.js' %}" defer></script>
 </head>
-<body class="{% if user.is_authenticated and user.phone %}has-tabbar{% endif %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-indicator="#loader">
+<body class="{% if user.is_authenticated and user.phone and not fullscreen %}has-tabbar{% endif %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-indicator="#loader">
   <div id="loader" class="loader" aria-hidden="true"></div>
   {% if demo_banner %}
     <p class="demo-banner" role="status" data-demo-banner>{{ demo_banner }}</p>
   {% endif %}
+  {% if not fullscreen %}
   <header class="topbar">
     <a class="brand" href="{% url 'games:home' %}">
       <img src="{% static 'icons/icon-192.png' %}" alt="" width="28" height="28">
@@ -32,6 +33,7 @@
       </a>
     {% endif %}
   </header>
+  {% endif %}
   {% if fake_now %}
     <p class="fake-clock" role="status">
       Relógio de teste: o app acha que agora é {{ fake_now|date:"l"|lower }}, {{ fake_now|date:"d/m/Y \à\s H\hi" }}.
@@ -40,7 +42,7 @@
 
   <main class="page">
     {% include "includes/messages.html" %}
-    {% if user.is_authenticated and user.password_is_provisional and request.resolver_match.view_name != 'accounts:password_change' %}
+    {% if user.is_authenticated and user.password_is_provisional and not fullscreen and request.resolver_match.view_name != 'accounts:password_change' %}
       <section class="status status--info" role="status" data-provisional-password>
         <p class="status__headline">Troque sua senha</p>
         <p>A diretoria definiu a sua senha, e ela passou por mensagem. Escolha uma só sua.</p>
@@ -50,7 +52,7 @@
     {% block content %}{% endblock %}
   </main>
 
-  {% if user.is_authenticated and user.phone %}
+  {% if user.is_authenticated and user.phone and not fullscreen %}
     <nav class="tabbar" aria-label="Navegação principal"{% if user.is_board %} data-tabs="5"{% endif %}>
       <a href="{% url 'games:home' %}" class="tabbar__item{% if nav_tab == 'inicio' %} is-active{% endif %}">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
