@@ -28,6 +28,7 @@ from fines.models import Fine
 from games.domain.schedule import WeekSchedule
 from games.domain.types import EntryStatus
 from games.models import GameDay, ListEntry
+from games.promotion import promote_agregados
 
 SATURDAY = 5  # date.weekday()
 LEFT_THE_LIST = "Saiu da lista"
@@ -145,6 +146,7 @@ def finish_game_day(game_day: GameDay, actor: Player | None = None) -> bool:
     game_day.finished_by = actor
     game_day.save(update_fields=["finished_at", "finished_by"])
     sync_game_charges(game_day, actor=actor)
+    promote_agregados()
     return True
 
 
@@ -169,6 +171,7 @@ def settle_finished_games(now=None) -> int:
             game_day.finished_at = opens
             game_day.save(update_fields=["finished_at"])
             sync_game_charges(game_day)
+            promote_agregados()
             done += 1
     return done
 

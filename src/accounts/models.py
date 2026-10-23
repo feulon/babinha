@@ -177,6 +177,19 @@ class Player(AbstractBaseUser, PermissionsMixin):
             "Quando marcou que leu as regras no cadastro. Vazio para quem já estava no Babinha."
         ),
     )
+    rules_seen_at = models.DateTimeField(
+        "regras vistas em",
+        null=True,
+        blank=True,
+        help_text="Quando viu as regras no primeiro login. Quem já existia entra como visto.",
+    )
+    player_type_set_at = models.DateTimeField(
+        "tipo definido em",
+        null=True,
+        blank=True,
+        help_text="Quando o tipo mudou (a diretoria ou a promoção automática). "
+        "Só os futebóis depois disso contam para virar avulso.",
+    )
     member_since = models.DateField(
         "no Babinha desde",
         null=True,

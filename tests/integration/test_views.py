@@ -455,6 +455,7 @@ class TestBoardScreens:
                 "late_fine_15": "10,00",
                 "late_fine_30": "25,00",
                 "monthly_due_day": "5",
+                "avulso_after_games": "5",
                 "pix_key": " Presidente@Baba.com.br ",
             },
         )
@@ -483,6 +484,7 @@ class TestBoardScreens:
                 "late_fine_15": "10,00",
                 "late_fine_30": "25,00",
                 "monthly_due_day": "5",
+                "avulso_after_games": "5",
                 "pix_key": "ladrao@example.com",
             },
         )
@@ -505,6 +507,7 @@ class TestBoardScreens:
                 "late_fine_15": "10,00",
                 "late_fine_30": "25,00",
                 "monthly_due_day": "10",
+                "avulso_after_games": "5",
                 "pix_key": club_values.pix_key,
             },
         )
@@ -518,7 +521,7 @@ class TestBoardScreens:
         data = dict.fromkeys(
             ["monthly_fee", "single_fee", "fine_base", "late_fine_15", "late_fine_30"], "1,00"
         )
-        data.update(monthly_due_day="10", pix_key="chave qualquer")
+        data.update(monthly_due_day="10", avulso_after_games="5", pix_key="chave qualquer")
         response = president_client.post(reverse("board:settings"), data)
         assert response.status_code == 200
         assert "Chave Pix inválida" in response.content.decode()
