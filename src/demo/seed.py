@@ -174,6 +174,9 @@ class _Seeder:
                 is_presidente=spec.is_presidente,
                 is_diretoria=spec.is_diretoria,
                 member_since=None if spec.rookie else veteran_since,
+                # The demo opens on each situation; the welcome is under Mais > Boas-vindas.
+                welcome_seen_at=clock.now(),
+                board_welcome_seen_at=clock.now(),
             )
         values = ClubSettings.load()
         values.monthly_fee = Decimal("120.00")

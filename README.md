@@ -57,7 +57,9 @@ senha** e avisa a pessoa pelo WhatsApp. Quem se cadastrou antes do celular exist
 numero no primeiro acesso depois da atualizacao. Celular e e-mail so aparecem para o proprio
 jogador e para a diretoria.
 
-O app tem dois tutoriais, so de leitura (sem tour no primeiro acesso nem estado salvo por conta). O da
+**Boas-vindas**: uma introducao de tela cheia, mostrada uma unica vez antes do app, em **/boas-vindas/1/** a **/boas-vindas/4/** (a semana com os horarios do app e do clube, entrar na lista e na fila de espera, Pix em tres passos, multas com os valores do clube e o caminho para as regras completas; termina em **Ir para o Inicio**). A diretoria tem um segundo conjunto de quatro telas em **/boas-vindas/diretoria/1/** a **/boas-vindas/diretoria/4/** (a aba Diretoria e o Painel, antes do primeiro domingo, no domingo com os 4 passos de Montar o domingo, e depois do jogo; termina em **Ir para o Painel**). **Pular**, em qualquer tela, conta como visto. Quem entra pela primeira vez (cadastro proprio ou login enviado pela diretoria) cai na primeira tela, sem repetir as regras que acabou de aceitar no cadastro; quem vira diretoria depois ve o conjunto da diretoria na primeira visita ao Painel; um diretor novo ve as telas do jogador e, na ultima, o convite para as da diretoria. O estado sao dois campos de data no jogador (`welcome_seen_at` e `board_welcome_seen_at`), sem progresso por tela; a migracao marca como visto quem ja existia (e os da diretoria, no conjunto deles). Rever: **Mais > Ajuda > Boas-vindas** (jogador) e o botao **Boas-vindas da diretoria** no fim do Painel; rever nao muda nada. A conta de demonstracao ja nasce com as boas-vindas vistas.
+
+O app tem dois tutoriais, so de leitura (sem tour a cada tela nem progresso por conta; as boas-vindas acima sao a unica introducao). O da
 diretoria fica em **/diretoria/tutorial/** (link **Tutorial da diretoria** no fim do Painel): lista e faltas, jogos pela fila
 de espera, gols e assistencia, Bola de Ouro, multas de atraso e de falta, dinheiro (A receber, Caixa,
 Configuracoes), Pix e convite por link. O Painel so tem gestao; conta, regras, Sobre e Feedback ficam em **Mais**, igual para todos. Os tutoriais e as regras compartilham os textos comuns em partials. O do jogador fica em **/tutorial/** (**Mais > Tutorial**): entrar na
@@ -197,7 +199,7 @@ Tudo por variaveis de ambiente; veja `.env.example`. As principais:
 Os valores em dinheiro (mensalidade, avulso, multa de falta com seu multiplicador e multa de atraso de 15 e 30 min), quantos futeboes um agregado joga antes de virar avulso, o dia de vencimento da mensalidade, a
 chave Pix e o WhatsApp da diretoria (opcional; a pagina publica de recuperacao de senha nao o mostra, por seguranca) ficam no banco e a
 diretoria edita em **Diretoria > Configuracoes**, junto com o nome do local do jogo (opcional), mostrado na tela inicial. Valor 0,00 desliga a cobranca. A tela
-publica `/regras/` ("Regras do babinha") le esses valores e explica os tipos de jogador, prazos e desistencia. No primeiro login o jogador cai nela.
+publica `/regras/` ("Regras do babinha") le esses valores e explica os tipos de jogador, prazos e desistencia. As boas-vindas do primeiro acesso resumem as multas e levam a ela.
 
 ## Producao
 
@@ -424,7 +426,7 @@ assistencias, os times de cada domingo e os resultados alimentam o ranking e o h
   placar desse jogo. As abas Domingo e Mais sao iguais para todos, sem controles de gestao. O
   avatar no topo leva ao proprio perfil e o logo ao Inicio. Cada tela da diretoria continua
   exigindo a permissao no servidor. O antigo `/modo/` so redireciona de volta a tela.
-- **Turma e perfil**: **/jogadores/**, uma aba da barra de baixo (**Mais**, **/mais/**, tem Minha conta (foto, celular e e-mail, senha), Dinheiro (Pagamentos e Pix, Historico de multas, Caixa), Ajuda (Tutorial, Regras, Sobre, Reportar bug ou sugestao) e **Sair**; o Ranking e a Bola de Ouro ficam a partir de Turma; o mensalista ganha uma bolinha "M" no avatar; enquanto a votacao da Bola de Ouro esta aberta, o card de voto abre o Inicio), e o diretorio (busca por nome e
+- **Turma e perfil**: **/jogadores/**, uma aba da barra de baixo (**Mais**, **/mais/**, tem Minha conta (foto, celular e e-mail, senha), Dinheiro (Pagamentos e Pix, Historico de multas, Caixa), Ajuda (Boas-vindas, Tutorial, Regras, Sobre, Reportar bug ou sugestao) e **Sair**; o Ranking e a Bola de Ouro ficam a partir de Turma; o mensalista ganha uma bolinha "M" no avatar; enquanto a votacao da Bola de Ouro esta aberta, o card de voto abre o Inicio), e o diretorio (busca por nome e
   filtro por tipo ou goleiros). Cada jogador tem uma pagina em **/jogador/<id>/**, com abas
   escolhidas por `?aba=` e trocadas por HTMX: **Resumo** (totais, presenca em % e ultimos
   domingos, com filtro de temporada em `?temporada=`), **Domingos** (placar de cada partida do

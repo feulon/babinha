@@ -1,0 +1,14 @@
+{% extends "accounts/welcome/_screen.html" %}
+{% block heading %}Antes do primeiro domingo{% endblock %}
+{% block body %}
+<section class="card stack">
+  <h2>Valores e Pix</h2>
+  <p>No Painel, em <strong>Dinheiro &gt; Configurações</strong>, ficam a mensalidade, o valor do avulso, as multas e a chave Pix. Sem isso, nada é cobrado e ninguém sabe para onde pagar.</p>
+  <p class="small muted">Só o presidente altera a chave Pix. Mudanças de valor valem só para cobranças novas.</p>
+</section>
+<section class="card stack">
+  <h2>Jogadores</h2>
+  <p>Em <strong>Jogadores</strong>, toque em <strong>Novo jogador</strong> para cadastrar alguém sem conta. O login e a senha provisória aparecem uma única vez, para você passar pelo WhatsApp. Em <strong>Editar</strong> ficam o tipo e o pote de cada um (o pote, que só a diretoria vê, entra no sorteio dos times).</p>
+  <p class="small muted"><strong>Convite por link:</strong> {% include "core/help/_invite.html" %}</p>
+</section>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "accounts/welcome/_screen.html" %}
+{% load fine_rules %}
+{% block heading %}Multas{% endblock %}
+{% block body %}
+{% if user.rules_accepted_at %}<p class="muted">Você aceitou as regras no cadastro. Aqui vai só o resumo.</p>{% endif %}
+{% how_fines_work %}
+<section class="card stack">
+  <h2>Atraso</h2>
+  <p class="small">{% late_fine_rules %}</p>
+</section>
+<a class="btn btn--ghost btn--block" href="{% url 'rules' %}">Ler as regras completas</a>
+{% endblock %}

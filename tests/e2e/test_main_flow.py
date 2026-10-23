@@ -28,7 +28,18 @@ def test_signup_login_and_join_the_list(
     page.get_by_label("Li e estou ciente das regras").check()
     page.get_by_role("button", name="Criar conta").click()
 
+    # Signing up opens the welcome, not the app: the rules were just accepted in the form.
+    expect(page).to_have_url(f"{live_server.url}/boas-vindas/1/")
     expect(page.get_by_text("Bem-vindo ao Babinha, Sócrates!")).to_be_visible()
+    expect(page.get_by_role("heading", name="Sua semana no Babinha")).to_be_visible()
+    expect(page.get_by_role("button", name="Pular")).to_be_visible()
+    page.get_by_role("link", name="Próxima").click()
+    expect(page.get_by_role("heading", name="Entre na lista")).to_be_visible()
+    page.get_by_role("link", name="Próxima").click()
+    expect(page.get_by_role("heading", name="Pix em três passos")).to_be_visible()
+    page.get_by_role("link", name="Próxima").click()
+    expect(page.get_by_role("heading", name="Multas")).to_be_visible()
+    page.get_by_role("link", name="Ir para o Início").click()
     expect(page.get_by_text("Você não está na lista")).to_be_visible()
 
     sign_out(page)
@@ -37,9 +48,8 @@ def test_signup_login_and_join_the_list(
     page.get_by_label("Senha").fill("dr10")
     page.get_by_role("button", name="Entrar").click()
 
-    # The first sign-in lands on the rules once, whatever comes next.
-    expect(page).to_have_url(f"{live_server.url}/regras/")
-    page.goto(live_server.url)
+    # The welcome was seen at signup: the first sign-in goes straight to the Início.
+    expect(page).to_have_url(f"{live_server.url}/")
     page.get_by_role("button", name="Entrar na lista").click()
     expect(page.get_by_text("Você está na lista deste domingo!")).to_be_visible()
     expect(page.locator('[data-state="lista"]')).to_be_visible()

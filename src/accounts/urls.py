@@ -1,7 +1,7 @@
 from django.contrib.auth.views import LogoutView
 from django.urls import path
 
-from accounts import views
+from accounts import views, welcome_views
 
 app_name = "accounts"
 
@@ -9,6 +9,9 @@ urlpatterns = [
     path("entrar/", views.login_view, name="login"),
     path("sair/", LogoutView.as_view(), name="logout"),
     path("cadastro/", views.signup_view, name="signup"),
+    path("boas-vindas/pular/", welcome_views.skip, name="welcome_skip"),
+    path("boas-vindas/diretoria/<int:step>/", welcome_views.board_screen, name="welcome_board"),
+    path("boas-vindas/<int:step>/", welcome_views.player_screen, name="welcome"),
     path("foto/", views.photo_view, name="photo_edit"),
     path("foto/remover/", views.photo_remove, name="photo_remove"),
     path("fotos/<int:player_id>/", views.photo_file, name="photo"),

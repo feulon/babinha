@@ -12,7 +12,7 @@ from django.urls import reverse_lazy
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
-from accounts import invites, photos, referrals, throttle
+from accounts import invites, photos, referrals, throttle, welcome
 from accounts.forms import (
     ContactForm,
     LoginForm,
@@ -24,7 +24,6 @@ from accounts.forms import (
     ThrottledPasswordResetForm,
 )
 from accounts.models import Player
-from core import clock
 from core.clock import SAO_PAULO
 from core.request import client_ip
 
@@ -94,12 +93,9 @@ def login_view(request: HttpRequest) -> HttpResponse:
             else:
                 throttle.record_login_success(account, client)
                 login(request, player)
-                if player.rules_seen_at is None:
-                    # First sign-in: the rules (and the week's timeline) once, whatever `next` says.
-                    Player.objects.filter(pk=player.pk, rules_seen_at__isnull=True).update(
-                        rules_seen_at=clock.now()
-                    )
-                    return redirect("rules")
+                if not welcome.is_seen(player, welcome.PLAYER):
+                    # First sign-in: the welcome once, whatever `next` says.
+                    return redirect(welcome.start_url())
                 return redirect(_safe_next(request) or "games:home")
     return render(request, "accounts/login.html", {"form": form, "next": _safe_next(request)})
 
@@ -134,7 +130,8 @@ def signup_view(request: HttpRequest) -> HttpResponse:
                     messages.warning(
                         request, "Sua foto não foi salva. Envie de novo pelo seu perfil."
                     )
-                return redirect(_safe_next(request) or "games:home")
+                # Just accepted the rules at sign-up: the welcome, never the rules again later.
+                return redirect(welcome.start_url())
         elif "invite_code" in form.errors:
             throttle.SIGNUP_CLIENT.hit(client)  # wrong codes count, so the code cannot be guessed
     context = {"form": form, "has_players": has_players, "next": _safe_next(request)}

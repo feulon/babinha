@@ -1,0 +1,16 @@
+{% extends "accounts/welcome/_screen.html" %}
+{% block heading %}Entre na lista{% endblock %}
+{% block body %}
+<section class="card stack">
+  <h2>Quando a lista abrir</h2>
+  <p>No <strong>Início</strong>, toque em <strong>Entrar na lista</strong>. Ela abre na segunda, às {{ list_opens_at|time:"H\hi" }}. Antes disso, o Início mostra quando abre para você.</p>
+</section>
+<section class="card stack">
+  <h2>Lista cheia? Fila de espera</h2>
+  <p>Quando as vagas acabam, o botão vira <strong>Entrar na fila de espera</strong>. Você entra por ordem de chegada e, quando alguém sai, o primeiro da fila entra sozinho e aparece como promovido.</p>
+</section>
+<section class="card stack">
+  <h2>Mudou de ideia?</h2>
+  <p>Toque em <strong>Desistir</strong> no Início. Até sábado {{ last_free_minute|time:"H\hi" }} é sem custo, e sair da fila de espera nunca gera multa.</p>
+</section>
+{% endblock %}
