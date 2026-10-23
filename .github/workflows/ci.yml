@@ -49,13 +49,15 @@ jobs:
         with:
           fetch-depth: 0
       # Decides how much runs: scripts/classify_changes.py prints text-only or full. Only a PR
-      # that touches nothing but screen templates and docs is text-only; push to main is always full.
+      # that touches nothing but docs, Markdown and screen templates whose tags, interpolations and
+      # behavior attributes are unchanged against the base (pure text) is text-only; push to main
+      # is always full.
       - name: Classify the change
         id: classify
         run: |
           mode=full
           if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
-            mode=$(git diff --name-only "origin/$GITHUB_BASE_REF...HEAD" | python3 scripts/classify_changes.py)
+            mode=$(git diff --name-only "origin/$GITHUB_BASE_REF...HEAD" | python3 scripts/classify_changes.py "origin/$GITHUB_BASE_REF")
           fi
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
           echo "Change mode: $mode"
@@ -98,13 +100,15 @@ jobs:
         with:
           fetch-depth: 0
       # Decides how much runs: scripts/classify_changes.py prints text-only or full. Only a PR
-      # that touches nothing but screen templates and docs is text-only; push to main is always full.
+      # that touches nothing but docs, Markdown and screen templates whose tags, interpolations and
+      # behavior attributes are unchanged against the base (pure text) is text-only; push to main
+      # is always full.
       - name: Classify the change
         id: classify
         run: |
           mode=full
           if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
-            mode=$(git diff --name-only "origin/$GITHUB_BASE_REF...HEAD" | python3 scripts/classify_changes.py)
+            mode=$(git diff --name-only "origin/$GITHUB_BASE_REF...HEAD" | python3 scripts/classify_changes.py "origin/$GITHUB_BASE_REF")
           fi
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
           echo "Change mode: $mode"

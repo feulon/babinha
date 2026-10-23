@@ -1,39 +1,94 @@
 """Classify a change as `text-only` or `full` from the list of changed files.
 
-Usage: git diff --name-only <base>...HEAD | python scripts/classify_changes.py
-       python scripts/classify_changes.py FILE...
+Usage: git diff --name-only <base>...HEAD | python scripts/classify_changes.py <base>
 
-A change is `text-only` when every file is a screen template (src/templates/**/*.html), under
-docs/, or a Markdown file. Anything else, or an empty list, is `full`. This is the single place
-that decides how much CI runs (see .github/workflows/ci.yml).
+A change is `text-only` when every file is under docs/, a Markdown file, or a screen template
+(src/templates/**/*.html) whose structure is unchanged against <base>: the same template tags and
+interpolations ({% ... %} and {{ ... }}), the same HTML tags and the same behavior attributes
+(hx-*, data-*, href, action, method, name, type, id, class). Only the words between tags may
+differ. Anything else, a new or deleted template, or an empty list is `full`. This is the single
+place that decides how much CI runs (see .github/workflows/ci.yml).
 """
 
+import re
+import subprocess
 import sys
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 
 TEXT_ONLY = "text-only"
 FULL = "full"
 
+TOKEN = re.compile(r"\{%.*?%\}|\{\{.*?\}\}|<[^>]+>", re.DOTALL)
+CONSTRUCT = re.compile(r"\{%.*?%\}|\{\{.*?\}\}", re.DOTALL)
+ATTRIBUTE = re.compile(r"([\w:@.-]+)(?:\s*=\s*(\"[^\"]*\"|'[^']*'|[^\s>]+))?")
+BEHAVIOR_ATTRIBUTES = {"href", "action", "method", "name", "type", "id", "class"}
+
+
+def is_behavior_attribute(name: str) -> bool:
+    return name in BEHAVIOR_ATTRIBUTES or name.startswith(("hx-", "data-"))
+
+
+def tag_signature(tag: str) -> tuple:
+    inner = CONSTRUCT.sub(lambda m: m.group(0).replace(" ", "\0"), tag.strip("<>/ \n"))
+    name, _, rest = inner.partition(" ")
+    attrs = [
+        (n.lower(), v)
+        for n, v in ATTRIBUTE.findall(rest.replace("\n", " "))
+        if is_behavior_attribute(n.lower())
+    ]
+    return (name.lower(), tuple(attrs), tuple(CONSTRUCT.findall(tag)))
+
+
+def skeleton(html: str) -> list:
+    tokens = []
+    for token in TOKEN.findall(re.sub(r"<!--.*?-->", "", html, flags=re.DOTALL)):
+        tokens.append(token if token[:2] in ("{%", "{{") else tag_signature(token))
+    return tokens
+
 
 def is_text_file(path: str) -> bool:
     parts = PurePosixPath(path).parts
-    if not parts:
-        return False
-    if parts[-1].endswith(".md"):
-        return True
-    if parts[0] == "docs":
-        return True
+    return bool(parts) and (parts[-1].endswith(".md") or parts[0] == "docs")
+
+
+def is_template(path: str) -> bool:
+    parts = PurePosixPath(path).parts
     return parts[:2] == ("src", "templates") and parts[-1].endswith(".html")
 
 
-def classify(paths: list[str]) -> str:
+def git_show(base: str, path: str) -> str | None:
+    result = subprocess.run(
+        ["git", "show", f"{base}:{path}"], capture_output=True, text=True, check=False
+    )
+    return result.stdout if result.returncode == 0 else None
+
+
+def read_new(path: str) -> str | None:
+    try:
+        return Path(path).read_text()
+    except OSError:
+        return None
+
+
+def is_text_change(path: str, base: str) -> bool:
+    if is_text_file(path):
+        return True
+    if not is_template(path):
+        return False
+    old, new = git_show(base, path), read_new(path)
+    return old is not None and new is not None and skeleton(old) == skeleton(new)
+
+
+def classify(paths: list[str], base: str) -> str:
     files = [p.strip() for p in paths if p.strip()]
-    return TEXT_ONLY if files and all(is_text_file(p) for p in files) else FULL
+    return TEXT_ONLY if files and all(is_text_change(p, base) for p in files) else FULL
 
 
 def main(argv: list[str]) -> int:
-    paths = argv[1:] or sys.stdin.read().splitlines()
-    print(classify(paths))
+    if len(argv) != 2:
+        print("usage: classify_changes.py <base-ref> < changed-files", file=sys.stderr)
+        return 2
+    print(classify(sys.stdin.read().splitlines(), argv[1]))
     return 0
 
 
