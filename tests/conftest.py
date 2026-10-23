@@ -56,6 +56,8 @@ def make_player(db: None) -> Callable[..., Player]:
         n = next(numbers)
         extra.setdefault("phone", f"119{n:08d}")
         extra.setdefault("email", f"jogador{n}@example.com")
+        # Fixture players are veterans: only the first-login tests start with the rules unseen.
+        extra.setdefault("rules_seen_at", TUESDAY)
         mensalista = player_type == PlayerType.MENSALISTA
         player = Player.objects.create_player(
             password=TEST_PASSWORD,

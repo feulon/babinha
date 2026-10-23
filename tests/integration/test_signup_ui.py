@@ -78,9 +78,13 @@ class TestRulesAcknowledgement:
         html = client.get(SIGNUP).content.decode()
         order = [
             html.index(f'data-signup-rule="{key}"')
-            for key in ("jogo", "lista", "prioridade", "valores", "multas")
+            for key in ("jogo", "lista", "tipos", "valores", "multas")
         ]
         assert order == sorted(order)
+        assert "Tipos de jogador" in html
+        assert "depois de 5 futebóis" in html
+        assert 'data-signup-rule="prioridade"' not in html
+        assert "toma a vaga" not in html
         assert "perdão" not in html
         assert "perdoa" not in html
         assert "Pagar não apaga o histórico." in html

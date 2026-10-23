@@ -160,6 +160,11 @@ class PlayerForm(PhotoFormMixin, SameNameMixin, ContactCleanMixin, forms.ModelFo
         if not editor.is_presidente:
             self._lock_presidente_only_fields()
 
+    def save(self, commit: bool = True) -> Player:
+        if "player_type" in self.changed_data:
+            self.instance.player_type_set_at = clock.now()
+        return super().save(commit)
+
     def _lock_presidente_only_fields(self) -> None:
         """The presidente's own contact and type, and who is on the diretoria, are the
         presidente's to change: anyone else on the diretoria sees them but cannot edit."""
@@ -213,6 +218,7 @@ class ClubSettingsForm(forms.ModelForm):
             *MONEY_FIELDS,
             "fine_factor",
             "monthly_due_day",
+            "avulso_after_games",
             "pix_key",
             "board_contact_phone",
             "venue_name",
@@ -243,6 +249,7 @@ class ClubSettingsForm(forms.ModelForm):
             max_digits="O multiplicador é grande demais.",
             max_whole_digits="O multiplicador é grande demais.",
         )
+        self.fields["avulso_after_games"].label = "Futebóis para virar avulso"
         self.initial["board_contact_phone"] = format_phone(self.instance.board_contact_phone)
         self.fields["monthly_due_day"].widget = forms.Select(
             choices=[(day, f"Dia {day}") for day in range(DUE_DAY_MIN, DUE_DAY_MAX + 1)]

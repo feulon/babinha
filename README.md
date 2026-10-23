@@ -194,10 +194,10 @@ Tudo por variaveis de ambiente; veja `.env.example`. As principais:
 | `BABA_CREATOR_EMAIL` | opcional: e-mail de contato na tela "Sobre o app" (vazio = sem contato) |
 | `DJANGO_SECURE_COOKIES`, `DJANGO_BEHIND_HTTPS_PROXY`, `DJANGO_HSTS_SECONDS` | quando servido por HTTPS |
 
-Os valores em dinheiro (mensalidade, avulso, multa de falta com seu multiplicador e multa de atraso de 15 e 30 min), o dia de vencimento da mensalidade, a
+Os valores em dinheiro (mensalidade, avulso, multa de falta com seu multiplicador e multa de atraso de 15 e 30 min), quantos futeboes um agregado joga antes de virar avulso, o dia de vencimento da mensalidade, a
 chave Pix e o WhatsApp da diretoria (opcional; a pagina publica de recuperacao de senha nao o mostra, por seguranca) ficam no banco e a
 diretoria edita em **Diretoria > Configuracoes**, junto com o nome do local do jogo (opcional), mostrado na tela inicial. Valor 0,00 desliga a cobranca. A tela
-publica `/regras/` ("Regras do babinha") le esses valores e explica prazos, prioridade e desistencia.
+publica `/regras/` ("Regras do babinha") le esses valores e explica os tipos de jogador, prazos e desistencia. No primeiro login o jogador cai nela.
 
 ## Producao
 
@@ -272,9 +272,8 @@ do limite de vagas.
   `/diretoria/multas/`, `/diretoria/despesas/`, `/diretoria/avisos/`, `/diretoria/valores/`)
   continuam, dentro do destino a que pertencem.
 - Quando pagar: a cobranca do domingo (avulsos e agregados) aparece depois do futebol, com o
-  vencimento escrito nela. O texto vem de um so lugar (`finance/_when_to_pay.html`) e aparece em
-  Regras, no Inicio e em Pagamentos. No Inicio, o que se deve e uma linha ("R$ 35,00 a pagar,
-  vence 24/10, Ver Pix"); a chave Pix, o comprovante e o plano mensal ficam em Pagamentos.
+  vencimento escrito nela. No Inicio, o que se deve e uma linha ("R$ 35,00 a pagar,
+  vence 24/10, Pagar"); a chave Pix, o comprovante e o plano mensal ficam em Pagamentos.
 - Caixa: todos veem arrecadado (com o que veio de mensalistas, multas e avulsos), despesas e saldo
   do mes (pelo mes a que cada cobranca se refere) em **Mais > Caixa**, igual para todos; o Caixa
   da diretoria, em **Diretoria > Caixa** (**/diretoria/caixa/**), mostra tambem quem pagou, quem
@@ -348,7 +347,7 @@ ou `rclone sync` para outro bucket.
   confirmacao mostra o aviso na propria pagina e o botao vira "Confirmar times mesmo assim".
 - **Acompanhar o domingo**: o cartao do proximo jogo, no Inicio do jogador, tem a situacao do jogador na lista
   (entrar, sair, fila de espera) e o botao "Acompanhar o domingo" (e so ele: o cartao do jogo do dia nao tem outro botao para os times). O botao fica bloqueado (com cadeado, sem link) ate chegar o domingo, a partir das 00h; no modo demonstracao ja nasce aberto. Quando o domingo acaba (a diretoria encerra, ou chegam as 12h30, a mesma hora em que a Bola de Ouro abre), o cartao passa a dizer "Domingo encerrado" com o botao "Ver como foi o domingo", e o cabecalho de **/jogo/** tambem. O botao abre **/jogo/** com tudo do domingo em blocos: times (o do jogador
-  em destaque), tabela de jogos e placares, presenca (a do proprio jogador e "Quem vai"; some quando o domingo encerra, junto com o botao "Atualizar"), Bola de
+  em destaque), tabela de jogos e placares, presenca (a do proprio jogador e "Lista do domingo"; some quando o domingo encerra, junto com o botao "Atualizar"), Bola de
   Ouro (so depois que o futebol encerra: votar, ou o resultado a partir de segunda 8h). Sao as
   mesmas telas de antes (Jogos, votacao), sem regra nova. Quem chega
   pelo botao leva `?next=` de tela em tela: a aba de baixo continua a de onde o jogador saiu (Inicio); so caminhos do proprio

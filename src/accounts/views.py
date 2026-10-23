@@ -23,6 +23,7 @@ from accounts.forms import (
     ThrottledPasswordResetForm,
 )
 from accounts.models import Player
+from core import clock
 from core.clock import SAO_PAULO
 from core.request import client_ip
 
@@ -92,6 +93,12 @@ def login_view(request: HttpRequest) -> HttpResponse:
             else:
                 throttle.record_login_success(account, client)
                 login(request, player)
+                if player.rules_seen_at is None:
+                    # First sign-in: the rules (and the week's timeline) once, whatever `next` says.
+                    Player.objects.filter(pk=player.pk, rules_seen_at__isnull=True).update(
+                        rules_seen_at=clock.now()
+                    )
+                    return redirect("rules")
                 return redirect(_safe_next(request) or "games:home")
     return render(request, "accounts/login.html", {"form": form, "next": _safe_next(request)})
 

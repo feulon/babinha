@@ -4,7 +4,7 @@
       <span class="who__title">Goleiros {{ week.goalkeepers|length }}/{{ week.goalkeeper_capacity }} · Linha {{ week.line|length }}/{{ week.line_capacity }} · Na espera {{ week.waiting_count }}</span>
       <span class="who__hint small muted">Toque para ver a lista completa</span>
       {% else %}
-      <span class="who__title">Quem vai</span>
+      <span class="who__title">Lista do domingo</span>
       <span class="count">{{ week.total_confirmed }}/{{ week.goalkeeper_capacity|add:week.line_capacity }}</span>
       {% endif %}
     </summary>

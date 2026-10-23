@@ -5,7 +5,7 @@
     {% if not view.over %}<button type="button" class="btn btn--ghost btn--small day-head__refresh" hx-get="{{ here_url }}" hx-target="#day" hx-swap="outerHTML" data-refresh>Atualizar</button>{% endif %}
   </header>
 
-  {% if not view.game_day.is_cancelled and not view.over %}
+  {% if view.published and not view.game_day.is_cancelled and not view.over %}
     <p class="small" data-presence>{{ follow.presence }}.</p>
     {% include "games/_who.html" with week=follow.week compact=True %}
   {% endif %}

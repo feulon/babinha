@@ -93,6 +93,9 @@ class TestPlayerView:
         assert "Nada por aqui ainda" in html
         assert "Ansioso? O domingo chega logo." in html
         assert "Time A" not in html
+        assert "data-presence" not in html
+        assert 'id="quem-vai"' not in html
+        assert "Toque para ver a lista completa" not in html
 
     def test_confirmed_teams_are_shown_without_potes(
         self, sunday: Sunday, lineup: Lineup, board_member: Player
@@ -102,6 +105,8 @@ class TestPlayerView:
         my_team = lineup.teams.get(number=team_number(lineup, me)).name
         html = text(login(me).get(TODAY))
         assert "Nada por aqui ainda" not in html
+        assert "data-presence" in html
+        assert 'id="quem-vai"' in html
         assert f"Você está no {my_team}" in html
         assert f"{me.name} (você)" in html
         assert all(player.name in html for player in sunday.line + sunday.goalkeepers)

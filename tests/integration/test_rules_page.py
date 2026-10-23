@@ -24,6 +24,12 @@ class TestRulesPage:
         html = response.content.decode()
         assert response.status_code == 200
         assert "Regras do babinha" in html
+        assert "Tipos de jogador" in html
+        assert "depois de 5 futebóis" in html
+        assert "A diretoria pode ajustar o tipo de cada jogador." in html
+        assert "toma a vaga" not in html
+        assert "retomam as vagas" not in html
+        assert "O comprovante da mensalidade pode vir depois" not in html
         assert "Mensalidade (vence dia 10)</dt><dd>R$ 100,00</dd>" in html
         assert "<dd>R$ 30,00</dd>" in html
         for fine in ("R$ 10,00", "R$ 15,00", "R$ 22,50"):

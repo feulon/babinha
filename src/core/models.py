@@ -21,6 +21,9 @@ DEFAULT_FINE_BASE = Decimal("50.00")
 CENTS = Decimal("0.01")
 # Minutes-late tiers of the fixed late fine, and what each costs until the diretoria changes it.
 LATE_TIERS = (15, 30)
+# Futebois an agregado plays before becoming avulso (until the diretoria changes it).
+DEFAULT_AVULSO_AFTER_GAMES = 5
+AVULSO_AFTER_GAMES_MIN = 1
 DEFAULT_LATE_FINE_15 = Decimal("10.00")
 DEFAULT_LATE_FINE_30 = Decimal("25.00")
 
@@ -75,6 +78,11 @@ class ClubSettings(models.Model):
         default=DEFAULT_DUE_DAY,
         validators=[MinValueValidator(DUE_DAY_MIN), MaxValueValidator(DUE_DAY_MAX)],
     )
+    avulso_after_games = models.PositiveSmallIntegerField(
+        "futebóis para virar avulso",
+        default=DEFAULT_AVULSO_AFTER_GAMES,
+        validators=[MinValueValidator(AVULSO_AFTER_GAMES_MIN)],
+    )
     pix_key = models.CharField(
         "chave Pix",
         max_length=77,
@@ -113,6 +121,10 @@ class ClubSettings(models.Model):
         verbose_name_plural = "valores"
         constraints = [
             models.CheckConstraint(condition=models.Q(pk=1), name="club_settings_singleton"),
+            models.CheckConstraint(
+                condition=models.Q(avulso_after_games__gte=AVULSO_AFTER_GAMES_MIN),
+                name="avulso_after_games_min",
+            ),
             models.CheckConstraint(
                 condition=models.Q(
                     monthly_due_day__gte=DUE_DAY_MIN, monthly_due_day__lte=DUE_DAY_MAX

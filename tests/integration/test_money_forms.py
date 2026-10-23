@@ -34,6 +34,7 @@ def values(**overrides: str) -> dict[str, str]:
         "late_fine_15": "10,00",
         "late_fine_30": "25,00",
         "monthly_due_day": "10",
+        "avulso_after_games": "5",
         "pix_key": "",
         "board_contact_phone": "",
         "venue_name": "",

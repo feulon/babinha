@@ -8,7 +8,7 @@
         {% include "finance/_pix.html" %}
         {% include "finance/_open_charges.html" %}
       {% else %}
-        <p><strong>R$ {{ payments.total_payable|floatformat:"2g" }}</strong> a pagar{% with next=payments.payable.0.charge %} · vence {{ next.due_date|date:"d/m" }}{% endwith %} · <a href="{% nexturl 'finance:payments' %}">Ver Pix</a></p>
+        <p><strong>R$ {{ payments.total_payable|floatformat:"2g" }}</strong> a pagar{% with next=payments.payable.0.charge %} · vence {{ next.due_date|date:"d/m" }}{% endwith %} · <a href="{% nexturl 'finance:payments' %}">Pagar</a></p>
       {% endif %}
     </section>
   {% else %}
