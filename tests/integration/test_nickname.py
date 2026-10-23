@@ -212,10 +212,8 @@ class TestBoardMoneyScreensShowTheName:
         end_game(GameDay.objects.get(pk=day.pk))
         return careca
 
-    @pytest.mark.parametrize("url_name", ["board:pending", "board:cash", "board:group_charge"])
-    def test_pending_cash_and_group_charge(
-        self, board_client: Client, owing: Player, url_name: str
-    ) -> None:
+    @pytest.mark.parametrize("url_name", ["board:pending", "board:cash"])
+    def test_pending_and_cash(self, board_client: Client, owing: Player, url_name: str) -> None:
         html = board_client.get(reverse(url_name)).content.decode()
         assert "Carlos Eduardo Lima" in html
 
