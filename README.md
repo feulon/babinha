@@ -166,6 +166,12 @@ Postgres descartavel (precisa de Docker e `gpg`; com `rclone` instalado testa ta
 
 O CI (GitHub Actions) roda lint (inclusive shellcheck dos scripts), testes, o build da imagem Docker e a validacao dos compose de producao e da demonstracao.
 
+Um PR so de texto (todos os arquivos em `src/templates/**/*.html`, `docs/**` ou `*.md`) roda o CI
+leve: lint, `tests/unit/test_templates_compile.py` (compila todos os templates) e os testes de
+integracao que citam os templates alterados; pula e2e, navegador e Docker. O job termina sempre
+com sucesso ou falha (nunca skipped). Push para `main` e qualquer outro PR rodam tudo. Quem decide
+e `scripts/classify_changes.py` (imprime `text-only` ou `full` para a lista de arquivos).
+
 ## Configuracao
 
 Tudo por variaveis de ambiente; veja `.env.example`. As principais:
