@@ -171,8 +171,8 @@ class ReceiptStatus(models.TextChoices):
 
 class Receipt(models.Model):
     """A Pix receipt (photo or PDF) the player sent for a charge. Kept forever, for audits: a
-    refused or replaced receipt stays (row and file), and the player sends a new one. Nothing
-    deletes the row or the file in the bucket."""
+    refused or replaced receipt stays (row and file), and the player sends a new one. Only
+    erasing the player (manage.py apagar_jogador, a LGPD request) deletes the row and the file."""
 
     charge = models.ForeignKey(Charge, on_delete=models.PROTECT, related_name="receipts")
     file = models.FileField("arquivo", storage=receipts_storage, max_length=200)

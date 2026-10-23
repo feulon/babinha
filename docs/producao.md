@@ -86,6 +86,7 @@ scripts/baba.sh status          # estado de cada servico (todos "healthy")
 scripts/baba.sh logs            # acompanha o log do app (ctrl+c sai); logs db, logs s3 para os outros
 scripts/baba.sh parar           # para tudo, os dados ficam
 scripts/baba.sh atualizar       # backup, git pull, reconstroi e reinicia
+scripts/baba.sh apagar-jogador CELULAR   # simula apagar um jogador (LGPD, secao 8)
 ```
 
 O app **se recusa a iniciar** se alguma variavel obrigatoria faltar ou estiver insegura (chave
@@ -284,12 +285,24 @@ de cerca de 30 pessoas:
 - [ ] Avise os jogadores, em poucas linhas, quais dados o bába guarda e para que (organizar o
   bába) e quem ve o que (celular, e-mail e comprovantes so o proprio jogador e a diretoria).
 - [ ] Combine um canal (o WhatsApp da diretoria) para quem quiser ver, corrigir ou apagar os
-  proprios dados; hoje apagar uma conta exige acesso ao banco e apagar o arquivo do comprovante.
+  proprios dados.
 - [ ] Os comprovantes ficam guardados por jogador, sem prazo de validade, para auditorias da
   diretoria (ficha do jogador, com todo o historico de pagamentos); nada os apaga
   automaticamente. **Ponto em aberto para o clube decidir**: por quanto tempo guardar os
-  comprovantes e como tratar um pedido de apagar os dados de um jogador.
+  comprovantes (o pedido de um jogador para apagar os dados dele esta logo abaixo).
 - [ ] Os backups tambem tem dados pessoais: disco em lugar seguro, mesma retencao.
+
+**Apagar um jogador de verdade** (pedido de remocao dos dados; desativar so esconde). Rode
+`scripts/baba.sh backup`, depois `scripts/baba.sh apagar-jogador 11987654321` (o celular dele):
+isso so simula e mostra o que sai (linhas por tabela, foto e comprovantes) e o que muda no que
+fica (placares dos jogos em que ele marcou, caixa e cobrancas, ranking, Bola de Ouro). Para
+apagar, repita com `--confirmar` e digite o celular de novo. O que ele fez como diretoria
+(despesas, gols lancados, comprovantes analisados) fica e passa para o presidente; quem ele
+indicou fica sem "indicado por". O presidente nao pode ser apagado, e quem esta na lista de um
+domingo que vai acontecer precisa sair dela pelo app antes. Se algum arquivo nao sair do
+armazenamento, o comando lista os que sobraram para apagar a mao. Sem terminal (em script),
+`--confirmar` so vale junto com `--sim-tenho-certeza`. Os backups antigos ainda tem os dados
+dele ate sairem pela retencao.
 
 ---
 
