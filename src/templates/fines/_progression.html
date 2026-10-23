@@ -1,3 +1,3 @@
 {% load money %}{% if club.fine_base %}O valor sobe a cada multa: a 1ª custa {{ club.fine_base|brl }} e cada nova custa {{ club.fine_factor|floatformat:"-2" }} vez a anterior
 ({% for amount in club.fine_examples %}{{ amount|brl }}{% if not forloop.last %}, {% endif %}{% endfor %}...).{% else %}O valor da multa ainda está a definir.{% endif %}
-Pagar não zera a conta; só o perdão da diretoria (ou uma multa cancelada) tira uma vez dela.
+Pagar não apaga o histórico.

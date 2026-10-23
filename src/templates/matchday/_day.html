@@ -15,9 +15,21 @@
       <p class="status__headline">Domingo cancelado</p>
     </section>
   {% elif not view.published %}
-    <section class="status status--neutral" data-state="sem-times">
-      <p class="status__headline">Times ainda não definidos</p>
-      <p>Os times saem por volta das {{ view.teams_out_label }}, quando a diretoria confirmar.</p>
+    <section class="empty-state" data-state="sem-times">
+      <svg class="empty-state__art" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+        <circle cx="60" cy="62" r="42" fill="var(--surface, #fff)" stroke="currentColor" stroke-width="4"/>
+        <path d="M60 36l15 11-6 18H51l-6-18z" fill="currentColor"/>
+        <path d="M60 36V22M75 47l14-5M69 65l9 13M51 65l-9 13M45 47l-14-5" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <circle cx="48" cy="64" r="7" fill="var(--surface, #fff)" stroke="currentColor" stroke-width="2.5"/>
+        <circle cx="72" cy="64" r="7" fill="var(--surface, #fff)" stroke="currentColor" stroke-width="2.5"/>
+        <circle cx="49" cy="65" r="2.5" fill="currentColor"/>
+        <circle cx="73" cy="65" r="2.5" fill="currentColor"/>
+        <path d="M50 86q10-6 20 0" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <path d="M96 40c-4 7-6 10-6 13a6 6 0 0 0 12 0c0-3-2-6-6-13z" fill="var(--primary-2)"/>
+      </svg>
+      <p class="status__headline">Nada por aqui ainda</p>
+      <p>Ansioso? O domingo chega logo.</p>
+      <p class="small muted">Os times saem por volta das {{ view.teams_out_label }}, quando a diretoria confirmar.</p>
     </section>
   {% else %}
     {% if view.adjusting %}

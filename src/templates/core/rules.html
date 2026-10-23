@@ -6,43 +6,49 @@
   <header>
     <p class="eyebrow">Babinha de Domingo</p>
     <h1>Regras do babinha</h1>
-    <p class="muted small">Domingo, das 10h às 12h. Todos os horários são de Brasília.</p>
+    <p class="muted small">Como funciona a semana. Todos os horários são de Brasília.</p>
   </header>
 
-  <section class="card" data-rules="valores">
-    <h2>Valores</h2>
+  <ol class="week" data-rules="semana">
+    <li class="week__step"><div class="week__when">Seg<br>{{ list_opens_at|time:"H\hi" }}</div><div class="week__what">
+      <strong>A lista abre</strong>
+      <p class="small muted">Mensalistas e avulsos entram. São até 4 goleiros: sem goleiro a linha tem 22 vagas, com 1 tem 21 e com 2 a 4 tem 20. Lista cheia vira fila de espera, por ordem de chegada, e quando alguém sai o primeiro da fila entra sozinho.</p>
+    </div></li>
+    <li class="week__step"><div class="week__when">Qua<br>20h</div><div class="week__what">
+      <strong>Agregados entram</strong>
+      <p class="small muted">Só se ainda houver vaga.</p>
+    </div></li>
+    <li class="week__step"><div class="week__when">Sáb<br>23h59</div><div class="week__what">
+      <strong>Último prazo sem multa</strong>
+      <p class="small muted">Sair da lista ou recusar a vaga que veio da espera é de graça até aqui. Depois, desistir gera multa. Sair da fila de espera nunca gera.</p>
+      <p class="small muted"><strong>Prioridade:</strong> até aqui o mensalista que entra com a lista cheia toma a vaga do último não mensalista, e o 1º e o 2º goleiro retomam as vagas 21 e 22 do último jogador de linha. Quem perde a vaga assim vai para o topo da fila, sem multa.</p>
+    </div></li>
+    <li class="week__step"><div class="week__when">Dom<br>10h às 12h</div><div class="week__what">
+      <strong>Dia do jogo</strong>
+      <p class="small muted">Cada partida termina com 2 gols ou 7 minutos, o que vier primeiro. Quem ganha fica, o empate tira os dois, e entra quem espera há mais tempo.</p>
+    </div></li>
+    <li class="week__step"><div class="week__when">Dom<br>depois</div><div class="week__what">
+      <strong>Bola de Ouro</strong>
+      <p class="small muted">Quem jogou vota no destaque do dia. O mais votado é a Bola de Ouro do Domingo.</p>
+    </div></li>
+    <li class="week__step"><div class="week__when">Seg<br>{{ list_opens_at|time:"H\hi" }}</div><div class="week__what">
+      <strong>Resultado e nova lista</strong>
+      <p class="small muted">Sai o resultado da votação e a lista da semana abre.</p>
+    </div></li>
+  </ol>
+
+  <section class="card" data-rules="dinheiro">
+    <h2>Dinheiro e multas</h2>
     <dl class="kv">
-      <dt>Mensalidade</dt><dd>{% if club.monthly_fee %}{{ club.monthly_fee|brl }} por mês{% else %}a definir{% endif %}</dd>
-      <dt>Avulso e agregado</dt><dd>{% if club.single_fee %}{{ club.single_fee|brl }} por domingo{% else %}a definir{% endif %}</dd>
-      <dt>Multa de falta</dt><dd>{% if club.fine_base %}{% for amount in club.fine_examples|slice:":3" %}{% if forloop.first %}{{ amount|brl }}{% else %}{{ amount|brl|cut:"R$ " }}{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}...{% else %}a definir{% endif %}</dd>
+      <dt>Mensalidade (vence dia {{ club.monthly_due_day }})</dt><dd>{% if club.monthly_fee %}{{ club.monthly_fee|brl }}{% else %}a definir{% endif %}</dd>
+      <dt>Avulso e agregado, por domingo</dt><dd>{% if club.single_fee %}{{ club.single_fee|brl }}{% else %}a definir{% endif %}</dd>
+      <dt>Falta sem aviso</dt><dd>{% if club.fine_base %}{{ club.fine_base|brl }}, sobe {{ club.fine_factor|increase_percent }}% a cada{% else %}a definir{% endif %}</dd>
+      <dt>Atraso de 15 min</dt><dd>{{ club.late_fine_15|brl }}</dd>
+      <dt>Atraso de 30 min</dt><dd>{{ club.late_fine_30|brl }}</dd>
     </dl>
-    <p class="small muted">O mesmo valor para todos. {% fine_progression %} Mensalista vale por um mês: você aperta “Virar mensalista” em Pagamentos e, no dia 1º, volta ao tipo fixo (avulso ou agregado) até aderir outra vez. A mensalidade vence todo dia {{ club.monthly_due_day }} e o comprovante pode vir depois. {% include "finance/_when_to_pay.html" %} {% include "core/help/_pix.html" %}</p>
+    <p class="small muted">A multa de falta é a mesma para todos. {% fine_progression %} Ela vem de faltar quando você estava na lista (se foi engano, a diretoria corrige e a multa some) ou de desistir depois de sábado 23h59.</p>
+    <p class="small muted">Mensalista vale por um mês: você aperta “Virar mensalista” em Pagamentos e, no dia 1º, volta ao tipo fixo (avulso ou agregado) até aderir outra vez. O comprovante da mensalidade pode vir depois. {% include "finance/_when_to_pay.html" %} {% include "core/help/_pix.html" %}</p>
   </section>
-
-  <section class="card" data-rules="lista">
-    <h2>A lista</h2>
-    <ul class="plain-list">
-      <li>Abre na segunda, às {{ list_opens_at|time:"H\hi" }}, para mensalistas e avulsos. Agregados entram a partir de quarta, às 20h, e só se ainda houver vaga.</li>
-      <li>São até 4 goleiros. Sem goleiro a linha tem 22 vagas, com 1 tem 21 e com 2 a 4 tem 20.</li>
-      <li>Passou do limite? Você entra na fila de espera, por ordem de chegada. Quando alguém sai, o primeiro da fila entra sozinho.</li>
-    </ul>
-  </section>
-
-  <section class="card" data-rules="prioridade">
-    <h2>Prioridade</h2>
-    <ul class="plain-list">
-      <li>Até sábado 23h59, o mensalista que entra com a lista cheia toma a vaga do último não mensalista a entrar.</li>
-      <li>O 1º e o 2º goleiro retomam as vagas 21 e 22 do último jogador de linha a entrar.</li>
-      <li>Quem perde a vaga assim vai para o topo da fila de espera, sem multa.</li>
-    </ul>
-  </section>
-
-  <section class="card" data-rules="desistencia">
-    <h2>Desistência</h2>
-    <p>Desistir da vaga, ou recusar a vaga quando é chamado da espera, não custa nada até sábado às 23h59. Depois disso, desistir gera multa.</p>
-  </section>
-
-  {% how_fines_work progression=False %}
 
   {% if not user.is_authenticated %}
     <a class="btn btn--ghost btn--block" href="{% url 'accounts:login' %}">Voltar para o login</a>

@@ -24,19 +24,46 @@ class TestRulesPage:
         html = response.content.decode()
         assert response.status_code == 200
         assert "Regras do babinha" in html
-        assert "R$ 100,00 por mês" in html
-        assert "vence todo dia 10" in html
-        assert "R$ 30,00 por domingo" in html
+        assert "Mensalidade (vence dia 10)</dt><dd>R$ 100,00</dd>" in html
+        assert "<dd>R$ 30,00</dd>" in html
         for fine in ("R$ 10,00", "R$ 15,00", "R$ 22,50"):
             assert fine in html
 
     def test_values_follow_a_change(self, client: Client, club_values: ClubSettings) -> None:
         club_values.single_fee = Decimal("45.00")
         club_values.save()
-        assert "R$ 45,00 por domingo" in client.get(RULES).content.decode()
+        assert "<dd>R$ 45,00</dd>" in client.get(RULES).content.decode()
+
+    def test_the_week_comes_in_order_and_money_comes_last(
+        self, client: Client, club_values: ClubSettings
+    ) -> None:
+        html = client.get(RULES).content.decode()
+        marks = [
+            "A lista abre",
+            "Agregados entram",
+            "Último prazo sem multa",
+            "Dia do jogo",
+            "Bola de Ouro",
+            "Resultado e nova lista",
+            'data-rules="dinheiro"',
+        ]
+        positions = [html.index(mark) for mark in marks]
+        assert positions == sorted(positions)
+        assert "perdão" not in html
+        assert "perdoa" not in html
+        assert "Pagar não apaga o histórico." in html
 
     def test_it_never_shows_the_pix_key(self, client: Client, club_values: ClubSettings) -> None:
         assert club_values.pix_key not in client.get(RULES).content.decode()
+
+
+class TestTutorialClosing:
+    def test_the_player_tutorial_ends_with_a_button_to_the_rules(
+        self, client: Client, make_player
+    ) -> None:
+        client.force_login(make_player("Zico"))
+        html = client.get(reverse("tutorial")).content.decode()
+        assert f'<a class="btn btn--primary btn--block" href="{RULES}">Ver as regras</a>' in html
 
 
 class TestPasswordRecoveryPage:
