@@ -80,13 +80,13 @@ class TestHistory:
         assert [e.charge.pk for e in payment_history(player)] == [charge.pk]
 
     def test_keeps_every_receipt_of_a_charge(
-        self, charge: Charge, player: Player, board_member: Player
+        self, charge: Charge, player: Player, board_member: Player, president: Player
     ) -> None:
         first = payments.submit_receipt(charge.pk, player, png())
         replacement = payments.submit_receipt(charge.pk, player, png())
         payments.refuse_receipt(replacement.pk, board_member, "Ilegível")
         third = payments.submit_receipt(charge.pk, player, png())
-        payments.approve_receipt(third.pk, board_member)
+        payments.approve_receipt(third.pk, president)
         (entry,) = payment_history(player)
         assert entry.situation == "Aprovado"
         assert [r.pk for r in entry.receipts] == [third.pk, replacement.pk, first.pk]
@@ -139,15 +139,15 @@ class TestPage:
 
 class TestNothingIsDeleted:
     def test_files_and_rows_survive_replace_refuse_approve_and_undo(
-        self, charge: Charge, player: Player, board_member: Player
+        self, charge: Charge, player: Player, board_member: Player, president: Player
     ) -> None:
         first = payments.submit_receipt(charge.pk, player, png())
         second = payments.submit_receipt(charge.pk, player, png())
         payments.refuse_receipt(second.pk, board_member, "Valor errado")
         third = payments.submit_receipt(charge.pk, player, png())
-        payments.approve_receipt(third.pk, board_member)
-        payments.undo_approval(third.pk, board_member)
-        payments.approve_receipt(third.pk, board_member)
+        payments.approve_receipt(third.pk, president)
+        payments.undo_approval(third.pk, president)
+        payments.approve_receipt(third.pk, president)
         charge.refresh_from_db()
         assert charge.status == ChargeStatus.PAID
         for receipt in (first, second, third):

@@ -18,7 +18,7 @@ Aplicativo para gerenciar o bába semanal de domingo de um grupo de amigos, semp
 - Padrao do novato: linha, avulso e pote 3.
 - Tipos fixos de jogador: avulso e agregado, definidos pela diretoria; o agregado vira avulso apos N futeboes (configuravel) e o primeiro login leva as Regras. Para a adesao mensal, ver [Mensalidade no README](../README.md#dinheiro-resumo).
 - Posicao: linha ou goleiro. Definida pela diretoria.
-- Diretoria (administradores) e presidente tem os mesmos poderes. O presidente e o dono do Pix mostrado no app.
+- Diretoria (administradores) e presidente tem os mesmos poderes. O Pix mostrado no app tem a chave e o nome do titular que o presidente cadastra. Marcar como pago e confirmar comprovante e so do presidente. Existe ainda um administrador oculto (criador do app), ligado so pelo banco ou pelo comando `definir_admin`, com os poderes do presidente e sem aparecer como presidente.
 - Poderes da diretoria: tipo e posicao dos jogadores, potes, comprovantes (pago ou recusado), despesas, cancelar domingo, valores, Pix, editar a lista, operar placar, perdoar multa, nomear outros diretores, encerrar temporada.
 - Potes: so a diretoria ve e edita. Jogadores veem os times formados, nunca o pote.
 
@@ -38,7 +38,7 @@ Aplicativo para gerenciar o bába semanal de domingo de um grupo de amigos, semp
 - Mesmo valor para todos. Os valores (mensalidade, avulso, multas) serao definidos depois e devem ser configuraveis pela diretoria.
 - A vaga vale ao confirmar. O pagamento do domingo so e cobrado depois do jogo (12h30 de domingo ou quando um diretor finaliza o jogo), com prazo (ate sabado). Quem nao pagou aparece como pendente para a diretoria.
 - Mensalidade: ver as regras de adesao, vencimento e renovacao no [README](../README.md#dinheiro-resumo).
-- O jogador envia foto ou PDF do comprovante do Pix. A diretoria marca pago ou recusado (com motivo). Chave Pix unica, configuravel, mostrada no app junto com o valor.
+- O jogador envia foto ou PDF do comprovante do Pix. O presidente confirma o pagamento; a diretoria pode recusar (com motivo). Chave Pix unica, configuravel, mostrada no app junto com o valor.
 - Multa: desistencia depois do prazo, falta sem aviso (pela lista de presenca) ou atraso. O atraso tem valor fixo por faixa (padrao: 15 min = R$ 10, 30 min = R$ 25; editavel pela diretoria), fora da escada das faltas, e a diretoria multa no fim do domingo. A multa de falta parte de um valor base (R$ 50) e sobe pelo multiplicador (padrao 1,5x, editavel pela diretoria) a cada ocorrencia (50, 75, 112,50...), por jogador, e a contagem nunca zera. Paga pelo mesmo fluxo de Pix e comprovante.
 - Qualquer diretor pode perdoar a multa. O perdao cancela a cobranca e apaga a ocorrencia da contagem. O app registra quem perdoou e o motivo.
 - Aviso de pagamento pendente: em "Avisar quem deve" (Financeiro > A receber) a diretoria escolhe devedores e envia um e-mail de cobranca. So quem tem e-mail recebe; quem ja foi avisado recentemente e pulado, a menos que a diretoria marque para repetir. Quem nao tem e-mail e avisado fora do app, pelo WhatsApp: "Cobrar no grupo" (na mesma tela) monta uma mensagem para o grupo do WhatsApp marcando o telefone de cada devedor; o app so monta o texto, quem compartilha e o diretor.

@@ -43,6 +43,11 @@
       <a class="hub__item" href="{% url 'tutorial' %}">
         <span class="hub__text"><strong>Tutorial</strong></span>
       </a>
+      {% if user.is_board %}
+      <a class="hub__item" href="{% url 'board:sunday_tutorial' %}">
+        <span class="hub__text"><strong>Como montar o domingo</strong><span class="small muted">Passo a passo da lista aos times</span></span>
+      </a>
+      {% endif %}
       <a class="hub__item" href="{% url 'rules' %}">
         <span class="hub__text"><strong>Regras do babinha</strong><span class="small muted">Valores, prazos e prioridades</span></span>
       </a>

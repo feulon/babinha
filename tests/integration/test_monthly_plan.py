@@ -163,7 +163,13 @@ class TestJoining:
         assert monthly_charges(player) == []
 
     def test_paying_later_keeps_the_enrollment(
-        self, fees: ClubSettings, player: Player, board_member: Player, receipt_upload, clock
+        self,
+        fees: ClubSettings,
+        player: Player,
+        board_member: Player,
+        receipt_upload,
+        clock,
+        president: Player,
     ) -> None:
         monthly.join(player)
         clock.set(datetime(2026, 10, 24, 18, 0, tzinfo=SP))
@@ -174,7 +180,7 @@ class TestJoining:
         assert charge.status == ChargeStatus.UNDER_REVIEW
         assert player.is_mensalista
 
-        payments.approve_receipt(receipt.pk, board_member)
+        payments.approve_receipt(receipt.pk, president)
         charge.refresh_from_db()
         assert charge.status == ChargeStatus.PAID
         assert player.is_mensalista
@@ -304,12 +310,12 @@ class TestMembershipCoverage:
         assert monthly_charges(player)[0].status == ChargeStatus.PENDING
 
     def test_paid_history_is_preserved(
-        self, fees, player, board_client, board_member, receipt_upload
+        self, fees, player, board_client, board_member, receipt_upload, president: Player
     ):
         monthly.join(player)
         (charge,) = monthly_charges(player)
         receipt = payments.submit_receipt(charge.pk, player, receipt_upload())
-        payments.approve_receipt(receipt.pk, board_member)
+        payments.approve_receipt(receipt.pk, president)
         board_client.post(edit_url(player), form_data(player, mensalista=""))
         charge.refresh_from_db()
         assert charge.status == ChargeStatus.PAID
@@ -497,13 +503,14 @@ class TestBoardView:
         make_player,
         board_member: Player,
         receipt_upload,
+        president: Player,
     ) -> None:
         paid, pending = make_player("Pagou"), make_player("Deve")
         make_player("Avulso Fixo")
         for each in (paid, pending):
             monthly.join(each)
         receipt = payments.submit_receipt(monthly_charges(paid)[0].pk, paid, receipt_upload())
-        payments.approve_receipt(receipt.pk, board_member)
+        payments.approve_receipt(receipt.pk, president)
 
         html = board_client.get(CASH).content.decode()
 

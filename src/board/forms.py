@@ -149,8 +149,13 @@ class PlayerForm(PhotoFormMixin, SameNameMixin, ContactCleanMixin, forms.ModelFo
         super().__init__(*args, **kwargs)
         place_after(self, "mensalista", "player_type")
         self.initial["mensalista"] = self.instance.pk is not None and self.instance.is_mensalista
-        if self.instance.is_presidente or (editor is not None and editor.pk == self.instance.pk):
-            # Nobody switches themselves off, and the presidente is always there.
+        if (
+            self.instance.is_presidente
+            or (self.instance.is_admin and not editor.has_presidente_powers)
+            or (editor is not None and editor.pk == self.instance.pk)
+        ):
+            # Nobody switches themselves off, the presidente is always there and the admin is
+            # not the diretoria's to switch off.
             self.fields["is_active"].disabled = True
         if not self.instance.photo:
             del self.fields["remove_photo"]
@@ -169,7 +174,7 @@ class PlayerForm(PhotoFormMixin, SameNameMixin, ContactCleanMixin, forms.ModelFo
             self.fields["referred_by"].disabled = True
         if self.instance.is_presidente or self.instance.referred_by_id is None:
             self.fields["referred_by"].required = False
-        if not editor.is_presidente:
+        if not editor.has_presidente_powers:
             self._lock_presidente_only_fields()
 
     def save(self, commit: bool = True) -> Player:
@@ -181,7 +186,7 @@ class PlayerForm(PhotoFormMixin, SameNameMixin, ContactCleanMixin, forms.ModelFo
         """The presidente's own contact and type, and who is on the diretoria, are the
         presidente's to change: anyone else on the diretoria sees them but cannot edit."""
         locked = ["is_diretoria"]
-        if self.instance.is_presidente:
+        if self.instance.has_presidente_powers:
             locked += ["phone", "email", "player_type", "mensalista"]
         for name in locked:
             field = self.fields[name]
@@ -232,18 +237,26 @@ class ClubSettingsForm(forms.ModelForm):
             "monthly_due_day",
             "avulso_after_games",
             "pix_key",
+            "pix_holder",
             "board_contact_phone",
             "venue_name",
         ]
-        widgets = {"pix_key": forms.TextInput(attrs={"autocomplete": "off", "spellcheck": "false"})}
+        widgets = {
+            "pix_key": forms.TextInput(attrs={"autocomplete": "off", "spellcheck": "false"}),
+            "pix_holder": forms.TextInput(attrs={"autocomplete": "off"}),
+        }
 
     def __init__(self, *args: object, editor: Player, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
-        if not editor.is_presidente:
-            # The key receives everyone's monthly fee: only the presidente, whose it is, changes it.
-            pix_key = self.fields["pix_key"]
-            pix_key.disabled = True
-            pix_key.help_text = "Só o presidente altera a chave Pix."
+        if not editor.has_presidente_powers:
+            # The key receives everyone's monthly fee: only the presidente, whose it is, changes it,
+            # and the holder that goes with it.
+            for name, hint in (
+                ("pix_key", "Só o presidente altera a chave Pix."),
+                ("pix_holder", "Só o presidente altera o titular do Pix."),
+            ):
+                self.fields[name].disabled = True
+                self.fields[name].help_text = hint
         for name in MONEY_FIELDS:
             localize_money(self.fields[name])
         self.fields["fine_base"].label = "Primeira falta (R$)"
@@ -266,6 +279,9 @@ class ClubSettingsForm(forms.ModelForm):
         self.fields["monthly_due_day"].widget = forms.Select(
             choices=[(day, f"Dia {day}") for day in range(DUE_DAY_MIN, DUE_DAY_MAX + 1)]
         )
+
+    def clean_pix_holder(self) -> str:
+        return " ".join(self.cleaned_data["pix_holder"].split())
 
     def clean_pix_key(self) -> str:
         raw = self.cleaned_data["pix_key"]

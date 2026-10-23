@@ -313,7 +313,12 @@ class TestChargesOpenAfterTheGame:
 
 class TestCancelledSunday:
     def test_cancelling_charges_nobody_and_refunds_nothing(
-        self, game_day: GameDay, make_player, board_member: Player, receipt_upload
+        self,
+        game_day: GameDay,
+        make_player,
+        board_member: Player,
+        receipt_upload,
+        president: Player,
     ) -> None:
         unpaid, in_review, paid = make_player(), make_player(), make_player()
         for player in (unpaid, in_review, paid):
@@ -321,7 +326,7 @@ class TestCancelledSunday:
         end_game(game_day)
         payments.submit_receipt(active_game_charge(in_review).pk, in_review, receipt_upload())
         receipt = payments.submit_receipt(active_game_charge(paid).pk, paid, receipt_upload())
-        payments.approve_receipt(receipt.pk, board_member)
+        payments.approve_receipt(receipt.pk, president)
 
         services.cancel_game_day(game_day.pk, board_member, "Chuva")
         assert game_charges(unpaid)[0].status == ChargeStatus.CANCELLED
@@ -391,12 +396,17 @@ class TestFineCharges:
             fines.forgive(fine.pk, board_member, "Avisou")
 
     def test_paid_fine_keeps_counting(
-        self, game_day: GameDay, make_player, board_member: Player, receipt_upload
+        self,
+        game_day: GameDay,
+        make_player,
+        board_member: Player,
+        receipt_upload,
+        president: Player,
     ) -> None:
         player = make_player()
         fine = self.fine_for(game_day, player)
         receipt = payments.submit_receipt(fine.charge.pk, player, receipt_upload())
-        payments.approve_receipt(receipt.pk, board_member)
+        payments.approve_receipt(receipt.pk, president)
         fine.refresh_from_db()
         assert fine.status == FineStatus.PAID
         second = self.fine_for(game_day, player)
@@ -463,14 +473,20 @@ class TestFineCharges:
         assert fine.charge.status == ChargeStatus.REFUSED
 
     def test_correcting_a_paid_no_show_does_not_fine_twice(
-        self, game_day: GameDay, make_player, board_member: Player, receipt_upload, clock
+        self,
+        game_day: GameDay,
+        make_player,
+        board_member: Player,
+        receipt_upload,
+        clock,
+        president: Player,
     ) -> None:
         player = make_player()
         services.join_list(game_day.pk, player)
         clock.set(AFTER_KICKOFF)
         fine = services.mark_attendance(game_day.pk, player, Attendance.FALTOU, board_member)
         receipt = payments.submit_receipt(fine.charge.pk, player, receipt_upload())
-        payments.approve_receipt(receipt.pk, board_member)
+        payments.approve_receipt(receipt.pk, president)
 
         services.mark_attendance(game_day.pk, player, Attendance.PRESENTE, board_member)
         again = services.mark_attendance(game_day.pk, player, Attendance.FALTOU, board_member)

@@ -14,7 +14,7 @@ from finance.reminders import debtors
 from finance.selectors import PixInfo, open_charges
 from games import services
 from games.models import GameDay
-from tests.conftest import PIX_KEY, end_game
+from tests.conftest import PIX_HOLDER, PIX_KEY, end_game
 
 pytestmark = pytest.mark.django_db
 
@@ -76,7 +76,7 @@ class TestMessage:
         assert "Garrincha - " in message
         assert message.count("R$ 30,00") == 2
         assert "Total devido: R$ 60,00" in message
-        assert f"Pix: {PIX_KEY} (em nome de Presidente)" in message
+        assert f"Pix: {PIX_KEY} (em nome de {PIX_HOLDER})" in message
 
     def test_only_players_with_something_to_pay_enter(
         self, board_client: Client, owing, make_player

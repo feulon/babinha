@@ -28,10 +28,14 @@
   </section>
 
   {% if receipt.status == "em_analise" %}
-    <form method="post" action="{% url 'board:approve_receipt' receipt_id=receipt.pk %}" data-confirm="Confirmar o pagamento de {{ charge.player.name }} ({{ charge.amount|brl }})? A cobrança passa a paga e entra no caixa.">
-      {% csrf_token %}{% next_field %}
-      <button type="submit" class="btn btn--primary btn--block">Confirmar pagamento</button>
-    </form>
+    {% if user.has_presidente_powers %}
+      <form method="post" action="{% url 'board:approve_receipt' receipt_id=receipt.pk %}" data-confirm="Confirmar o pagamento de {{ charge.player.name }} ({{ charge.amount|brl }})? A cobrança passa a paga e entra no caixa.">
+        {% csrf_token %}{% next_field %}
+        <button type="submit" class="btn btn--primary btn--block">Confirmar pagamento</button>
+      </form>
+    {% else %}
+      <p class="small muted">Só o presidente confirma o pagamento. Você pode recusar o comprovante.</p>
+    {% endif %}
     <section class="card">
       <h2>Recusar</h2>
       <p class="small muted">O jogador vê o motivo e pode enviar outro comprovante.</p>

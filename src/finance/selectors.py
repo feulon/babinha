@@ -25,7 +25,7 @@ from games.models import GameDay
 @dataclass(frozen=True)
 class PixInfo:
     key: str
-    holder: str  # the presidente owns the Pix account shown in the app
+    holder: str  # who the key is under, as the presidente wrote it; "" when not informed
 
     @property
     def is_configured(self) -> bool:
@@ -33,8 +33,8 @@ class PixInfo:
 
 
 def pix_info() -> PixInfo:
-    presidente = Player.objects.filter(is_presidente=True).only("name").first()
-    return PixInfo(ClubSettings.load().pix_key, presidente.name if presidente else "")
+    club = ClubSettings.load()
+    return PixInfo(club.pix_key, club.pix_holder)
 
 
 @dataclass(frozen=True)

@@ -22,7 +22,7 @@ from finance.models import (
     ReceiptStatus,
 )
 from games import services
-from tests.conftest import PDF_BYTES, PIX_KEY, PNG_BYTES, end_game
+from tests.conftest import PDF_BYTES, PIX_HOLDER, PIX_KEY, PNG_BYTES, end_game
 
 pytestmark = pytest.mark.django_db
 
@@ -46,6 +46,13 @@ def player_client(client: Client, player: Player) -> Client:
 def board_client(board_member: Player) -> Client:
     client = Client()
     client.force_login(board_member)
+    return client
+
+
+@pytest.fixture
+def president_client(president: Player) -> Client:
+    client = Client()
+    client.force_login(president)
     return client
 
 
@@ -82,7 +89,7 @@ class TestPlayerHome:
         assert "Pagamento pendente" in html
         assert "R$ 30,00" in html
         assert PIX_KEY in html
-        assert "Em nome de Presidente" in html
+        assert f"Em nome de {PIX_HOLDER}" in html
         assert 'enctype="multipart/form-data"' in html
         assert "Domingo 18/10" in html
 
@@ -197,11 +204,13 @@ class TestReceiptFile:
 
 class TestReport:
     @pytest.fixture
-    def paid(self, charge: Charge, player: Player, board_member: Player) -> Charge:
+    def paid(
+        self, charge: Charge, player: Player, board_member: Player, president: Player
+    ) -> Charge:
         receipt = payments.submit_receipt(
             charge.pk, player, SimpleUploadedFile("pix.png", PNG_BYTES)
         )
-        payments.approve_receipt(receipt.pk, board_member)
+        payments.approve_receipt(receipt.pk, president)
         payments.save_expense(
             board_member, amount=Decimal("12.00"), description="Bomba de ar", day=date(2026, 10, 5)
         )
@@ -232,11 +241,16 @@ class TestReport:
         assert "Bomba de ar" in html
 
     def test_hand_marked_payment_trail_is_for_the_board_only(
-        self, board_client: Client, board_member: Player, charge: Charge, make_player
+        self,
+        board_client: Client,
+        board_member: Player,
+        charge: Charge,
+        make_player,
+        president: Player,
     ) -> None:
-        payments.mark_paid(charge.pk, board_member, PaymentMethod.CASH, "na quadra")
+        payments.mark_paid(charge.pk, president, PaymentMethod.CASH, "na quadra")
         html = board_client.get(reverse("board:cash")).content.decode()
-        assert f"Marcado como pago por {board_member.name}" in html
+        assert f"Marcado como pago por {president.name}" in html
         assert "Dinheiro" in html
         assert "na quadra" in html
         other = Client()
@@ -275,12 +289,12 @@ class TestBoardScreens:
         assert "Nilton" not in html
         assert "2 mensalidades em atraso" in html
 
-    def test_review_queue_and_approve(self, board_client: Client, receipt: Receipt) -> None:
-        queue = board_client.get(reverse("board:receipts")).content.decode()
+    def test_review_queue_and_approve(self, president_client: Client, receipt: Receipt) -> None:
+        queue = president_client.get(reverse("board:receipts")).content.decode()
         assert "Garrincha" in queue
-        page = board_client.get(reverse("board:receipt", args=[receipt.pk])).content.decode()
+        page = president_client.get(reverse("board:receipt", args=[receipt.pk])).content.decode()
         assert f'<img src="/comprovantes/{receipt.pk}/"' in page
-        response = board_client.post(
+        response = president_client.post(
             reverse("board:approve_receipt", args=[receipt.pk]), follow=True
         )
         assert "Pagamento de Garrincha confirmado." in response.content.decode()
@@ -288,38 +302,42 @@ class TestBoardScreens:
         assert receipt.status == ReceiptStatus.APPROVED
 
     def test_confirming_lands_on_the_receipt_where_it_can_be_undone(
-        self, board_client: Client, receipt: Receipt
+        self, president_client: Client, receipt: Receipt
     ) -> None:
-        response = board_client.post(
+        response = president_client.post(
             reverse("board:approve_receipt", args=[receipt.pk]), follow=True
         )
         assert "Desfazer confirmação" in response.content.decode()
-        response = board_client.post(reverse("board:undo_approval", args=[receipt.pk]), follow=True)
+        response = president_client.post(
+            reverse("board:undo_approval", args=[receipt.pk]), follow=True
+        )
         assert "Confirmação de Garrincha desfeita." in response.content.decode()
         receipt.refresh_from_db()
         assert receipt.status == ReceiptStatus.UNDER_REVIEW
 
     def test_mark_paid_is_one_tap_from_the_pending_list(
-        self, board_client: Client, charge: Charge
+        self, president_client: Client, charge: Charge
     ) -> None:
-        html = board_client.get(reverse("board:pending")).content.decode()
+        html = president_client.get(reverse("board:pending")).content.decode()
         url = reverse("board:mark_paid", args=[charge.pk])
         assert f'action="{url}"' in html
-        assert board_client.get(url).status_code == 405
-        response = board_client.post(url, {"next": reverse("board:pending") + "?x=1"}, follow=True)
+        assert president_client.get(url).status_code == 405
+        response = president_client.post(
+            url, {"next": reverse("board:pending") + "?x=1"}, follow=True
+        )
         assert "Pagamento de Garrincha (R$ 30,00) registrado." in response.content.decode()
         charge.refresh_from_db()
         assert charge.status == ChargeStatus.PAID
         assert charge.marked_paid_by is not None
 
     def test_mark_paid_ignores_foreign_redirects_and_refuses_non_board(
-        self, board_client: Client, player_client: Client, charge: Charge
+        self, president_client: Client, player_client: Client, charge: Charge
     ) -> None:
         url = reverse("board:mark_paid", args=[charge.pk])
         assert player_client.post(url).status_code == 403
         charge.refresh_from_db()
         assert charge.status == ChargeStatus.PENDING
-        response = board_client.post(url, {"next": "https://evil.example/"})
+        response = president_client.post(url, {"next": "https://evil.example/"})
         assert response.url == reverse("board:pending")
 
     def test_refuse_requires_reason(self, board_client: Client, receipt: Receipt) -> None:
@@ -429,10 +447,10 @@ class TestReplaceReceiptUnderReview:
         assert "Confirmar pagamento" not in old
 
     def test_a_paid_charge_offers_no_new_upload(
-        self, player_client: Client, charge: Charge, board_member: Player
+        self, player_client: Client, charge: Charge, board_member: Player, president: Player
     ) -> None:
         upload(player_client, charge)
-        payments.approve_receipt(Receipt.objects.get().pk, board_member)
+        payments.approve_receipt(Receipt.objects.get().pk, president)
         assert "Enviar outro" not in player_client.get(PAYMENTS).content.decode()
         html = upload(player_client, charge).content.decode()
         assert "Esta cobrança já está paga." in html

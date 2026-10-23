@@ -173,6 +173,8 @@ class _Seeder:
                 pote=spec.pote,
                 is_presidente=spec.is_presidente,
                 is_diretoria=spec.is_diretoria,
+                # The demo walks the Sunday itself: no first-time tutorial in the way.
+                sunday_tutorial_seen_at=clock.now(),
                 member_since=None if spec.rookie else veteran_since,
             )
         values = ClubSettings.load()
@@ -182,6 +184,7 @@ class _Seeder:
         values.monthly_due_day = 20
         values.venue_name = DEMO_VENUE
         values.pix_key = f"presidente@{DEMO_EMAIL_DOMAIN}"
+        values.pix_holder = self.board.name
         values.updated_by = self.board
         values.full_clean()
         values.save()

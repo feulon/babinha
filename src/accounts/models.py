@@ -174,11 +174,28 @@ class Player(AbstractBaseUser, PermissionsMixin):
     )
     is_diretoria = models.BooleanField("diretoria", default=False)
     is_presidente = models.BooleanField("presidente", default=False)
+    is_admin = models.BooleanField(
+        "administrador",
+        default=False,
+        help_text=(
+            "Papel oculto do criador do app: tem os poderes do presidente sem aparecer como "
+            "presidente. Só se liga pelo banco ou por `manage.py definir_admin`, nunca por tela."
+        ),
+    )
     is_active = models.BooleanField("ativo", default=True)
     password_is_provisional = models.BooleanField(
         "senha provisória",
         default=False,
         help_text="A diretoria definiu a senha: o jogador é convidado a trocá-la.",
+    )
+    sunday_tutorial_seen_at = models.DateTimeField(
+        "tutorial de montar o domingo visto em",
+        null=True,
+        blank=True,
+        help_text=(
+            "Quando a diretoria dispensou o tutorial que aparece na primeira vez que monta o "
+            "domingo. Vazio: ainda vai aparecer."
+        ),
     )
     created_at = models.DateTimeField("cadastrado em", default=clock.now)
     rules_accepted_at = models.DateTimeField(
@@ -268,8 +285,15 @@ class Player(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_board(self) -> bool:
-        """Diretoria and presidente have the same powers."""
-        return self.is_active and (self.is_diretoria or self.is_presidente)
+        """Diretoria, presidente and the hidden admin can do everything the diretoria can."""
+        return self.is_active and (self.is_diretoria or self.is_presidente or self.is_admin)
+
+    @property
+    def has_presidente_powers(self) -> bool:
+        """What only the presidente (and the hidden admin) may do: the Pix key and holder, and
+        confirming that a charge was paid. The single place where "is it the presidente" is asked
+        about an actor; `is_presidente` alone is the office, which the admin never holds."""
+        return self.is_active and (self.is_presidente or self.is_admin)
 
     @property
     def joined_on(self) -> date:

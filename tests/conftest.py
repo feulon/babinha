@@ -23,6 +23,7 @@ TEST_PASSWORD = "ab12"
 PNG_BYTES = b"\x89PNG\r\n\x1a\n" + b"\x00" * 64
 PDF_BYTES = b"%PDF-1.7\n%comprovante\n"
 PIX_KEY = "presidente@baba.com.br"
+PIX_HOLDER = "Titular da Conta"  # deliberately not the presidente: the key is not theirs
 
 
 @pytest.fixture
@@ -59,6 +60,8 @@ def make_player(db: None) -> Callable[..., Player]:
         extra.setdefault("email", f"jogador{n}@example.com")
         # Fixture players are veterans: only the first-login tests start with the rules unseen.
         extra.setdefault("rules_seen_at", TUESDAY)
+        # So are the diretoria: only the tests of the Sunday tutorial start with it unseen.
+        extra.setdefault("sunday_tutorial_seen_at", TUESDAY)
         mensalista = player_type == PlayerType.MENSALISTA
         name = name or f"Jogador {n}"
         player = Player.objects.create_player(
@@ -98,6 +101,7 @@ def club_values(db: None) -> ClubSettings:
     values.fine_base = Decimal("10.00")
     values.monthly_due_day = 10
     values.pix_key = PIX_KEY
+    values.pix_holder = PIX_HOLDER
     values.save()
     return values
 
