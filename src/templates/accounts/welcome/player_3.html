@@ -1,0 +1,18 @@
+{% extends "accounts/welcome/_screen.html" %}
+{% load money %}
+{% block heading %}Pix em três passos{% endblock %}
+{% block body %}
+<section class="card stack">
+  <h2>Como pagar</h2>
+  <p>{% include "core/help/_pix.html" %}</p>
+  <p class="small muted">Fica em <strong>Mais &gt; Pagamentos e Pix</strong>. A cobrança do domingo aparece depois do jogo, a partir das {{ charges_open|time:"H\hi" }} ou quando a diretoria finaliza o jogo.</p>
+</section>
+<section class="card stack">
+  <h2>Quanto custa</h2>
+  <dl class="kv">
+    <dt>Avulso e agregado, por domingo</dt><dd>{% if club.single_fee %}{{ club.single_fee|brl }}{% else %}a definir{% endif %}</dd>
+    <dt>Mensalidade (vence dia {{ club.monthly_due_day }})</dt><dd>{% if club.monthly_fee %}{{ club.monthly_fee|brl }}{% else %}a definir{% endif %}</dd>
+  </dl>
+  <p class="small muted">Mensalista paga a mensalidade e não paga cada domingo.</p>
+</section>
+{% endblock %}

@@ -203,13 +203,14 @@ class TestFirstLogin:
             {"login": player.phone, "password": TEST_PASSWORD, **extra},
         )
 
-    def test_first_login_goes_to_rules_once(self, make_player: Callable) -> None:
-        player = make_player(rules_seen_at=None)
+    def test_first_login_goes_to_the_welcome_once(self, make_player: Callable) -> None:
+        player = make_player(welcome_seen_at=None)
         client = Client()
         response = self.sign_in(client, player, next="/jogo/")
-        assert response["Location"] == reverse("rules")
+        assert response["Location"] == reverse("accounts:welcome", kwargs={"step": 1})
+        client.get(response["Location"])
         player.refresh_from_db()
-        assert player.rules_seen_at is not None
+        assert player.welcome_seen_at is not None
         client.logout()
         response = self.sign_in(client, player)
         assert response["Location"] == reverse("games:home")

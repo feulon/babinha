@@ -1,0 +1,23 @@
+{% extends "accounts/welcome/_screen.html" %}
+{% block heading %}No domingo{% endblock %}
+{% block body %}
+<p class="muted">No Painel, <strong>Montar o domingo</strong> guia o dia em quatro passos, na ordem.</p>
+<ol class="guide">
+  <li class="card guide__step">
+    <h2>1. Montar os times</h2>
+    <p>Sorteie pelos potes, ajuste se quiser e confirme. Até confirmar, só a diretoria vê o rascunho.</p>
+  </li>
+  <li class="card guide__step">
+    <h2>2. Primeiros jogos</h2>
+    <p>Com os times confirmados, abra a tabela de jogos e chame um de cada vez. {% include "core/help/_match_rules.html" %}</p>
+  </li>
+  <li class="card guide__step">
+    <h2>3. Presença</h2>
+    <p>Abre às {{ game_starts|time:"H\h" }} e não trava os jogos. Marque durante o futebol: falta gera multa, e corrigir para presente cancela a multa.</p>
+  </li>
+  <li class="card guide__step">
+    <h2>4. Finalizar e cobrar</h2>
+    <p>Confira as multas e toque em <strong>Finalizar jogo e cobrar</strong>. Isso abre as cobranças dos avulsos.</p>
+  </li>
+</ol>
+{% endblock %}
