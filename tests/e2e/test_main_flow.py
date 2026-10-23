@@ -36,6 +36,9 @@ def test_signup_login_and_join_the_list(
     page.get_by_label("Senha").fill("dr10")
     page.get_by_role("button", name="Entrar").click()
 
+    # The first sign-in lands on the rules once, whatever comes next.
+    expect(page).to_have_url(f"{live_server.url}/regras/")
+    page.goto(live_server.url)
     page.get_by_role("button", name="Entrar na lista").click()
     expect(page.get_by_text("Você está na lista deste domingo!")).to_be_visible()
     expect(page.locator('[data-state="lista"]')).to_be_visible()
