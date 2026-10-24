@@ -1,0 +1,19 @@
+{% extends "accounts/welcome/_screen.html" %}
+{% block heading %}Sua semana no Babinha{% endblock %}
+{% block body %}
+<p class="muted">Toda semana é igual: a lista abre, você entra, joga no domingo e acerta o que for devido. Todos os horários são de Brasília.</p>
+<ol class="week">
+  <li class="week__step"><div class="week__when">Seg<br>{{ list_opens_at|time:"H\hi" }}</div><div class="week__what">
+    <strong>A lista abre</strong>
+    <p class="small muted">Mensalistas e avulsos entram. Agregados entram na quarta, às {{ agregado_opens_at|time:"H\h" }}, se ainda houver vaga.</p>
+  </div></li>
+  <li class="week__step"><div class="week__when">Sáb<br>{{ last_free_minute|time:"H\hi" }}</div><div class="week__what">
+    <strong>Último prazo sem multa</strong>
+    <p class="small muted">Sair da lista é de graça até aqui. Depois, desistir gera multa.</p>
+  </div></li>
+  <li class="week__step"><div class="week__when">Dom<br>{{ game_starts|time:"H\h" }}</div><div class="week__what">
+    <strong>Dia do jogo</strong>
+    <p class="small muted">O futebol vai das {{ game_starts|time:"H\h" }} às {{ game_ends|time:"H\h" }}.</p>
+  </div></li>
+</ol>
+{% endblock %}

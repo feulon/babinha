@@ -176,6 +176,9 @@ class _Seeder:
                 # The demo walks the Sunday itself: no first-time tutorial in the way.
                 sunday_tutorial_seen_at=clock.now(),
                 member_since=None if spec.rookie else veteran_since,
+                # The demo opens on each situation; the welcome is under Mais > Boas-vindas.
+                welcome_seen_at=clock.now(),
+                board_welcome_seen_at=clock.now(),
             )
         values = ClubSettings.load()
         values.monthly_fee = Decimal("120.00")

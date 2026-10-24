@@ -2,7 +2,7 @@
 // static assets are cached; offline navigations get a friendly fallback page.
 "use strict";
 
-const CACHE = "baba-v2";
+const CACHE = "baba-v3";
 const PRECACHE = [{% for url in precache %}"{{ url|escapejs }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
 
 self.addEventListener("install", (event) => {

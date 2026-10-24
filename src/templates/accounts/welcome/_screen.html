@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Boas-vindas{% endblock %}
+{% block content %}
+<div class="stack welcome" data-welcome="{{ kind }}" data-step="{{ nav.step }}">
+  <header class="welcome__head">
+    <p class="eyebrow">{% if kind == "board" %}Boas-vindas da diretoria{% else %}Boas-vindas ao Babinha{% endif %} · {{ nav.step }} de {{ steps|length }}</p>
+    <form method="post" action="{% url 'accounts:welcome_skip' %}">
+      {% csrf_token %}
+      <input type="hidden" name="set" value="{{ kind }}">
+      <button type="submit" class="btn btn--ghost btn--small">Pular</button>
+    </form>
+  </header>
+  <ol class="welcome__progress" aria-label="Tela {{ nav.step }} de {{ steps|length }}">
+    {% for n in steps %}<li{% if n == nav.step %} class="is-current" aria-current="step"{% elif n < nav.step %} class="is-done"{% endif %}><span class="visually-hidden">{{ n }}</span></li>{% endfor %}
+  </ol>
+  <h1>{% block heading %}{% endblock %}</h1>
+  {% block body %}{% endblock %}
+  <div class="welcome__actions">
+    {% if nav.next_url %}
+      <a class="btn btn--primary btn--block" href="{{ nav.next_url }}">Próxima</a>
+    {% elif nav.board_url %}
+      <a class="btn btn--primary btn--block" href="{{ nav.board_url }}">Ver a parte da diretoria</a>
+      <a class="btn btn--ghost btn--block" href="{{ nav.finish_url }}">{{ nav.finish_label }}</a>
+    {% else %}
+      <a class="btn btn--primary btn--block" href="{{ nav.finish_url }}">{{ nav.finish_label }}</a>
+    {% endif %}
+    {% if nav.previous_url %}<a class="btn btn--ghost btn--block" href="{{ nav.previous_url }}">Voltar</a>{% endif %}
+  </div>
+</div>
+{% endblock %}
