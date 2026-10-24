@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from urllib.parse import urlencode
 
 from django import forms
 from django.contrib import messages
@@ -86,6 +87,38 @@ def dashboard(request: HttpRequest) -> HttpResponse:
 @board_required
 def tutorial(request: HttpRequest) -> HttpResponse:
     return render(request, "board/tutorial.html")
+
+
+def _iso_day(raw: str | None) -> str:
+    """The Sunday a first-time tutorial leads back to, or "" for anything that is not a date."""
+    try:
+        return date.fromisoformat(raw or "").isoformat()
+    except ValueError:
+        return ""
+
+
+@board_required
+def sunday_tutorial(request: HttpRequest) -> HttpResponse:
+    """How to build the Sunday, from the list to the result. Whoever has not dismissed it yet gets
+    the button that does, and goes on to the Sunday they were opening."""
+    context = {
+        "first_time": request.user.sunday_tutorial_seen_at is None,
+        "day": _iso_day(request.GET.get("domingo")),
+    }
+    return render(request, "board/sunday_tutorial.html", context)
+
+
+@board_required
+@require_POST
+def sunday_tutorial_seen(request: HttpRequest) -> HttpResponse:
+    """The diretor dismissed the tutorial: it no longer opens by itself."""
+    if request.user.sunday_tutorial_seen_at is None:
+        request.user.sunday_tutorial_seen_at = clock.now()
+        request.user.save(update_fields=["sunday_tutorial_seen_at"])
+    day = _iso_day(request.POST.get("domingo"))
+    if day:
+        return redirect("board:game_day", day=day)
+    return redirect("board:dashboard")
 
 
 @board_required
@@ -195,7 +228,9 @@ def player_edit(request: HttpRequest, player_id: int) -> HttpResponse:
         "back": navigation.requested_next(request) or _players_url(filters),
         "query": request.GET.urlencode(),
         "new_password": new_password,
-        "can_reset_password": not player.is_presidente or request.user.is_presidente,
+        "can_reset_password": (
+            not player.has_presidente_powers or request.user.has_presidente_powers
+        ),
         "payment_history": payment_history(player),
     }
     response = render(request, "board/player_edit.html", context)
@@ -210,7 +245,7 @@ def reset_player_password(request: HttpRequest, player_id: int) -> HttpResponse:
     """A player without an e-mail cannot use the recovery link: the diretoria sets a provisional
     password, shown once, and passes it on outside the app (WhatsApp)."""
     player = get_object_or_404(Player, pk=player_id)
-    if player.is_presidente and not request.user.is_presidente:
+    if player.has_presidente_powers and not request.user.has_presidente_powers:
         raise PermissionDenied
     password = generate_provisional_password()
     player.set_password(password)
@@ -306,6 +341,10 @@ def _neighbour(sunday: date) -> str | None:
 @board_required
 def game_day(request: HttpRequest, day: str | None = None) -> HttpResponse:
     current = _sunday_or_404(day)
+    if request.user.sunday_tutorial_seen_at is None and not is_htmx(request):
+        # The first time a diretor builds a Sunday, the tutorial comes first, once.
+        url = reverse("board:sunday_tutorial")
+        return redirect(f"{url}?{urlencode({'domingo': current.date.isoformat()})}")
     context = {
         **_roster_context(current),
         "previous_sunday": _neighbour(current.date - WEEK),

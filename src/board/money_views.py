@@ -11,7 +11,7 @@ from django.utils.formats import date_format
 from django.views.decorators.http import require_http_methods, require_POST
 
 from core import clock, navigation
-from core.decorators import board_required
+from core.decorators import board_required, presidente_required
 from core.models import ZERO
 from core.templatetags.money import brl
 from finance import charges, services
@@ -42,7 +42,7 @@ def _review_page(request: HttpRequest, receipt: Receipt, refuse_form: RefuseForm
         "charge": receipt.charge,
         "earlier": receipt.charge.receipts.exclude(pk=receipt.pk).select_related("reviewed_by"),
         "refuse_form": refuse_form,
-        "can_undo": services.can_undo_approval(receipt),
+        "can_undo": services.can_undo_approval(receipt) and request.user.has_presidente_powers,
     }
     return render(request, "board/receipt_review.html", context)
 
@@ -57,7 +57,7 @@ def receipt_review(request: HttpRequest, receipt_id: int) -> HttpResponse:
     return _review_page(request, _receipt_or_404(receipt_id), RefuseForm())
 
 
-@board_required
+@presidente_required
 @require_POST
 def approve_receipt(request: HttpRequest, receipt_id: int) -> HttpResponse:
     receipt = _receipt_or_404(receipt_id)
@@ -71,7 +71,7 @@ def approve_receipt(request: HttpRequest, receipt_id: int) -> HttpResponse:
     return redirect(navigation.requested_next(request) or "board:receipts")
 
 
-@board_required
+@presidente_required
 @require_POST
 def undo_approval(request: HttpRequest, receipt_id: int) -> HttpResponse:
     receipt = _receipt_or_404(receipt_id)
@@ -151,7 +151,7 @@ def waive_charge(request: HttpRequest, charge_id: int) -> HttpResponse:
     return render(request, "board/waive.html", {"charge": charge, "form": form})
 
 
-@board_required
+@presidente_required
 @require_POST
 def mark_paid(request: HttpRequest, charge_id: int) -> HttpResponse:
     """One tap: cash, no note. Other methods are not offered here."""

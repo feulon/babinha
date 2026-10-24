@@ -47,6 +47,12 @@ def _require_board(actor: Player) -> None:
         raise PermissionDenied
 
 
+def _require_presidente(actor: Player) -> None:
+    """Confirming that money arrived is the presidente's (and the hidden admin's) alone."""
+    if not actor.has_presidente_powers:
+        raise PermissionDenied
+
+
 def _required_reason(reason: str, message: str) -> str:
     reason = reason.strip()
     if not reason:
@@ -133,7 +139,7 @@ def _mark_reviewed(receipt: Receipt, status: ReceiptStatus, actor: Player, reaso
 @transaction.atomic
 def approve_receipt(receipt_id: int, actor: Player) -> Receipt:
     """The money arrived: the charge (and its fine, if any) is paid."""
-    _require_board(actor)
+    _require_presidente(actor)
     receipt = _lock_for_review(receipt_id, with_sunday=False)
     _mark_reviewed(receipt, ReceiptStatus.APPROVED, actor, "")
     charge = receipt.charge
@@ -159,7 +165,7 @@ def undo_approval(receipt_id: int, actor: Player) -> Receipt:
 
     Only within UNDO_WINDOW of the confirmation, and only while the charge is still paid.
     """
-    _require_board(actor)
+    _require_presidente(actor)
     receipt = Receipt.objects.select_related("charge").get(pk=receipt_id)
     Charge.objects.select_for_update().get(pk=receipt.charge_id)
     receipt = Receipt.objects.select_for_update().select_related("charge").get(pk=receipt_id)
@@ -218,7 +224,7 @@ def mark_paid(charge_id: int, actor: Player, method: str, note: str = "") -> Cha
 
     The charge becomes paid, so it enters the Caixa; who marked it, how and why stays on it.
     """
-    _require_board(actor)
+    _require_presidente(actor)
     if method not in PaymentMethod.values:
         raise PaymentError("Escolha a forma de pagamento.")
     charge = Charge.objects.select_for_update().get(pk=charge_id)

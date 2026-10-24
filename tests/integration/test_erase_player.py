@@ -64,6 +64,7 @@ def scene(
     club_values: ClubSettings,
     clock: FixedClock,
     receipt_upload,
+    president: Player,
 ) -> Scene:
     sunday = fill_sunday()
     day_id = sunday.game_day.pk
@@ -90,7 +91,7 @@ def scene(
 
     charge = Charge.objects.get(player=target)
     receipt = payments.submit_receipt(charge.pk, target, receipt_upload(PDF_BYTES, "pix.pdf"))
-    payments.approve_receipt(receipt.pk, board_member)
+    payments.approve_receipt(receipt.pk, president)
     MonthlyEnrollment.objects.create(player=target, month=current_month())
     Feedback.objects.create(author=target, kind=FeedbackKind.BUG, text="O botão some.")
     photos.replace(target, PNG_BYTES)

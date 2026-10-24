@@ -36,6 +36,7 @@ def values(**overrides: str) -> dict[str, str]:
         "monthly_due_day": "10",
         "avulso_after_games": "5",
         "pix_key": "",
+        "pix_holder": "",
         "board_contact_phone": "",
         "venue_name": "",
     }

@@ -1,4 +1,4 @@
-"""Pay a Sunday by Pix: the player sends the receipt, the diretoria confirms it."""
+"""Pay a Sunday by Pix: the player sends the receipt, the presidente confirms it."""
 
 from datetime import datetime
 
@@ -28,7 +28,7 @@ def test_pay_by_pix_and_board_confirms(
     clock: FixedClock,
     club_values: ClubSettings,
     make_player,
-    board_member: Player,
+    president: Player,
 ) -> None:
     player = make_player("Garrincha")
     log_in(page, live_server.url, player)
@@ -56,7 +56,7 @@ def test_pay_by_pix_and_board_confirms(
     expect(page.get_by_text("Comprovante em análise")).to_be_visible()
 
     sign_out(page)
-    log_in(page, live_server.url, board_member)
+    log_in(page, live_server.url, president)
     tab(page, "Diretoria")
     expect(page.get_by_text("1 para conferir")).to_be_visible()
     page.get_by_role("link", name="Comprovantes 1 para conferir").click()

@@ -34,6 +34,12 @@ docker compose exec app python manage.py criar_presidente --telefone "(11) 98765
 - E-mails (Mailpit): http://localhost:8025
 - S3 dos comprovantes: http://localhost:7070 (so com assinatura; o app e o unico cliente)
 
+O comando `definir_admin --email EMAIL` liga o papel oculto de administrador de uma conta que ja existe
+(`--remover` desliga). O administrador tem os poderes do presidente (chave Pix e titular, marcar como pago,
+confirmar comprovantes, tudo da diretoria), mas nunca aparece como presidente, como titular do Pix nem nas listas
+de cargos. Nao ha tela para isso: so o comando ou o banco (`accounts_player.is_admin`). Ex.:
+`docker compose exec app python manage.py definir_admin --email voce@exemplo.com`.
+
 O comando `criar_presidente` cria a primeira conta (sem indicacao); o celular (`--telefone`) e o
 e-mail (`--email`, validado) sao obrigatorios; `--apelido` e opcional (sem ele, o apelido e o nome). Ele pede a senha de 4 caracteres no terminal, ou le de
 `BABA_BOOTSTRAP_PASSWORD`. Os outros jogadores se cadastram em `/cadastro/` com o celular e o
@@ -43,8 +49,11 @@ ao jogador, com um atalho para o WhatsApp; nenhuma mensagem nem e-mail e enviado
 "Editar" corrige o nome e desativa quem saiu do baba (campo Ativo: some das listas e do cadastro, o
 historico fica; "So desativados" nos filtros traz a pessoa de volta). Nomes repetidos pedem confirmacao.
 
+O tutorial **Como montar o domingo** (so para a diretoria) abre sozinho na primeira vez que cada diretor entra em **Montar o domingo**, com o botao "Entendi" para dispensar; depois fica em **Mais > Ajuda** e no Painel.
+
 Em **Diretoria > A receber**, tocar numa cobranca mostra "Marcar como pago", que registra quem pagou sem comprovante, como
-dinheiro: a cobranca fica paga e entra no Caixa, com quem marcou e como.
+dinheiro: a cobranca fica paga e entra no Caixa, com quem marcou e como. So o presidente marca como pago e confirma comprovantes
+(o resto da diretoria so recusa o comprovante ou dispensa a cobranca, e nao ve esses botoes).
 **Cobrar no grupo**, na mesma tela, monta uma mensagem para o grupo do WhatsApp marcando o telefone de cada pessoa que deve; o app nao envia nada, a diretoria compartilha a mensagem.
 "Confirmar pagamento" e "Dispensar" pedem confirmacao, e "Desfazer confirmacao" devolve o
 comprovante para analise ate 10 minutos depois. Inicio e Jogos do jogador se atualizam sozinhos
@@ -195,7 +204,7 @@ Tudo por variaveis de ambiente; veja `.env.example`. As principais:
 | `DJANGO_SECURE_COOKIES`, `DJANGO_BEHIND_HTTPS_PROXY`, `DJANGO_HSTS_SECONDS` | quando servido por HTTPS |
 
 Os valores em dinheiro (mensalidade, avulso, multa de falta com seu multiplicador e multa de atraso de 15 e 30 min), quantos futeboes um agregado joga antes de virar avulso, o dia de vencimento da mensalidade, a
-chave Pix e o WhatsApp da diretoria (opcional; a pagina publica de recuperacao de senha nao o mostra, por seguranca) ficam no banco e a
+chave Pix, o nome do titular do Pix (opcional: aparece em "Em nome de ..." no cartao do Pix, na mensagem para o grupo e no e-mail de aviso, e some quando vazio; nunca usa o nome do presidente) e o WhatsApp da diretoria (opcional; a pagina publica de recuperacao de senha nao o mostra, por seguranca) ficam no banco e a
 diretoria edita em **Diretoria > Configuracoes**, junto com o nome do local do jogo (opcional), mostrado na tela inicial. Valor 0,00 desliga a cobranca. A tela
 publica `/regras/` ("Regras do babinha") le esses valores e explica os tipos de jogador, prazos e desistencia. No primeiro login o jogador cai nela.
 
@@ -258,7 +267,7 @@ do limite de vagas.
   ocorrer ate as 12h30 dele ou sua finalizacao pela diretoria, o que vier primeiro.
 - Multa: vira cobranca, com vencimento no sabado seguinte. Paga continua contando para a
   escalada; so o perdao tira da contagem.
-- O jogador faz o Pix para a chave do presidente e envia a foto (JPG, PNG, WebP) ou o PDF do
+- O jogador faz o Pix para a chave cadastrada (so o presidente troca a chave e o titular) e envia a foto (JPG, PNG, WebP) ou o PDF do
   comprovante, ate 10 MB. O tipo e conferido pelo conteudo do arquivo. A diretoria confirma ou
   recusa com motivo; recusado, o jogador envia outro. Enquanto o comprovante esta em analise o
   jogador pode ver o que enviou e trocar por outro ("Enviar outro"); o antigo fica no historico.

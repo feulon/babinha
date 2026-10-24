@@ -17,6 +17,7 @@
     <li class="card guide__step">
       <h2>3. Lista de presença e faltas</h2>
       <p>Em <strong>Montar o domingo</strong>, no Painel, ficam a lista, a fila de espera e os times. Marque a presença durante o futebol. Quem estava na lista e não veio recebe <strong>Faltou</strong> e a multa de falta na hora. Se foi engano, corrija para presente e a multa é cancelada.</p>
+      <a class="btn btn--ghost btn--small" href="{% url 'board:sunday_tutorial' %}">Passo a passo de montar o domingo</a>
     </li>
     <li class="card guide__step">
       <h2>4. Jogos pela fila de espera</h2>
@@ -48,7 +49,7 @@
     </li>
     <li class="card guide__step">
       <h2>11. Pix e comprovante</h2>
-      <p>O jogador segue estes passos: {% include "core/help/_pix.html" %} Em <strong>A receber &gt; A conferir</strong>, toque em <strong>Conferir comprovante</strong> e toque em <strong>Confirmar pagamento</strong> ou em <strong>Recusar comprovante</strong>. Dinheiro recebido fora do app vira pago com <strong>Marcar como pago</strong>.</p>
+      <p>O jogador segue estes passos: {% include "core/help/_pix.html" %} Em <strong>A receber &gt; A conferir</strong>, toque em <strong>Conferir comprovante</strong> e toque em <strong>Recusar comprovante</strong> se não bater. Só o presidente toca em <strong>Confirmar pagamento</strong>, e só ele registra dinheiro recebido fora do app com <strong>Marcar como pago</strong>.</p>
     </li>
   </ol>
 </div>

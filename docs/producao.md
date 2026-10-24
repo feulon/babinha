@@ -102,7 +102,7 @@ scripts/baba.sh presidente
 
 Pergunta o celular (e o login), o e-mail (recuperacao de senha) e o nome, e pede a **senha de 4 caracteres digitando no
 terminal**. Nao deixe `BABA_BOOTSTRAP_PASSWORD` nas variaveis. Entre no app e configure em
-**Diretoria > Financeiro > Configuracoes**: mensalidade, avulso, multas, dia de vencimento, a chave Pix e o WhatsApp da
+**Diretoria > Financeiro > Configuracoes**: mensalidade, avulso, multas, dia de vencimento, a chave Pix, o titular do Pix (opcional) e o WhatsApp da
 diretoria (opcional; a pagina publica de recuperacao de senha nao o mostra, por seguranca) e o nome do local do jogo
 (opcional, aparece na tela inicial). Os
 jogadores se cadastram em `/cadastro/` ou a diretoria cria as contas pela tela.
