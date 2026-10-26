@@ -39,6 +39,15 @@ O comando `definir_admin --email EMAIL` liga o papel oculto de administrador de 
 confirmar comprovantes, tudo da diretoria), mas nunca aparece como presidente, como titular do Pix nem nas listas
 de cargos. Nao ha tela para isso: so o comando ou o banco (`accounts_player.is_admin`). Ex.:
 `docker compose exec app python manage.py definir_admin --email voce@exemplo.com`.
+Na producao (`scripts/baba.sh`), o mesmo comando e `scripts/baba.sh admin --email voce@exemplo.com`
+(com `--remover` para desligar).
+
+O comando `lista_whatsapp` mostra no terminal a lista do proximo domingo em texto puro, para colar no
+WhatsApp quando o app estiver fora do ar ou sem conexao. Le o banco direto e usa a mesma ordem do app
+(chegada mais as preferencias): cabecalho com a data, o horario e o local do jogo, depois Goleiros,
+Mensalistas, Avulsos e Agregados, e a espera por ultimo quando houver. So aparece quem esta inscrito.
+`--data DD/MM/AAAA` escolhe outro domingo. Na producao: `scripts/baba.sh lista` (e `scripts/baba.sh lista --data 25/10/2026`).
+Local: `docker compose exec app python manage.py lista_whatsapp`.
 
 O comando `criar_presidente` cria a primeira conta (sem indicacao); o celular (`--telefone`) e o
 e-mail (`--email`, validado) sao obrigatorios; `--apelido` e opcional (sem ele, o apelido e o nome). Ele pede a senha de 4 caracteres no terminal, ou le de

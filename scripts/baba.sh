@@ -10,6 +10,10 @@
 #   scripts/baba.sh backup       run scripts/backup.sh
 #   scripts/baba.sh apagar-jogador CELULAR [--confirmar]
 #                                erase a player and all their data (LGPD); simulates by default
+#   scripts/baba.sh lista [--data DD/MM/AAAA]
+#                                print the Sunday list as text for WhatsApp (needs no internet or tunnel)
+#   scripts/baba.sh admin --email EMAIL [--remover]
+#                                turn the hidden admin role on (or off) for an account
 #   scripts/baba.sh init         only create .env.production
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
@@ -140,8 +144,22 @@ main() {
             [ -t 0 ] || exec_flags=(-T)
             compose exec "${exec_flags[@]}" app python manage.py apagar_jogador "$@"
             ;;
+        lista)
+            [ -f "$ENV_FILE" ] || die "run scripts/baba.sh subir first"
+            # -T keeps the text clean (no terminal line endings) when it is piped or copied.
+            local list_flags=()
+            { [ -t 0 ] && [ -t 1 ]; } || list_flags=(-T)
+            compose exec "${list_flags[@]}" app python manage.py lista_whatsapp "$@"
+            ;;
+        admin)
+            [ -f "$ENV_FILE" ] || die "run scripts/baba.sh subir first"
+            [ "$#" -gt 0 ] || die "usage: scripts/baba.sh admin --email EMAIL [--remover]"
+            local admin_flags=()
+            [ -t 0 ] || admin_flags=(-T)
+            compose exec "${admin_flags[@]}" app python manage.py definir_admin "$@"
+            ;;
         *)
-            sed -n '2,14p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+            sed -n '2,17p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
             [ -z "$command" ] || exit 1
             ;;
     esac

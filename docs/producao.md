@@ -87,6 +87,8 @@ scripts/baba.sh logs            # acompanha o log do app (ctrl+c sai); logs db, 
 scripts/baba.sh parar           # para tudo, os dados ficam
 scripts/baba.sh atualizar       # backup, git pull, reconstroi e reinicia
 scripts/baba.sh apagar-jogador CELULAR   # simula apagar um jogador (LGPD, secao 8)
+scripts/baba.sh lista           # a lista do proximo domingo em texto, para colar no WhatsApp (secao 7)
+scripts/baba.sh admin --email EMAIL   # liga o administrador oculto de uma conta (--remover desliga)
 ```
 
 O app **se recusa a iniciar** se alguma variavel obrigatoria faltar ou estiver insegura (chave
@@ -252,6 +254,17 @@ migracoes rodam no inicio). Para voltar atras: `git checkout <versao anterior>` 
 **Ver logs:** `scripts/baba.sh logs` (app), `scripts/baba.sh logs db`. Os links de redefinicao de
 senha aparecem nos caminhos dos acessos (`/senha/redefinir/...`): valem 1 hora e uso unico, mas
 nao compartilhe os logs.
+
+**Lista do domingo sem abrir o app:** com a internet ruim ou o tunel fora, `scripts/baba.sh lista`
+mostra no terminal a lista do proximo domingo em texto puro, pronta para copiar e mandar no
+WhatsApp. Ela le o banco direto, na mesma ordem do app (chegada mais as preferencias que o app ja
+aplica): cabecalho com a data, o horario e o local, depois Goleiros, Mensalistas, Avulsos e
+Agregados, e a espera por ultimo se houver. So aparece quem esta inscrito. Para outro domingo:
+`scripts/baba.sh lista --data 25/10/2026`. Precisa dos conteineres ligados (`scripts/baba.sh status`).
+
+**Administrador oculto:** `scripts/baba.sh admin --email voce@exemplo.com` liga o papel numa conta
+que ja existe, e `scripts/baba.sh admin --email voce@exemplo.com --remover` desliga. E o mesmo
+comando `definir_admin`, sem precisar escrever `docker compose exec`.
 
 **Problemas comuns**
 

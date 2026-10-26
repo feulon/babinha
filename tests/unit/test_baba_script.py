@@ -108,3 +108,50 @@ def test_apagar_jogador_needs_a_phone(tmp_path: Path) -> None:
     )
     assert result.returncode != 0
     assert "docker" not in result.stdout
+
+
+def run_with_fake_docker(tmp_path: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    env_file = tmp_path / ".env.production"
+    env_file.write_text("")
+    return subprocess.run(
+        [str(SCRIPT), *args],
+        env={**os.environ, **fake_docker(tmp_path), "BABA_ENV_FILE": str(env_file)},
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def test_lista_prints_the_sunday_list_from_the_app_container(tmp_path: Path) -> None:
+    result = run_with_fake_docker(tmp_path, "lista")
+    assert result.returncode == 0, result.stderr
+    # No terminal here: -T, which also keeps terminal line endings out of the copied text.
+    assert "exec -T app python manage.py lista_whatsapp" in result.stdout
+
+
+def test_lista_passes_the_date_on(tmp_path: Path) -> None:
+    result = run_with_fake_docker(tmp_path, "lista", "--data", "25/10/2026")
+    assert "exec -T app python manage.py lista_whatsapp --data 25/10/2026" in result.stdout
+
+
+def test_admin_runs_definir_admin_in_the_app_container(tmp_path: Path) -> None:
+    result = run_with_fake_docker(tmp_path, "admin", "--email", "eu@exemplo.com", "--remover")
+    assert result.returncode == 0, result.stderr
+    assert (
+        "exec -T app python manage.py definir_admin --email eu@exemplo.com --remover"
+        in result.stdout
+    )
+
+
+def test_admin_needs_arguments(tmp_path: Path) -> None:
+    result = run_with_fake_docker(tmp_path, "admin")
+    assert result.returncode != 0
+    assert "docker" not in result.stdout
+
+
+def test_the_usage_mentions_the_new_commands(tmp_path: Path) -> None:
+    usage = run(tmp_path / "x.env").stdout
+    assert "lista" in usage
+    assert "admin --email" in usage
+    assert "init" in usage
