@@ -251,6 +251,12 @@ restaurar, baixe o arquivo (`rclone copy r2:baba-backups/<arquivo> .`) e use o `
 migracoes rodam no inicio). Para voltar atras: `git checkout <versao anterior>` e
 `scripts/baba.sh subir`; se uma migracao ja mudou o banco, restaure o backup feito antes.
 
+**Depois de atualizar para a versao em que o domingo so comeca e termina quando o diretor manda:**
+o domingo nao termina mais sozinho pelo horario. Qualquer domingo passado que ainda esteja aberto
+(normalmente o ultimo) precisa ser finalizado a mao pela diretoria, em Montar o domingo >
+Finalizar e cobrar. Isso cria as cobrancas daquele domingo e abre a Bola de Ouro. A migracao
+so preenche o inicio dos domingos passados; ela nao finaliza nem cobra nada.
+
 **Ver logs:** `scripts/baba.sh logs` (app), `scripts/baba.sh logs db`. Os links de redefinicao de
 senha aparecem nos caminhos dos acessos (`/senha/redefinir/...`): valem 1 hora e uso unico, mas
 nao compartilhe os logs.
