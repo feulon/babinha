@@ -94,6 +94,20 @@ class TestFinishedSunday:
         assert f'href="{FOLLOW}"' in hero
         assert "votação aberta" in page
 
+    def test_the_next_sunday_list_card_comes_before_the_recap_card(self, sunday: Sunday) -> None:
+        page = text(login(sunday.line[0]).get(HOME))
+        assert 'data-state="' in page
+        assert page.index('data-state="') < page.index('class="hero"')
+
+    def test_while_the_sunday_is_on_the_game_card_keeps_the_list_state_inside_it(
+        self, fill_sunday: Callable[..., Sunday], clock: FixedClock
+    ) -> None:
+        sunday = fill_sunday()
+        clock.set(KICKOFF)
+        page = text(login(sunday.line[0]).get(HOME))
+        assert 'data-state="' in hero_of(page)
+        assert 'data-state="' not in page[: page.index('class="hero"')]
+
     def test_first_home_request_after_12h30_already_says_it_is_over(
         self, fill_sunday: Callable[..., Sunday], clock: FixedClock
     ) -> None:
