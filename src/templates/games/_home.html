@@ -3,11 +3,11 @@
   {% if oob_messages %}{% include "includes/messages.html" with oob=True %}{% endif %}
   {% include "finance/_monthly_card.html" with compact=True %}
 
+  {% if hero_over %}{% include "games/_list_state.html" %}{% endif %}
+
   {% include "games/_hero.html" %}
 
   {% gold_ball_card user "top" %}
-
-  {% if hero_over %}{% include "games/_list_state.html" %}{% endif %}
 
   {% include "finance/_home_payments.html" %}
 
