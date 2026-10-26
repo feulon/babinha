@@ -1,9 +1,15 @@
 <div id="match-live" class="stack">
   {% if oob_messages %}{% include "includes/messages.html" with oob=True %}{% include "board/_match_score.html" with oob=True %}{% endif %}
-  {% if can_score and not started %}
-    <section class="status status--wait">
-      <p class="status__headline">O jogo ainda não começou</p>
-      <p>Gols e o encerramento da partida só entram a partir do início do jogo, {{ kickoff|date:"l, d/m, H\hi" }}.</p>
+  {% if not started %}
+    <section class="status status--wait" data-state="nao-iniciado">
+      <p class="status__headline">Inicie o domingo</p>
+      <p>Gols, assistências e o encerramento da partida só entram depois que a diretoria inicia o domingo.</p>
+      {% if can_start %}
+        {% url 'board:match' match_id=match.pk as match_url %}
+        {% include "board/_start_sunday.html" with next=match_url %}
+      {% elif not game_day.is_cancelled %}
+        <p class="small muted">O domingo pode ser iniciado no dia do jogo.</p>
+      {% endif %}
     </section>
   {% elif can_score %}
     {% for side in sides %}

@@ -15,7 +15,7 @@ from matchday import services
 from matchday.domain.score import Score, Side
 from matchday.models import Goal, Lineup, LineupSpot, Match
 from matchday.services import MatchdayError
-from tests.conftest import SP, TUESDAY, Sunday
+from tests.conftest import SP, TUESDAY, Sunday, start_game
 
 pytestmark = pytest.mark.django_db
 
@@ -78,6 +78,7 @@ class TestDraw:
     ) -> None:
         sunday = fill_sunday(line=21, goalkeepers=1)
         clock.set(AFTER_KICKOFF)
+        start_game()
         games.mark_attendance(sunday.game_day.pk, sunday.line[0], Attendance.FALTOU, board_member)
         lineup = services.draw(sunday.game_day.pk, board_member, random.Random(2))
         assert not lineup.spots.filter(player=sunday.line[0]).exists()
@@ -278,6 +279,7 @@ class TestEditableAfterResults:
         services.confirm(sunday.game_day.pk, board_member)
         match = services.add_match(sunday.game_day.pk, board_member, home_team=1, away_team=2)
         clock.set(AFTER_KICKOFF)
+        start_game()
         home, away = members(lineup, 1), members(lineup, 2)
         services.add_goal(
             match.pk, board_member, side=Side.HOME, scorer=home[0].pk, assist=home[1].pk
@@ -306,6 +308,7 @@ class TestEditableAfterResults:
         services.confirm(sunday.game_day.pk, board_member)
         match = services.add_match(sunday.game_day.pk, board_member, home_team=1, away_team=2)
         clock.set(AFTER_KICKOFF)
+        start_game()
         scorer = members(lineup, 1)[0]
         services.add_goal(match.pk, board_member, side=Side.HOME, scorer=scorer.pk)
         goals = recorded(match)
@@ -363,6 +366,7 @@ def match_setup(
 ) -> tuple[Sunday, Lineup, Match]:
     sunday, lineup = drawn(fill_sunday, board_member)
     clock.set(AFTER_KICKOFF)
+    start_game()
     match = services.add_match(
         sunday.game_day.pk,
         board_member,
@@ -442,6 +446,7 @@ class TestMatchTable:
         sunday, lineup, match = match_setup
         gone, other = sunday.goalkeepers[0], sunday.goalkeepers[1]
         clock.set(AFTER_KICKOFF)
+        start_game()
         games.mark_attendance(sunday.game_day.pk, gone, Attendance.FALTOU, board_member)
         assert gone not in services.goalkeeper_pool(lineup)
         assert gone in services.match_goalkeeper_pool(match)
@@ -528,6 +533,7 @@ class TestGoals:
                 match.pk, board_member, side=Side.HOME, scorer=home[0].pk, assist=outsider.pk
             )
         clock.set(AFTER_KICKOFF)
+        start_game()
         games.mark_attendance(sunday.game_day.pk, home[1], Attendance.FALTOU, board_member)
         with pytest.raises(MatchdayError, match="autor do gol"):
             services.add_goal(match.pk, board_member, side=Side.HOME, scorer=home[1].pk)

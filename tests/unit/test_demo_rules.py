@@ -76,7 +76,6 @@ class TestListContext:
         ctx = context(WEDNESDAY)
         assert not ctx.opened_for(G)
         assert ctx.opened_for(M)
-        assert not ctx.started
         assert not ctx.closed
         assert ctx.in_free_period
 
@@ -89,9 +88,6 @@ class TestListContext:
     def test_joining_stays_forbidden_without_the_demo(self) -> None:
         with pytest.raises(NotOpenYet):
             join(Roster(), Applicant(1, LINE, G), context(WEDNESDAY))
-
-    def test_game_day_actions_are_open_before_kickoff_in_the_demo(self) -> None:
-        assert context(WEDNESDAY, DemoDay(False, False)).started
 
     def test_the_free_period_lasts_until_the_teams_are_confirmed(self) -> None:
         before = context(SUNDAY_AFTERNOON, DemoDay(teams_confirmed=False, finished=False))

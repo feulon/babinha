@@ -19,7 +19,7 @@ from games.models import Attendance, GameDay
 from matchday import services as matchday
 from matchday.domain.score import Side
 from matchday.models import LineupSpot, Match
-from tests.conftest import SP, Sunday, end_game
+from tests.conftest import SP, Sunday, end_game, start_game
 
 pytestmark = pytest.mark.django_db
 
@@ -57,6 +57,7 @@ def played(fill_sunday: Callable[..., Sunday], board_member: Player, clock: Fixe
     matchday.draw(day_id, board_member, random.Random(3))
     matchday.confirm(day_id, board_member)
     clock.set(KICKOFF)
+    start_game(sunday.game_day)
     first = matchday.add_match(day_id, board_member, home_team=1, away_team=2)
     second = matchday.add_match(day_id, board_member, home_team=3, away_team=4)
     out = Played(sunday, board_member, first, second)
@@ -88,6 +89,7 @@ class TestVotingWindow:
         assert selectors.window_of(sunday.game_day).phase == voting.Phase.NONE
         matchday.confirm(sunday.game_day.pk, board_member)
         clock.set(KICKOFF)
+        start_game(sunday.game_day)
         match = matchday.add_match(sunday.game_day.pk, board_member, home_team=1, away_team=2)
         assert selectors.window_of(sunday.game_day).phase == voting.Phase.WAITING
         matchday.finish_match(match.pk, board_member)

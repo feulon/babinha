@@ -14,7 +14,7 @@ from core.clock import FixedClock
 from games.models import GameDay
 from matchday import services as matchday
 from matchday.domain.score import Side
-from tests.conftest import SP, Sunday, end_game
+from tests.conftest import SP, Sunday, end_game, start_game
 
 pytestmark = pytest.mark.django_db
 
@@ -45,6 +45,7 @@ def sunday(fill_sunday: Callable[..., Sunday], board_member: Player, clock: Fixe
     matchday.draw(sunday.game_day.pk, board_member, random.Random(3))
     matchday.confirm(sunday.game_day.pk, board_member)
     clock.set(KICKOFF)
+    start_game(sunday.game_day)
     match = matchday.add_match(sunday.game_day.pk, board_member, home_team=1, away_team=2)
     spots = match.lineup.spots.filter(team=match.home_team).select_related("player")
     scorer = spots[0].player
@@ -102,11 +103,13 @@ class TestVoteScreen:
         assert not Ballot.objects.exists()
         assert not PlaceTally.objects.exists()
 
-    def test_automatic_sunday_end_opens_voting(self, sunday: Sunday, clock: FixedClock) -> None:
+    def test_the_clock_never_ends_the_sunday_for_the_vote(
+        self, sunday: Sunday, clock: FixedClock
+    ) -> None:
         GameDay.objects.filter(pk=sunday.game_day.pk).update(finished_at=None, finished_by=None)
-        clock.set(datetime(2026, 10, 18, 12, 30, tzinfo=SP))
+        clock.set(datetime(2026, 10, 18, 18, 0, tzinfo=SP))
         page = text(login(sunday.line[0]).get(VOTE))
-        assert 'data-state="votar"' in page
+        assert 'data-state="aguardando"' in page
 
     def test_voter_sees_the_form_without_themselves(self, sunday: Sunday) -> None:
         viewer = sunday.line[0]

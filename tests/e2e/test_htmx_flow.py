@@ -11,7 +11,7 @@ from accounts.models import Player
 from core.clock import FixedClock
 from games.models import ListEntry
 from matchday import services
-from tests.conftest import SP, TEST_PASSWORD, Sunday
+from tests.conftest import SP, TEST_PASSWORD, Sunday, start_game
 from tests.e2e.helpers import expect_signed_in
 
 pytestmark = [pytest.mark.e2e, pytest.mark.django_db(transaction=True)]
@@ -111,6 +111,7 @@ def test_board_marks_attendance_and_lateness_during_the_games(
     services.draw(sunday.game_day.pk, board_member, random.Random(5))
     services.confirm(sunday.game_day.pk, board_member)
     clock.set(AFTER_KICKOFF)
+    start_game(sunday.game_day)
     page.on("dialog", lambda dialog: dialog.accept())
     log_in(page, live_server.url, board_member)
     page.goto(f"{live_server.url}/diretoria/domingo/{sunday.game_day.date.isoformat()}/")

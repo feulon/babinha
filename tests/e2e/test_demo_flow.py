@@ -59,6 +59,9 @@ def test_the_diretoria_runs_the_sunday_from_teams_to_charges(page: Page, live_se
     page.get_by_role("link", name="Abrir tabela de jogos").click()
     page.get_by_role("button", name="Começar Time A x Time B").click()
     expect(page.get_by_text("Time A x Time B em campo.")).to_be_visible()
+    # The demo releases the calendar, but the Sunday still starts only when the diretor says so.
+    page.get_by_role("button", name="Iniciar o domingo").click()
+    expect(page.get_by_text("Domingo iniciado.")).to_be_visible()
 
     page.locator("form[action*='/gol/home/assistencia/']").get_by_role("button").first.click()
     page.locator("[data-goal-assist]").get_by_role("button", name="Não se aplica").click()
@@ -88,7 +91,12 @@ def test_the_late_fine_works_beside_another_app_on_the_same_host(
     page.context.add_cookies([{"name": "csrftoken", "value": "a" * 32, "url": live_server.url}])
     open_sunday(page)
 
-    page.locator("#passo-presenca > summary").click()
+    presence = page.locator("#passo-presenca")
+    presence.locator("> summary").click()
+    presence.get_by_role("button", name="Iniciar o domingo").click()
+    expect(page.get_by_text("Domingo iniciado.")).to_be_visible()
+    if presence.get_attribute("open") is None:
+        presence.locator("> summary").click()
     page.locator("#presenca-linha > summary").click()
     page.locator("#presenca-linha form[action*=atraso] button").first.click()
     expect(page.locator("#multar-atraso .late-row")).to_contain_text("15 min")

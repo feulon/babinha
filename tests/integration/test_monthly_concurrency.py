@@ -12,14 +12,13 @@ from finance import charges, monthly
 from finance.models import Charge, ChargeKind, ChargeStatus
 from games import services as games
 from games.models import GameDay
-from tests.conftest import SP
+from tests.conftest import SP, start_game
 
 
 @pytest.mark.django_db(transaction=True)
-@pytest.mark.parametrize("automatic", [False, True])
 @pytest.mark.parametrize("enrollment_first", [False, True])
 def test_enrollment_and_finalization_serialize(
-    clock: FixedClock, club_values, make_player, president, automatic, enrollment_first
+    clock: FixedClock, club_values, make_player, president, enrollment_first
 ) -> None:
     assert connection.vendor == "postgresql"
     player = make_player(referred_by=president)
@@ -28,15 +27,13 @@ def test_enrollment_and_finalization_serialize(
     before_cutoff = datetime(2026, 10, 18, 12, 29, 59, tzinfo=SP)
     cutoff = datetime(2026, 10, 18, 12, 30, tzinfo=SP)
     clock.set(before_cutoff if enrollment_first else cutoff)
+    start_game(game)
     ready = Event()
     release = Event()
     second_pid = Queue()
 
     def assess() -> None:
-        if automatic:
-            charges.settle_finished_games()
-        else:
-            games.finish_game_day(game.pk, president)
+        games.finish_game_day(game.pk, president)
 
     first_action, second_action = (
         (lambda: monthly.join(player), assess)

@@ -16,8 +16,8 @@ from tests.e2e.helpers import expect_signed_in, sign_out, tab
 
 pytestmark = [pytest.mark.e2e, pytest.mark.django_db(transaction=True)]
 
-# Goals wait for the Sunday's kickoff.
-KICKOFF = datetime(2026, 10, 18, 10, 5, tzinfo=ZoneInfo("America/Sao_Paulo"))
+# Sunday before 10h: goals wait for the diretoria to start the Sunday, not for the clock.
+EARLY_SUNDAY = datetime(2026, 10, 18, 9, 30, tzinfo=ZoneInfo("America/Sao_Paulo"))
 
 
 def log_in(page: Page, base_url: str, player: Player) -> None:
@@ -61,9 +61,17 @@ def test_draw_confirm_and_score(
     page.get_by_role("button", name="Começar Azul x Time B").click()
     expect(page.get_by_text("Azul x Time B em campo.")).to_be_visible()
 
-    clock.set(KICKOFF)
+    clock.set(EARLY_SUNDAY)
     page.reload()
     expect(page.get_by_role("heading", name="Jogo 1")).to_be_visible()
+    waiting = page.locator('[data-state="nao-iniciado"]')
+    expect(waiting.get_by_text("Inicie o domingo")).to_be_visible()
+    expect(page.locator("[data-match-timer]")).to_have_count(0)
+    expect(page.get_by_role("heading", name="Gol do Azul")).to_have_count(0)
+    waiting.get_by_role("button", name="Iniciar o domingo").click()
+    expect(page.get_by_text("Domingo iniciado.")).to_be_visible()
+    expect(page.get_by_role("heading", name="Jogo 1")).to_be_visible()
+    expect(waiting).to_have_count(0)
     timer = page.locator("[data-match-timer]")
     expect(timer.locator(".timer__clock")).to_have_text("7:00")
     timer.get_by_role("button", name="Iniciar").click()

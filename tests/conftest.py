@@ -10,6 +10,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from accounts.models import MonthlyEnrollment, Player, PlayerType, Position, current_month
 from core.clock import FixedClock, use_clock
+from core.clock import now as clock_now
 from core.models import ClubSettings
 from finance import charges
 from games import services as games
@@ -34,11 +35,13 @@ def clock() -> Iterator[FixedClock]:
 
 @pytest.fixture
 def after_kickoff(clock: FixedClock) -> FixedClock:
-    """Move the clock to Sunday 2026-10-18 10h05, once the game started: goals and full time count.
+    """Move the clock to Sunday 2026-10-18 10h05, with the Sunday started by the diretoria:
+    presence, goals and full time count.
 
     Request it after the fixtures that fill the list, which needs the Tuesday morning clock.
     """
     clock.set(KICKOFF_PLUS_5)
+    start_game()
     return clock
 
 
@@ -143,6 +146,15 @@ def fill_sunday(
         return Sunday(game_day, players, keepers)
 
     return fill
+
+
+def start_game(game_day: GameDay | None = None) -> None:
+    """The diretoria started the Sunday (by default the one of the clock's day) at the clock's
+    time: presence, goals and the end of the game open. The clock alone never starts it."""
+    if game_day is None:
+        game_day = games.game_day_for(clock_now().astimezone(SP).date())
+    GameDay.objects.filter(pk=game_day.pk).update(started_at=clock_now())
+    game_day.refresh_from_db()
 
 
 def end_game(game_day: GameDay) -> None:

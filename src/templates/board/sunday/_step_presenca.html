@@ -4,10 +4,14 @@
     <span class="step__num" aria-hidden="true">3</span>
     <span class="step__text">
       <span class="step__title">Presença</span>
-      <span class="step__sub">{% if can_mark_attendance %}{{ attendance_marked }} de {{ attendance_total }} marcados · não trava os jogos{% else %}Abre às {{ schedule.starts|date:"H\h" }} · não trava os jogos{% endif %}</span>
+      <span class="step__sub">{% if can_mark_attendance %}{{ attendance_marked }} de {{ attendance_total }} marcados · não trava os jogos{% else %}Abre quando o domingo começar · não trava os jogos{% endif %}</span>
     </span>
   </summary>
   <div class="step__body">
+    {% if can_start %}
+      <p class="small muted">A presença, os gols e o fim do jogo abrem quando a diretoria inicia o domingo.</p>
+      {% include "board/_start_sunday.html" with next="" %}
+    {% endif %}
     {% if can_mark_attendance %}
       <p class="small muted">Marque durante o futebol. Falta gera multa; corrigir para presente cancela a multa. O relógio marca o atraso (15 ou 30 min).</p>
       {% url 'board:mark_all_present' day=game_day.date.isoformat as all_present_url %}

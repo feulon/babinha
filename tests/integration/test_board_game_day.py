@@ -1,4 +1,4 @@
-"""Game day for the diretoria: attendance, kickoff rule, auto reopen, queue and goals."""
+"""Game day for the diretoria: attendance, start rule, auto reopen, queue and goals."""
 
 import random
 from collections.abc import Callable
@@ -12,18 +12,18 @@ from accounts.models import Player, PlayerType
 from core.clock import FixedClock
 from fines.models import Fine
 from games import services as games
-from games.models import Attendance, ListEntry
+from games.models import Attendance, GameDay, ListEntry
 from matchday import services
 from matchday.domain.score import Score, Side
 from matchday.models import Goal, Lineup, LineupSpot, Match
-from tests.conftest import SP, Sunday
+from tests.conftest import SP, Sunday, start_game
 
 pytestmark = pytest.mark.django_db
 
 DAY = "2026-10-18"
 BEFORE_KICKOFF = datetime(2026, 10, 18, 9, 55, tzinfo=SP)
 AFTER_KICKOFF = datetime(2026, 10, 18, 10, 5, tzinfo=SP)
-MESSAGE_TOO_EARLY = "O jogo ainda não começou."
+MESSAGE_NOT_STARTED = "O domingo ainda não começou. Toque em Iniciar o domingo."
 
 
 @pytest.fixture
@@ -74,6 +74,7 @@ class TestAttendanceScreen:
         self, sunday: Sunday, board_client: Client, clock: FixedClock, club_values
     ) -> None:
         clock.set(AFTER_KICKOFF)
+        start_game()
         html = text(board_client.get(reverse("board:game_day", kwargs={"day": DAY})))
         assert (
             'hx-confirm="Marcar Linha 01 como faltou? Gera multa de R$ 10,00 (1ª ocorrência)."'
@@ -89,6 +90,7 @@ class TestAttendanceScreen:
         club_values,
     ) -> None:
         clock.set(AFTER_KICKOFF)
+        start_game()
         repeat = sunday.line[0]
         games.mark_attendance(sunday.game_day.pk, repeat, Attendance.FALTOU, board_member)
         games.mark_attendance(sunday.game_day.pk, repeat, Attendance.PRESENTE, board_member)
@@ -112,6 +114,7 @@ class TestAllPresent:
         self, sunday: Sunday, board_member: Player, board_client: Client, clock: FixedClock
     ) -> None:
         clock.set(AFTER_KICKOFF)
+        start_game()
         absent = sunday.line[0]
         games.mark_attendance(sunday.game_day.pk, absent, Attendance.FALTOU, board_member)
         response = board_client.post(self.url(), follow=True)
@@ -129,6 +132,7 @@ class TestAllPresent:
         self, sunday: Sunday, board_member: Player, board_client: Client, clock: FixedClock
     ) -> None:
         clock.set(AFTER_KICKOFF)
+        start_game()
         board_client.post(self.url())
         entry = ListEntry.objects.get(game_day=sunday.game_day, player=sunday.line[0])
         assert entry.attendance_marked_by == board_member
@@ -138,20 +142,22 @@ class TestAllPresent:
         self, sunday: Sunday, board_client: Client, clock: FixedClock
     ) -> None:
         clock.set(AFTER_KICKOFF)
+        start_game()
         board_client.post(self.url())
         response = board_client.post(self.url(), follow=True)
         assert "Todos da lista já estão com a presença marcada." in text(response)
 
-    def test_not_before_kickoff(
+    def test_not_before_the_diretoria_starts_even_after_10h(
         self, sunday: Sunday, board_client: Client, clock: FixedClock
     ) -> None:
-        clock.set(BEFORE_KICKOFF)
+        clock.set(AFTER_KICKOFF)
         response = board_client.post(self.url(), follow=True)
-        assert "A presença só pode ser marcada a partir do início do jogo." in text(response)
+        assert MESSAGE_NOT_STARTED in text(response)
         assert not ListEntry.objects.filter(game_day=sunday.game_day).exclude(attendance="")
 
     def test_only_the_board(self, sunday: Sunday, clock: FixedClock) -> None:
         clock.set(AFTER_KICKOFF)
+        start_game()
         client = Client()
         client.force_login(sunday.line[0])
         assert client.post(self.url()).status_code != 200
@@ -173,50 +179,59 @@ class TestBumpMessage:
         assert "Linha 20 (o último a entrar) foi para a espera por prioridade." in html
 
 
-class TestKickoffRule:
-    def test_no_goal_before_kickoff(
+class TestStartRule:
+    """Goals and full time wait for the diretoria to start the Sunday, never for the clock."""
+
+    def test_no_goal_until_the_diretoria_starts_even_after_10h(
         self, match: Match, lineup: Lineup, board_member: Player, clock: FixedClock
     ) -> None:
-        clock.set(BEFORE_KICKOFF)
+        clock.set(AFTER_KICKOFF)
         scorer = team_players(lineup, 1)[0]
-        with pytest.raises(services.MatchdayError, match=MESSAGE_TOO_EARLY):
+        with pytest.raises(services.MatchdayError, match=MESSAGE_NOT_STARTED):
             services.add_goal(match.pk, board_member, side=Side.HOME, scorer=scorer.pk)
         assert not Goal.objects.exists()
 
-    def test_no_full_time_before_kickoff(
+    def test_no_full_time_until_the_diretoria_starts(
         self, match: Match, board_member: Player, clock: FixedClock
     ) -> None:
-        clock.set(BEFORE_KICKOFF)
-        with pytest.raises(services.MatchdayError, match=MESSAGE_TOO_EARLY):
+        clock.set(AFTER_KICKOFF)
+        with pytest.raises(services.MatchdayError, match=MESSAGE_NOT_STARTED):
             services.finish_match(match.pk, board_member)
         match.refresh_from_db()
         assert not match.is_finished
 
-    def test_no_goal_correction_before_kickoff(
+    def test_no_goal_correction_without_a_start(
         self, match: Match, lineup: Lineup, board_member: Player, clock: FixedClock
     ) -> None:
-        clock.set(AFTER_KICKOFF)
+        clock.set(BEFORE_KICKOFF)
+        start_game()
         home = team_players(lineup, 1)
         recorded = services.add_goal(match.pk, board_member, side=Side.HOME, scorer=home[0].pk)
-        clock.set(BEFORE_KICKOFF)
-        with pytest.raises(services.MatchdayError, match=MESSAGE_TOO_EARLY):
+        GameDay.objects.filter(pk=match.lineup.game_day_id).update(started_at=None)
+        with pytest.raises(services.MatchdayError, match=MESSAGE_NOT_STARTED):
             services.edit_goal(recorded.pk, board_member, side=Side.HOME, scorer=home[1].pk)
 
-    def test_goals_open_at_kickoff(
+    def test_goals_assists_and_full_time_open_as_soon_as_the_diretoria_starts_before_10h(
         self, match: Match, lineup: Lineup, board_member: Player, clock: FixedClock
     ) -> None:
-        clock.set(datetime(2026, 10, 18, 10, 0, tzinfo=SP))
-        scorer = team_players(lineup, 1)[0]
-        services.add_goal(match.pk, board_member, side=Side.HOME, scorer=scorer.pk)
+        clock.set(BEFORE_KICKOFF)
+        assert games.start_game_day(match.lineup.game_day_id, board_member) is True
+        home = team_players(lineup, 1)
+        services.add_goal(
+            match.pk, board_member, side=Side.HOME, scorer=home[0].pk, assist=home[1].pk
+        )
         assert services.score_of(match) == Score(1, 0)
+        assert Goal.objects.get().assist == home[1]
+        services.finish_match(match.pk, board_member)
+        match.refresh_from_db()
+        assert match.is_finished
 
     def test_the_view_flashes_the_error(
         self, match: Match, lineup: Lineup, board_client: Client, clock: FixedClock
     ) -> None:
-        clock.set(BEFORE_KICKOFF)
+        clock.set(AFTER_KICKOFF)
         scorer = team_players(lineup, 1)[0]
-        assert MESSAGE_TOO_EARLY in goal(board_client, match, "home", scorer=scorer.pk)
-        assert not Goal.objects.exists()
+        assert MESSAGE_NOT_STARTED in goal(board_client, match, "home", scorer=scorer.pk)
 
 
 class TestDeletingTheDecidingGoal:
@@ -225,6 +240,7 @@ class TestDeletingTheDecidingGoal:
         self, match: Match, lineup: Lineup, board_member: Player, clock: FixedClock
     ) -> tuple[Match, list[Goal]]:
         clock.set(AFTER_KICKOFF)
+        start_game()
         home, away = team_players(lineup, 1), team_players(lineup, 2)
         goals = [
             services.add_goal(match.pk, board_member, side=Side.HOME, scorer=home[0].pk),
@@ -257,6 +273,7 @@ class TestDeletingTheDecidingGoal:
         self, match: Match, lineup: Lineup, board_member: Player, clock: FixedClock
     ) -> None:
         clock.set(AFTER_KICKOFF)
+        start_game()
         scored = services.add_goal(
             match.pk, board_member, side=Side.HOME, scorer=team_players(lineup, 1)[0].pk
         )
@@ -269,6 +286,7 @@ class TestDeletingTheDecidingGoal:
         self, match: Match, lineup: Lineup, board_member: Player, clock: FixedClock
     ) -> None:
         clock.set(AFTER_KICKOFF)
+        start_game()
         home = team_players(lineup, 1)
         services.add_goal(match.pk, board_member, side=Side.HOME, scorer=home[0].pk)
         second = services.add_goal(match.pk, board_member, side=Side.HOME, scorer=home[1].pk)
@@ -404,6 +422,7 @@ class TestQuickGoal:
     @pytest.fixture(autouse=True)
     def started(self, match: Match, clock: FixedClock) -> None:
         clock.set(AFTER_KICKOFF)
+        start_game()
 
     def test_one_tap_records_the_goal(
         self, match: Match, lineup: Lineup, board_client: Client
@@ -452,10 +471,10 @@ class TestQuickGoal:
         assert response.status_code == 302
         assert response.url == reverse("board:match", kwargs={"match_id": match.pk})
 
-    def test_the_question_waits_for_kickoff(
+    def test_the_question_waits_for_the_start(
         self, match: Match, lineup: Lineup, board_client: Client, clock: FixedClock
     ) -> None:
-        clock.set(BEFORE_KICKOFF)
+        GameDay.objects.filter(pk=match.lineup.game_day_id).update(started_at=None)
         url = reverse("board:ask_assist", kwargs={"match_id": match.pk, "side": "home"})
         response = board_client.get(url, {"scorer": team_players(lineup, 1)[0].pk})
         assert response.status_code == 302

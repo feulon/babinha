@@ -1,7 +1,7 @@
 """Início: the list lives inside the Sunday card, and "Acompanhar o domingo" waits for the day."""
 
 from collections.abc import Callable
-from datetime import datetime
+from datetime import date, datetime
 
 import pytest
 from django.test import Client
@@ -9,7 +9,8 @@ from django.urls import reverse
 
 from accounts.models import Player
 from core.clock import FixedClock
-from tests.conftest import SP
+from games import services as games
+from tests.conftest import SP, end_game
 
 pytestmark = pytest.mark.django_db
 
@@ -67,6 +68,7 @@ class TestListInsideTheCard:
     def test_while_the_finished_sunday_is_shown_its_card_does_not_carry_the_next_list(
         self, player_client: Client, clock: FixedClock
     ) -> None:
+        end_game(games.game_day_for(date(2026, 10, 11)))
         clock.set(datetime(2026, 10, 12, 7, 0, tzinfo=SP))
         assert "data-state" not in hero_of(player_client)
         assert 'data-state="fechada"' in player_client.get(HOME).content.decode()

@@ -28,7 +28,7 @@ from games.models import GameDay, ListEntry
 from matchday import services as matchday
 from matchday.domain.score import Side
 from matchday.models import Goal, LineupSpot, Match, MatchPlayer
-from tests.conftest import PDF_BYTES, PNG_BYTES, SP, Sunday, end_game
+from tests.conftest import PDF_BYTES, PNG_BYTES, SP, Sunday, end_game, start_game
 
 pytestmark = pytest.mark.django_db
 
@@ -71,6 +71,7 @@ def scene(
     matchday.draw(day_id, board_member, random.Random(3))
     matchday.confirm(day_id, board_member)
     clock.set(KICKOFF)
+    start_game(sunday.game_day)
     one, two = team(sunday.game_day, 1), team(sunday.game_day, 2)
     target = one[0]
     first = matchday.add_match(day_id, board_member, home_team=1, away_team=2)

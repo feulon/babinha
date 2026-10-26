@@ -134,11 +134,6 @@ class ListContext:
             return self.demo.finished
         return self.now >= self.schedule.starts
 
-    @property
-    def started(self) -> bool:
-        """The game began: presence, goals and the end of the game can be recorded."""
-        return self.demo is not None or self.now >= self.schedule.starts
-
     def opened_for(self, player_type: PlayerType) -> bool:
         return self.demo is not None or self.now >= self.schedule.opens_for(player_type)
 

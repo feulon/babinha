@@ -20,6 +20,15 @@ class GameDay(models.Model):
         related_name="+",
     )
     cancel_reason = models.CharField("motivo do cancelamento", max_length=200, blank=True)
+    started_at = models.DateTimeField("iniciado em", null=True, blank=True)
+    started_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="iniciado por",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
     finished_at = models.DateTimeField("finalizado em", null=True, blank=True)
     finished_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -49,8 +58,13 @@ class GameDay(models.Model):
         return self.cancelled_at is not None
 
     @property
+    def is_started(self) -> bool:
+        """The diretoria started the game: presence, goals and the end of the game open."""
+        return self.started_at is not None
+
+    @property
     def is_finished(self) -> bool:
-        """The game is over and its fees are payable (set at 12h30 or by the diretoria)."""
+        """The diretoria ended the game, so its fees are payable."""
         return self.finished_at is not None
 
 

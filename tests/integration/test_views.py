@@ -13,7 +13,7 @@ from fines import services as fine_services
 from fines.models import Fine, FineReason, FineStatus
 from games import services
 from games.models import GameDay, ListEntry
-from tests.conftest import SP, TUESDAY
+from tests.conftest import SP, TUESDAY, start_game
 
 pytestmark = pytest.mark.django_db
 
@@ -170,6 +170,7 @@ class TestHome:
 
     def test_closed_after_kickoff(self, player_client: Client, clock: FixedClock) -> None:
         clock.set(AFTER_KICKOFF)
+        start_game()
         assert state(player_client.get(HOME)) == "encerrada"
 
     def test_confirmed_player_cannot_leave_after_kickoff(
@@ -177,6 +178,7 @@ class TestHome:
     ) -> None:
         player_client.post(reverse("games:join"))
         clock.set(AFTER_KICKOFF)
+        start_game()
         html = player_client.get(HOME).content.decode()
         assert 'data-state="lista"' in html
         assert reverse("games:leave") not in html
@@ -195,6 +197,7 @@ class TestHome:
             services.join_list(game_day.pk, make_player())
         player_client.post(reverse("games:join"))
         clock.set(AFTER_KICKOFF)
+        start_game()
         html = player_client.get(HOME).content.decode()
         assert 'data-state="espera"' in html
         assert reverse("games:leave") not in html
@@ -575,6 +578,7 @@ class TestBoardScreens:
         assert "Todos presentes" not in page
 
         clock.set(AFTER_KICKOFF)
+        start_game()
         page = board_client.get(reverse("board:game_day", kwargs={"day": day})).content.decode()
         assert "Todos presentes" in page
         board_client.post(

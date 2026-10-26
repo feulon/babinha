@@ -227,6 +227,7 @@ class _Seeder:
             # morning dropout costs is recorded by the same service the list calls.
             fines.record_fine(self.players["formiga"], game_day, FineReason.LATE_DROPOUT)
             fixed.set(noon)
+            games.start_game_day(game_day.pk, self.board)
             for key in LAST_SUNDAY_LIST:
                 if key != "formiga":
                     games.mark_attendance(
@@ -268,7 +269,8 @@ class _Seeder:
     # --- this Sunday: the games and the attendance ------------------------------------------
 
     def presence(self) -> None:
-        """The attendance as the diretoria marks it during the games."""
+        """The diretoria starts the Sunday and marks the attendance during the games."""
+        games.start_game_day(self.day_id, self.board)
         on_list = [row.player for row in self.entries()]
         for player in on_list:
             games.mark_attendance(self.day_id, player, Attendance.PRESENTE, self.board)

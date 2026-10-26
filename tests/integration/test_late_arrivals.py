@@ -19,7 +19,7 @@ from fines.models import Fine, FineReason, FineStatus
 from games import services as games
 from games.domain.roster import ListError
 from games.models import Attendance, ListEntry
-from tests.conftest import SP, Sunday
+from tests.conftest import SP, Sunday, start_game
 
 pytestmark = pytest.mark.django_db
 
@@ -36,6 +36,7 @@ def sunday(fill_sunday: Callable[..., Sunday], club_values) -> Sunday:
 @pytest.fixture
 def started(sunday: Sunday, clock: FixedClock) -> Sunday:
     clock.set(AFTER_KICKOFF)
+    start_game()
     return sunday
 
 

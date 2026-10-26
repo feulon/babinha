@@ -87,6 +87,5 @@ def week_context() -> dict[str, object]:
         "last_free_minute": week.last_free_minute,
         "game_starts": week.starts,
         "game_ends": week.ends,
-        "charges_open": week.charges_open,
         "club": ClubSettings.load(),
     }

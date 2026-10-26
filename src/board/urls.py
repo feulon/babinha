@@ -53,6 +53,7 @@ urlpatterns = [
     ),
     path("domingo/<str:day>/presenca/multar-atraso/", views.fine_late, name="fine_late"),
     path("domingo/<str:day>/cancelar/", views.cancel_game_day, name="cancel"),
+    path("domingo/<str:day>/iniciar/", views.start_game_day, name="start"),
     path("domingo/<str:day>/finalizar/", views.finish_game_day, name="finish"),
     path("domingo/<str:day>/reabrir/", views.reopen_game_day, name="reopen"),
     path("domingo/<str:day>/times/", times_views.teams, name="teams"),

@@ -14,7 +14,7 @@ from core.clock import FixedClock
 from matchday import services
 from matchday.domain.score import Side
 from matchday.models import Lineup, LineupSpot
-from tests.conftest import SP, Sunday
+from tests.conftest import SP, Sunday, start_game
 
 pytestmark = pytest.mark.django_db
 
@@ -59,6 +59,7 @@ class TestFollowTheGame:
         for home, away in ((1, 2), (3, 4), (1, 3)):
             services.add_match(sunday.game_day.pk, board_member, home_team=home, away_team=away)
         clock.set(AFTER_KICKOFF)
+        start_game()
 
     def score_first_match(self, sunday: Sunday, lineup: Lineup, board_member: Player) -> None:
         match = lineup.matches.get(order=1)

@@ -106,7 +106,6 @@ def refuse_receipt(request: HttpRequest, receipt_id: int) -> HttpResponse:
 def pending(request: HttpRequest) -> HttpResponse:
     today = clock.now().date()
     charges.ensure_monthly_charges(today)
-    charges.settle_finished_games()
     only_unpaid = request.GET.get("filtro") == UNPAID_FILTER
     rows = open_charges(today)
     if only_unpaid:
@@ -131,7 +130,6 @@ def cash(request: HttpRequest, month: str | None = None) -> HttpResponse:
     """The diretoria's Caixa: the month's totals with who paid, who owes and the expenses."""
     today = clock.now().date()
     charges.ensure_monthly_charges(today)
-    charges.settle_finished_games()
     return render(request, "board/cash.html", report_context(month, with_people=True))
 
 

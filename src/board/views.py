@@ -63,7 +63,6 @@ def dashboard(request: HttpRequest) -> HttpResponse:
     game_day = services.matchday_game_day()
     today = clock.now().date()
     charges.ensure_monthly_charges(today)
-    charges.settle_finished_games()
     club = ClubSettings.load()
     pending_fines = Fine.objects.filter(status=FineStatus.PENDING).count()
     receipts_to_review = review_queue().count()
@@ -312,6 +311,7 @@ def _roster_context(current: GameDay) -> dict:
     roster = board_roster(current)
     can_mark_attendance = services.game_started(current) and not current.is_cancelled
     return {
+        "can_start": services.can_start(current),
         "game_day": current,
         "schedule": services.schedule_for(current.date),
         "roster": roster,
@@ -505,6 +505,24 @@ def cancel_game_day(request: HttpRequest, day: str) -> HttpResponse:
         suffix = f" {voided} multa(s) deste domingo cancelada(s)." if voided else ""
         messages.success(request, f"Domingo cancelado.{suffix}")
     return _back(current)
+
+
+@board_required
+@require_POST
+def start_game_day(request: HttpRequest, day: str) -> HttpResponse:
+    """The diretor starts the Sunday, from its screen or from a match (which `next` returns to)."""
+    current = _sunday_or_404(day)
+    try:
+        started = services.start_game_day(current.pk, request.user)
+    except ListError as error:
+        messages.error(request, error.message)
+    else:
+        if started:
+            messages.success(request, "Domingo iniciado. Gols, presença e o fim do jogo liberados.")
+        else:
+            messages.info(request, "Este domingo já tinha começado.")
+    target = navigation.requested_next(request)
+    return redirect(target) if target else _back(current)
 
 
 @board_required

@@ -50,9 +50,8 @@ def windows(game_days: Iterable[GameDay], now: datetime | None = None) -> dict[i
             closes_at=schedule.vote_closes,
             has_game=day.pk in confirmed and not day.is_cancelled,
             matches=row["total"],
-            # Use the same automatic Sunday end as the existing game-day lifecycle.
-            # Demo Sundays only end through the diretoria, regardless of the real clock.
-            game_over_at=day.finished_at or (None if demo.is_on() else schedule.charges_open),
+            # The Sunday only ends when the diretoria finishes it, never by the clock.
+            game_over_at=day.finished_at,
             everyone_voted=day.pk in voted_out,
         )
     return result

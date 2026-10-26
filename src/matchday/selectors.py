@@ -6,10 +6,8 @@ from datetime import date, time
 from django.db.models import Prefetch
 
 from accounts.models import Player
-from core import clock, demo
 from games.domain.schedule import TEAMS_OUT_AT
 from games.models import GameDay
-from games.services import schedule_for
 from matchday.domain.score import Score
 from matchday.grouping import first_timers
 from matchday.models import Goal, Lineup, LineupSpot, Match, Team
@@ -210,9 +208,8 @@ def _plays(upcoming: NextUp, team_id: int | None, viewer: Player) -> bool:
 
 def day_view(game_day: GameDay, viewer: Player) -> DayView:
     lineup = lineup_for(game_day)
-    over = game_day.is_finished or (
-        not demo.is_on() and clock.now() >= schedule_for(game_day.date).ends
-    )
+    # The Sunday only ends when the diretoria finishes it, never by the clock.
+    over = game_day.is_finished
     if lineup is None or not lineup.is_confirmed or game_day.is_cancelled:
         return DayView(game_day, False, (), (), (), (), None, False, over)
 

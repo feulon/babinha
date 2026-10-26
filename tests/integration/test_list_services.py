@@ -15,7 +15,7 @@ from games import services
 from games.domain.roster import GameCancelled, ListError, NotOpenYet
 from games.domain.types import EntryStatus
 from games.models import Attendance, GameDay, ListEntry
-from tests.conftest import SP
+from tests.conftest import SP, start_game
 
 SUNDAY = date(2026, 10, 18)
 SUNDAY_MORNING = datetime(2026, 10, 18, 8, 0, tzinfo=SP)
@@ -111,6 +111,7 @@ class TestJoinAndLeave:
         player = make_player()
         services.join_list(game_day.pk, player)
         clock.set(AFTER_KICKOFF)
+        start_game()
         result = services.leave_list(game_day.pk, player, board_actor=board_member)
         assert result.fines == ()
 
@@ -236,10 +237,11 @@ class TestFines:
     ) -> None:
         player = make_player()
         services.join_list(game_day.pk, player)
-        with pytest.raises(ListError, match="início do jogo"):
+        clock.set(AFTER_KICKOFF)
+        with pytest.raises(ListError, match="ainda não começou"):
             services.mark_attendance(game_day.pk, player, Attendance.FALTOU, board_member)
 
-        clock.set(AFTER_KICKOFF)
+        start_game()
         fine = services.mark_attendance(game_day.pk, player, Attendance.FALTOU, board_member)
         assert fine is not None
         assert fine.reason == FineReason.NO_SHOW
@@ -260,5 +262,6 @@ class TestFines:
     ) -> None:
         outsider = make_player()
         clock.set(AFTER_KICKOFF)
+        start_game()
         with pytest.raises(ListError, match="não está na lista"):
             services.mark_attendance(game_day.pk, outsider, Attendance.FALTOU, board_member)

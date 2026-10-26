@@ -127,7 +127,8 @@ Sem `--reset` ele recusa rodar num banco que ja tem dados, e recusa apagar conta
 O que a chave `BABA_DEMO` libera e o que continua valendo:
 
 - **Liberado** (as regras de horario do dia do jogo): abertura e fechamento da lista, times,
-  presenca, gols, fim de partida, finalizar o jogo e cobrar, votacao da Bola de Ouro.
+  votacao da Bola de Ouro. Presenca, gols, fim de partida e finalizar o jogo esperam a diretoria
+  iniciar o domingo, como fora da demonstracao.
 - **Continua valendo**: vagas, prioridades, fila de espera, permissoes, valores e multas.
 - Sem o calendario, o estado do domingo decide as fases: o prazo sem multa (e a prioridade na
   lista) dura ate a diretoria confirmar os times; a lista fecha quando a diretoria finaliza o
@@ -257,8 +258,9 @@ do limite de vagas.
 ## Dinheiro (resumo)
 
 - Mesmo valor para todos. Nada e cobrado enquanto o valor estiver zerado.
-- Domingo: quem esta na lista como avulso ou agregado deve o avulso, mas so depois do jogo: as
-  12h30 de domingo ou quando um diretor aperta "Finalizar jogo e cobrar" na tela do domingo.
+- Domingo: quem esta na lista como avulso ou agregado deve o avulso, mas so depois do jogo:
+  quando um diretor aperta "Finalizar jogo e cobrar" na tela do domingo (o relogio nunca encerra
+  o domingo).
   Antes disso ninguem aparece com pagamento pendente por causa do domingo (a multa por
   desistencia tardia ou falta segue as regras dela). Depois do fim, sair da lista (ou perder a
   vaga) cancela a cobranca ainda nao paga. Domingo cancelado nao cobra ninguem e nao devolve
@@ -366,7 +368,7 @@ ou `rclone sync` para outro bucket.
   "jogo anterior". Se os times estao desequilibrados, a
   confirmacao mostra o aviso na propria pagina e o botao vira "Confirmar times mesmo assim".
 - **Acompanhar o domingo**: o cartao do proximo jogo, no Inicio do jogador, tem a situacao do jogador na lista
-  (entrar, sair, fila de espera) e o botao "Acompanhar o domingo" (e so ele: o cartao do jogo do dia nao tem outro botao para os times). O botao fica bloqueado (com cadeado, sem link) ate chegar o domingo, a partir das 00h; no modo demonstracao ja nasce aberto. Quando o domingo acaba (a diretoria encerra, ou chegam as 12h30, a mesma hora em que a Bola de Ouro abre), o cartao passa a dizer "Domingo encerrado" com o botao "Ver como foi o domingo", e o cabecalho de **/jogo/** tambem; nesse momento o cartao da lista do proximo domingo vem primeiro no Inicio e o do domingo encerrado logo abaixo. O botao abre **/jogo/** com tudo do domingo em blocos: times (o do jogador
+  (entrar, sair, fila de espera) e o botao "Acompanhar o domingo" (e so ele: o cartao do jogo do dia nao tem outro botao para os times). O botao fica bloqueado (com cadeado, sem link) ate chegar o domingo, a partir das 00h; no modo demonstracao ja nasce aberto. Quando o domingo acaba (a diretoria encerra, a mesma hora em que a Bola de Ouro abre; o relogio nunca encerra o domingo), o cartao passa a dizer "Domingo encerrado" com o botao "Ver como foi o domingo", e o cabecalho de **/jogo/** tambem; nesse momento o cartao da lista do proximo domingo vem primeiro no Inicio e o do domingo encerrado logo abaixo. O botao abre **/jogo/** com tudo do domingo em blocos: times (o do jogador
   em destaque), tabela de jogos e placares, presenca (a do proprio jogador e "Lista do domingo"; some quando o domingo encerra, junto com o botao "Atualizar"), Bola de
   Ouro (so depois que o futebol encerra: votar, ou o resultado a partir de segunda 8h). Sao as
   mesmas telas de antes (Jogos, votacao), sem regra nova. Quem chega
@@ -378,6 +380,10 @@ ou `rclone sync` para outro bucket.
   lado sai da fila entre os goleiros da lista e os jogadores de linha sorteados para o gol (quem
   fica em quadra mantem o seu) e pode ser trocado na tela do jogo. Os jogadores veem o proximo jogo
   no Inicio e em **/jogo/** assim que o anterior termina.
+- Quem inicia e encerra o domingo e a diretoria, nunca o relogio (`GameDay.started_at`, migracao
+  `games.0005`): ate um diretor tocar em "Iniciar o domingo" (na tela do jogo ou no passo
+  Presenca, so no dia do jogo), a tela do jogo nao mostra o cronometro nem aceita gols ou fim de
+  partida, e a presenca e o passo Finalizar e cobrar ficam fechados.
 - Um diretor registra os gols de cada partida: ao tocar em quem marcou, o app pergunta quem deu a
   assistencia (um jogador, "Nenhum" ou "Nao se aplica"; `Goal.assist_not_applicable`, migracao
   `matchday.0006`), ou registra um gol contra. A
@@ -403,8 +409,8 @@ ou `rclone sync` para outro bucket.
 - **Diretoria > Montar o domingo** e uma tela de quatro passos, nesta ordem: **Times** (montar e confirmar;
   a lista de jogadores fica recolhida dentro do passo, com Adicionar jogador so antes das 10h do
   domingo), **Primeiros jogos** (trancado ate os times estarem confirmados; nunca espera a
-  presenca), **Presenca** (marcada durante o futebol, so a partir das 10h, agrupada por time, cada
-  grupo recolhido; nunca trava os times nem os jogos) e **Finalizar e cobrar** (trancado ate as 10h;
+  presenca), **Presenca** (marcada durante o futebol, so depois que a diretoria inicia o domingo, agrupada por time, cada
+  grupo recolhido; nunca trava os times nem os jogos) e **Finalizar e cobrar** (trancado ate o domingo ser iniciado;
   lista quem faltou com a multa e junta Multar por atraso e Finalizar jogo e cobrar).
   So o passo da vez abre sozinho; o que a pessoa abre ou fecha fica assim ate sair da tela.
   Cancelar este domingo fica no fim da tela, separado dos passos, e pede um motivo e confirmacao
@@ -420,8 +426,8 @@ assistencias, os times de cada domingo e os resultados alimentam o ranking e o h
 
 ## Comunidade (resumo)
 
-- **Bola de Ouro**: depois que o futebol e finalizado (pela diretoria ou pelo encerramento
-  automatico do domingo as 12h30) e ate segunda 8h, o mesmo instante em que a lista da semana abre
+- **Bola de Ouro**: depois que o futebol e finalizado pela diretoria (o relogio nunca encerra o
+  domingo) e ate segunda 8h, o mesmo instante em que a lista da semana abre
   (`BABA_LIST_OPENS_AT`), quem jogou o domingo vota em tres jogadores (1o, 2o e 3o, valendo 5, 3 e 2 pontos) em **/bola-de-ouro/**.
   Nao da para votar em si mesmo nem repetir jogador, e o voto nao pode ser alterado. Jogam e
   recebem votos todos que estiveram no domingo (linha e goleiros), exceto quem foi marcado com

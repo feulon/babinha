@@ -43,21 +43,17 @@ class ListResult:
 PAID_LATE_FINE_MESSAGE = (
     "A multa por atraso deste jogador já foi paga. O atraso não pode mais mudar."
 )
+NOT_STARTED_MESSAGE = "O domingo ainda não começou. Toque em Iniciar o domingo."
 
 
 def schedule_for(sunday: date) -> WeekSchedule:
     return WeekSchedule(sunday, list_opens_at=settings.BABA_LIST_OPENS_AT)
 
 
-def sunday_over(game_day: GameDay, now=None) -> bool:
-    """The Sunday has ended: the diretoria finished it, or its fees opened (12h30, which is also
-    when the Bola de Ouro opens), whether or not `finished_at` has been saved yet."""
-    if game_day.is_cancelled:
-        return False
-    if game_day.is_finished:
-        return True
-    now = now or clock.now()
-    return not demo.is_on() and now >= schedule_for(game_day.date).charges_open
+def sunday_over(game_day: GameDay) -> bool:
+    """The Sunday has ended: the diretoria finished it (which also opens its fees and the Bola de
+    Ouro). The clock never ends it."""
+    return game_day.is_finished and not game_day.is_cancelled
 
 
 def sunday_arrived(game_day: GameDay) -> bool:
@@ -101,8 +97,9 @@ def _demo_day(game_day: GameDay) -> DemoDay:
 
 
 def game_started(game_day: GameDay) -> bool:
-    """Presence, goals and the end of the game open at kickoff (always, in demo mode)."""
-    return context_for(game_day).started
+    """Presence, goals and the end of the game open when the diretoria starts the Sunday, never
+    by the clock."""
+    return game_day.is_started
 
 
 def entry_rows(game_day: GameDay) -> list[ListEntry]:
@@ -268,16 +265,40 @@ def reopen_game_day(game_day_id: int, actor: Player) -> ListResult:
     return ListResult(outcome.events)
 
 
+def can_start(game_day: GameDay) -> bool:
+    """Whether the diretoria can start the Sunday now: on the day of the game, not yet started,
+    not cancelled."""
+    return not game_day.is_started and not game_day.is_cancelled and sunday_arrived(game_day)
+
+
+@transaction.atomic
+def start_game_day(game_day_id: int, actor: Player) -> bool:
+    """The diretoria starts the game: presence, goals and the end of the game open. Only the
+    diretoria starts it, never the clock. Returns False when it had already started."""
+    _require_board(actor)
+    game_day = _lock(game_day_id)
+    if game_day.is_cancelled:
+        raise ListError("Este domingo foi cancelado.")
+    if game_day.is_started:
+        return False
+    if not sunday_arrived(game_day):
+        raise ListError("O domingo só pode ser iniciado no dia do jogo.")
+    game_day.started_at = clock.now()
+    game_day.started_by = actor
+    game_day.save(update_fields=["started_at", "started_by"])
+    return True
+
+
 @transaction.atomic
 def finish_game_day(game_day_id: int, actor: Player) -> bool:
-    """The diretoria ends the game before 12h30: everyone on the list now owes the single fee.
-    Returns False when the game was already finished."""
+    """The diretoria ends the game: everyone on the list now owes the single fee. Only the
+    diretoria ends it, never the clock. Returns False when the game was already finished."""
     _require_board(actor)
     game_day = _lock(game_day_id)
     if game_day.is_cancelled:
         raise ListError("Este domingo foi cancelado.")
     if not game_started(game_day):
-        raise ListError("O jogo só pode ser finalizado a partir do início.")
+        raise ListError(NOT_STARTED_MESSAGE)
     return charges.finish_game_day(game_day, actor)
 
 
@@ -287,7 +308,7 @@ def _lock_for_attendance(game_day_id: int, actor: Player) -> GameDay:
     if game_day.is_cancelled:
         raise ListError("Este domingo foi cancelado.")
     if not game_started(game_day):
-        raise ListError("A presença só pode ser marcada a partir do início do jogo.")
+        raise ListError(NOT_STARTED_MESSAGE)
     return game_day
 
 
