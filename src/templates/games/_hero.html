@@ -1,18 +1,20 @@
 <section class="hero" data-hero>
-  <p class="hero__eyebrow">{% if hero_over %}Domingo encerrado{% else %}Próximo jogo{% endif %}</p>
-  <h1>Domingo, {% if hero_over %}{{ hero_day.date|date:"d/m" }}{% else %}{{ week.game_day.date|date:"d/m" }}{% endif %} · 10h às 12h</h1>
+  <p class="hero__eyebrow">Próximo jogo</p>
+  <h1>Domingo, {{ week.game_day.date|date:"d/m" }} · 10h às 12h</h1>
   {% if venue_name %}<p class="hero__sub">{{ venue_name }}</p>{% endif %}
-  {% if not hero_over and not week.game_day.is_cancelled %}
+  {% if not week.game_day.is_cancelled %}
     <dl class="meter">
       <div><dt>goleiros</dt><dd>{{ week.goalkeepers|length }}/{{ week.goalkeeper_capacity }}</dd></div>
       <div><dt>linha</dt><dd>{{ week.line|length }}/{{ week.line_capacity }}</dd></div>
       <div><dt>na espera</dt><dd>{{ week.waiting_count }}</dd></div>
     </dl>
   {% endif %}
-  {% if not hero_over %}{% include "games/_list_state.html" %}{% endif %}
-  {% if hero_follow_open %}
-    <a class="btn btn--block hero__cta" href="{% url 'matchday:today' %}?next={{ next_url|urlencode:'' }}">{% if hero_over %}Ver como foi o domingo{% else %}Acompanhar o domingo{% endif %}</a>
-  {% else %}
-    <span class="btn btn--block hero__cta hero__cta--locked" role="link" aria-disabled="true"><span aria-hidden="true">&#128274;</span> Acompanhar o domingo</span>
+  {% include "games/_list_state.html" %}
+  {% if with_follow %}
+    {% if hero_follow_open %}
+      <a class="btn btn--block hero__cta" href="{% url 'matchday:today' %}?next={{ next_url|urlencode:'' }}">Acompanhar o domingo</a>
+    {% else %}
+      <span class="btn btn--block hero__cta hero__cta--locked" role="link" aria-disabled="true"><span aria-hidden="true">&#128274;</span> Acompanhar o domingo</span>
+    {% endif %}
   {% endif %}
 </section>

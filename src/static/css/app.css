@@ -585,6 +585,43 @@ p {
   margin: 0 0 0.375rem;
 }
 
+/* The ended Sunday: a quiet dark card, one line of text and a small button, below the list. */
+.recap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: var(--scoreboard);
+  color: var(--on-scoreboard);
+  border-radius: var(--radius);
+  padding: 0.75rem 0.875rem;
+}
+
+.recap__text {
+  min-width: 0;
+}
+
+.recap__eyebrow {
+  margin: 0;
+  opacity: 0.7;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.recap__title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.recap .recap__cta {
+  flex: none;
+  color: var(--on-scoreboard);
+  border-color: rgb(255 255 255 / 25%);
+}
+
 .meter {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
