@@ -19,6 +19,7 @@ from board.matchday_forms import (
 from board.views import _sunday_or_404
 from core.decorators import board_required
 from core.htmx import is_htmx
+from games import services as games_services
 from matchday import services
 from matchday.domain.score import MATCH_MINUTES, Side
 from matchday.models import Goal, Match, Team
@@ -110,7 +111,9 @@ def _goal_form(match: Match, side: Side, data: object = None) -> GoalForm:
 
 
 def _timer_running(current: Match, row) -> bool:
-    return not current.is_finished and not row.score.decided
+    """The match is on court: the Sunday started and the match is neither ended nor won."""
+    started = services.has_started(current.lineup.game_day)
+    return started and not current.is_finished and not row.score.decided
 
 
 def _timer_on(current: Match) -> bool:
@@ -161,9 +164,9 @@ def _live_context(current: Match, asking: tuple[Side, Player] | None = None) -> 
         "sides": sides,
         "next_up": _next_up_after(current),
         # Goals can be added at any time, even once the match ended, until a team has won it,
-        # but not before the Sunday's kickoff.
+        # but only once the diretoria started the Sunday.
         "started": services.has_started(current.lineup.game_day),
-        "kickoff": services.kickoff(current.lineup.game_day),
+        "can_start": games_services.can_start(current.lineup.game_day),
         "can_score": not row.score.decided,
         "timer_on": _timer_running(current, row),
     }

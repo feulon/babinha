@@ -14,7 +14,7 @@ from finance.models import Charge, ChargeKind, ChargeStatus
 from fines.models import Fine, FineReason
 from matchday import services as matchday
 from matchday.domain.score import Side
-from tests.conftest import SP, Sunday, end_game
+from tests.conftest import SP, Sunday, end_game, start_game
 
 pytestmark = pytest.mark.django_db
 
@@ -52,6 +52,7 @@ def ready(fill_sunday: Callable[..., Sunday], board_member: Player) -> Sunday:
 def scorer(ready: Sunday, board_member: Player, clock: FixedClock) -> Player:
     """Scored both goals of Time A 2 x 0 Time B, the only match of the Sunday."""
     clock.set(KICKOFF)
+    start_game(ready.game_day)
     match = matchday.add_match(ready.game_day.pk, board_member, home_team=1, away_team=2)
     player = match.lineup.spots.filter(team=match.home_team).select_related("player")[0].player
     for _ in range(2):

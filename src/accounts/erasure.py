@@ -78,6 +78,7 @@ CLEARED = (
 
 HANDED_OVER = (
     Reference("domingos cancelados", GameDay, "cancelled_by"),
+    Reference("domingos iniciados", GameDay, "started_by"),
     Reference("domingos finalizados", GameDay, "finished_by"),
     Reference("presenças marcadas", ListEntry, "attendance_marked_by"),
     Reference("times sorteados", Lineup, "drawn_by"),

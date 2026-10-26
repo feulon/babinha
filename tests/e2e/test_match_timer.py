@@ -6,6 +6,7 @@ count what the timer asks of them."""
 
 import random
 from collections.abc import Callable
+from datetime import datetime
 
 import pytest
 from django.urls import reverse
@@ -15,7 +16,7 @@ from accounts.models import Player
 from core.clock import FixedClock
 from matchday import services
 from matchday.models import Match
-from tests.conftest import TEST_PASSWORD, Sunday
+from tests.conftest import SP, TEST_PASSWORD, Sunday, start_game
 from tests.e2e.helpers import expect_signed_in
 
 pytestmark = [pytest.mark.e2e, pytest.mark.django_db(transaction=True)]
@@ -66,6 +67,9 @@ def match(
     sunday = fill_sunday()
     services.draw(sunday.game_day.pk, board_member, random.Random(5))
     made = services.add_match(sunday.game_day.pk, board_member, home_team=1, away_team=2)
+    # The timer shows once the diretoria started the Sunday.
+    clock.set(datetime(2026, 10, 18, 9, 30, tzinfo=SP))
+    start_game(sunday.game_day)
     return sunday, made
 
 

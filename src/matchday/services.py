@@ -13,7 +13,6 @@ Sunday's lineup afterwards never rewrites matches already played.
 import random
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime
 
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
@@ -23,7 +22,7 @@ from accounts.models import Player
 from core import clock
 from games.domain.types import EntryStatus, Position
 from games.models import Attendance, GameDay, ListEntry
-from games.services import game_started, schedule_for
+from games.services import NOT_STARTED_MESSAGE, game_started
 from matchday.domain.draw import (
     TEAM_COUNT,
     Conflict,
@@ -785,19 +784,16 @@ def _team_of(match: Match, side: Side) -> Team:
     return match.home_team if side == Side.HOME else match.away_team
 
 
-def kickoff(game_day: GameDay) -> datetime:
-    return schedule_for(game_day.date).starts
-
-
 def has_started(game_day: GameDay) -> bool:
-    """The Sunday's game kicked off: the same moment the attendance list opens."""
+    """The diretoria started the Sunday: the same moment the attendance list opens."""
     return game_started(game_day)
 
 
 def _require_started(match: Match) -> None:
-    """Goals and full time count for the ranking, so they wait for the Sunday's kickoff."""
+    """Goals and full time count for the ranking, so they wait for the diretoria to start the
+    Sunday, never for the clock."""
     if not has_started(match.lineup.game_day):
-        raise MatchdayError("O jogo ainda não começou.")
+        raise MatchdayError(NOT_STARTED_MESSAGE)
 
 
 @transaction.atomic

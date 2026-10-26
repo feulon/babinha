@@ -13,7 +13,7 @@ from core.models import ClubSettings
 from finance.models import Charge, ChargeKind, ChargeStatus
 from games import services
 from games.models import GameDay
-from tests.conftest import SP, end_game
+from tests.conftest import SP, end_game, start_game
 
 pytestmark = pytest.mark.django_db
 
@@ -43,20 +43,29 @@ def test_pending_page_is_empty_until_the_game_is_finished(
     assert "Garrincha" not in page
 
     clock.set(AFTER_KICKOFF)
+    start_game()
     response = board_client.post(reverse("board:finish", kwargs={"day": game_day.date.isoformat()}))
     assert response.status_code == 302
     page = board_client.get(reverse("board:pending")).content.decode()
     assert "Garrincha" in page
 
 
-def test_pending_page_charges_after_12h30_without_anyone_pressing_finish(
+def test_the_clock_never_charges_without_anyone_pressing_finish(
     signed_up, board_client: Client, clock: FixedClock
 ) -> None:
-    _, player = signed_up
-    clock.set(datetime(2026, 10, 18, 12, 31, tzinfo=SP))
-    page = board_client.get(reverse("board:pending")).content.decode()
-    assert "Garrincha" in page
-    assert Charge.objects.filter(player=player, kind=ChargeKind.GAME).count() == 1
+    game_day, player = signed_up
+    clock.set(AFTER_KICKOFF)
+    start_game()
+    for moment in (
+        datetime(2026, 10, 18, 12, 31, tzinfo=SP),
+        datetime(2026, 10, 19, 9, 0, tzinfo=SP),
+    ):
+        clock.set(moment)
+        page = board_client.get(reverse("board:pending")).content.decode()
+        assert "Garrincha" not in page
+    game_day.refresh_from_db()
+    assert not game_day.is_finished
+    assert not Charge.objects.filter(player=player, kind=ChargeKind.GAME).exists()
 
 
 def test_player_sees_nothing_to_pay_after_joining(

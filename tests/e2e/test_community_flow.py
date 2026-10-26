@@ -15,7 +15,7 @@ from core.clock import FixedClock
 from games import services as games
 from matchday import services as matchday
 from matchday.domain.score import Side
-from tests.conftest import SP, TEST_PASSWORD, Sunday
+from tests.conftest import SP, TEST_PASSWORD, Sunday, start_game
 from tests.e2e.helpers import expect_signed_in, sign_out, tab
 
 pytestmark = [pytest.mark.e2e, pytest.mark.django_db(transaction=True)]
@@ -46,6 +46,7 @@ def test_vote_result_ranking_and_season(
     matchday.draw(day_id, board_member, random.Random(3))
     matchday.confirm(day_id, board_member)
     clock.set(KICKOFF)
+    start_game(sunday.game_day)
     match = matchday.add_match(day_id, board_member, home_team=1, away_team=2)
     scorer = match.lineup.spots.filter(team=match.home_team).select_related("player")[0].player
     for _ in range(2):

@@ -11,7 +11,7 @@ from core.models import ClubSettings
 from games import services
 from games.models import Attendance, GameDay, ListEntry
 from games.promotion import promote_agregados
-from tests.conftest import SP, TEST_PASSWORD
+from tests.conftest import SP, TEST_PASSWORD, start_game
 
 pytestmark = pytest.mark.django_db
 
@@ -110,6 +110,7 @@ class TestPromotion:
             attendance=Attendance.PRESENTE,
         )
         clock.set(datetime(2026, 10, 18, 10, 30, tzinfo=SP))
+        start_game(day)
         services.finish_game_day(day.pk, board_member)
         assert refreshed(agregado) == PlayerType.AVULSO
 

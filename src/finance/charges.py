@@ -1,9 +1,9 @@
 """Charge lifecycle: what each player owes, created and cancelled as the list changes.
 
-- Sunday: a confirmed avulso or agregado owes the single fee, but only once the game is over:
-  at 12h30 on Sunday, or when the diretoria finishes the game by hand. Until then nobody owes
-  anything for the Sunday. Once it is over, leaving the list (or losing the spot) cancels a
-  charge nobody paid yet. A cancelled Sunday charges nobody and refunds nothing automatically.
+- Sunday: a confirmed avulso or agregado owes the single fee, but only once the diretoria
+  finishes the game (the clock never does). Until then nobody owes anything for the Sunday.
+  Once it is over, leaving the list (or losing the spot) cancels a charge nobody paid yet. A
+  cancelled Sunday charges nobody and refunds nothing automatically.
 - Monthly fee: one charge per player who joined the monthly plan (accounts.MonthlyEnrollment)
   for the calendar month, due on the configured day. Nobody renews by themselves; the Sunday fee of
   a player not enrolled in the month of that Sunday is owed like any avulso's.
@@ -18,10 +18,9 @@ from collections.abc import Collection
 from datetime import date, timedelta
 
 from django.conf import settings
-from django.db import transaction
 
 from accounts.models import MonthlyEnrollment, Player
-from core import clock, demo
+from core import clock
 from core.models import ZERO, ClubSettings
 from finance.models import Charge, ChargeKind, ChargeStatus
 from fines.models import Fine
@@ -148,32 +147,6 @@ def finish_game_day(game_day: GameDay, actor: Player | None = None) -> bool:
     sync_game_charges(game_day, actor=actor)
     promote_agregados()
     return True
-
-
-def settle_finished_games(now=None) -> int:
-    """Finish the Sundays whose 12h30 has passed and that nobody finished by hand.
-
-    Safe to call on every page view, like `ensure_monthly_charges`: each Sunday is finished once.
-    """
-    if demo.is_on():
-        return 0  # Demo mode: the diretoria decides when the game ends, not the clock.
-    now = now or clock.now()
-    due = GameDay.objects.filter(
-        finished_at__isnull=True, cancelled_at__isnull=True, date__lte=now.date()
-    )
-    done = 0
-    for game_day_id in due.values_list("pk", flat=True):
-        with transaction.atomic():
-            game_day = GameDay.objects.select_for_update().get(pk=game_day_id)
-            opens = WeekSchedule(game_day.date, settings.BABA_LIST_OPENS_AT).charges_open
-            if now < opens or game_day.is_finished or game_day.is_cancelled:
-                continue
-            game_day.finished_at = opens
-            game_day.save(update_fields=["finished_at"])
-            sync_game_charges(game_day)
-            promote_agregados()
-            done += 1
-    return done
 
 
 def open_fine_charge(fine: Fine) -> Charge | None:

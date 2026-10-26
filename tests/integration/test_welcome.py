@@ -149,7 +149,7 @@ class TestRealValues:
         assert "R$ 30,00" in html
         assert "R$ 100,00" in html
         assert "vence dia 10" in html
-        assert "12h30" in html
+        assert "quando a diretoria finaliza o jogo" in html
         assert PIX_KEY not in html
 
     def test_unset_values_say_a_definir(self, logged_in: Client) -> None:
@@ -270,7 +270,7 @@ class TestFirstLoginAsBoard:
         client = Client()
         client.force_login(new_board_member)
         sunday = client.get(board_screen(3)).content.decode()
-        assert "Abre às 10h" in sunday
+        assert "Abre quando a diretoria inicia o domingo" in sunday
         for step in ("Montar os times", "Primeiros jogos", "Presença", "Finalizar e cobrar"):
             assert step in sunday
         assert "2 gols ou 7 minutos" in sunday

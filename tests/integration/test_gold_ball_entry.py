@@ -14,7 +14,7 @@ from community import selectors
 from core.clock import FixedClock
 from matchday import services as matchday
 from matchday.domain.score import Side
-from tests.conftest import SP, Sunday, end_game
+from tests.conftest import SP, Sunday, end_game, start_game
 
 pytestmark = pytest.mark.django_db
 
@@ -34,6 +34,7 @@ def played(fill_sunday: Callable[..., Sunday], board_member: Player, clock: Fixe
     matchday.draw(sunday.game_day.pk, board_member, random.Random(3))
     matchday.confirm(sunday.game_day.pk, board_member)
     clock.set(KICKOFF)
+    start_game(sunday.game_day)
     match = matchday.add_match(sunday.game_day.pk, board_member, home_team=1, away_team=2)
     scorer = match.lineup.spots.filter(team=match.home_team).select_related("player")[0].player
     for _ in range(2):

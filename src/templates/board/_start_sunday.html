@@ -1,0 +1,6 @@
+{% comment %}The diretor starts the Sunday: presence, goals and the end of the game open. Only this button starts it, never the clock. `next` is where to come back to.{% endcomment %}
+<form method="post" action="{% url 'board:start' day=game_day.date.isoformat %}" data-confirm="Iniciar o domingo? Gols, presença e o fim do jogo passam a valer.">
+  {% csrf_token %}
+  {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+  <button class="btn btn--primary btn--block" data-start-sunday>Iniciar o domingo</button>
+</form>

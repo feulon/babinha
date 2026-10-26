@@ -9,7 +9,7 @@ from playwright.sync_api import Page, expect
 
 from accounts.models import Player
 from core.clock import FixedClock
-from tests.conftest import SP, TEST_PASSWORD, Sunday
+from tests.conftest import SP, TEST_PASSWORD, Sunday, start_game
 from tests.e2e.helpers import expect_signed_in
 
 pytestmark = [pytest.mark.e2e, pytest.mark.django_db(transaction=True)]
@@ -57,6 +57,7 @@ def test_answer_to_an_action_far_down_the_page_stays_in_view(
 ) -> None:
     fill_sunday(line=20, goalkeepers=2)
     clock.set(datetime(2026, 10, 18, 10, 5, tzinfo=SP))
+    start_game()
     page.on("dialog", lambda dialog: dialog.accept())
     log_in(page, live_server.url, board_member)
     page.goto(f"{live_server.url}{DAY_URL}")

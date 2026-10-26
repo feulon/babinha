@@ -14,7 +14,7 @@ from games.models import Attendance
 from matchday import services
 from matchday.domain.score import Side
 from matchday.models import Goal, Lineup, LineupSpot, Match
-from tests.conftest import SP, Sunday
+from tests.conftest import SP, Sunday, end_game, start_game
 
 pytestmark = pytest.mark.django_db
 
@@ -120,6 +120,7 @@ class TestPlayerView:
         services.confirm(sunday.game_day.pk, board_member)
         absent = LineupSpot.objects.filter(lineup=lineup, team__number=1).first().player
         clock.set(AFTER_KICKOFF)
+        start_game()
         games.mark_attendance(sunday.game_day.pk, absent, Attendance.FALTOU, board_member)
         teammate = LineupSpot.objects.filter(lineup=lineup, team__number=2).first().player
         assert absent.name in text(login(teammate).get(TODAY))
@@ -134,6 +135,7 @@ class TestPlayerView:
     ) -> None:
         absent = LineupSpot.objects.filter(lineup=lineup, team__number=1).first().player
         clock.set(AFTER_KICKOFF)
+        start_game()
         games.mark_attendance(sunday.game_day.pk, absent, Attendance.FALTOU, board_member)
         board = text(login(board_member).get(reverse("board:teams", kwargs={"day": DAY})))
         assert f"Saíram ou faltaram: {absent.name}." in board
@@ -180,6 +182,7 @@ class TestPlayerView:
         match = services.add_match(sunday.game_day.pk, board_member, home_team=1, away_team=2)
         scorer = LineupSpot.objects.filter(lineup=lineup, team__number=1).first().player
         clock.set(AFTER_KICKOFF)
+        start_game()
         services.add_goal(match.pk, board_member, side=Side.HOME, scorer=scorer.pk)
         services.finish_match(match.pk, board_member)
         html = text(login(sunday.line[0]).get(TODAY))
@@ -193,8 +196,10 @@ class TestPlayerView:
         match = services.add_match(sunday.game_day.pk, board_member, home_team=1, away_team=2)
         scorer = LineupSpot.objects.filter(lineup=lineup, team__number=1).first().player
         clock.set(AFTER_KICKOFF)  # goals wait for the kickoff
+        start_game()
         services.add_goal(match.pk, board_member, side=Side.HOME, scorer=scorer.pk)
         services.finish_match(match.pk, board_member)
+        end_game(sunday.game_day)
         for moment in (
             datetime(2026, 10, 18, 12, 40, tzinfo=SP),
             datetime(2026, 10, 18, 23, 59, tzinfo=SP),
@@ -216,6 +221,8 @@ class TestPlayerView:
         self, sunday: Sunday, clock: FixedClock
     ) -> None:
         clock.set(datetime(2026, 10, 18, 12, 40, tzinfo=SP))
+        start_game(sunday.game_day)
+        end_game(sunday.game_day)
         client = login(sunday.line[0])
         html = text(client.get(reverse("games:home")))
         assert "Domingo encerrado" in html
@@ -242,6 +249,7 @@ class TestPlayerView:
         services.confirm(sunday.game_day.pk, board_member)
         services.add_match(sunday.game_day.pk, board_member, home_team=1, away_team=2)
         clock.set(AFTER_KICKOFF)
+        start_game()
         assert 'data-state="resultado"' not in text(login(sunday.line[0]).get(TODAY))
 
     def test_past_sundays(
@@ -506,6 +514,7 @@ class TestMatchScreen:
     ) -> None:
         gone = sunday.goalkeepers[0]
         clock.set(AFTER_KICKOFF)
+        start_game()
         games.mark_attendance(sunday.game_day.pk, gone, Attendance.FALTOU, board_member)
         page = board_client.get(reverse("board:match", kwargs={"match_id": match.pk}))
         form = page.context["goalkeepers_form"]

@@ -14,7 +14,7 @@ from core.clock import FixedClock
 from core.models import ClubSettings
 from matchday import services as matchday
 from matchday.domain.score import Side
-from tests.conftest import SP, Sunday, end_game
+from tests.conftest import SP, Sunday, end_game, start_game
 
 pytestmark = pytest.mark.django_db
 
@@ -46,6 +46,7 @@ def sunday(
     matchday.draw(sunday.game_day.pk, board_member, random.Random(3))
     matchday.confirm(sunday.game_day.pk, board_member)
     clock.set(KICKOFF)
+    start_game(sunday.game_day)
     match = matchday.add_match(sunday.game_day.pk, board_member, home_team=1, away_team=2)
     scorer = match.lineup.spots.filter(team=match.home_team).select_related("player")[0].player
     matchday.add_goal(match.pk, board_member, side=Side.HOME, scorer=scorer.pk)
@@ -108,23 +109,20 @@ class TestFinishedSunday:
         assert 'data-state="' in hero_of(page)
         assert 'data-state="' not in page[: page.index('class="hero"')]
 
-    def test_first_home_request_after_12h30_already_says_it_is_over(
+    def test_the_clock_never_ends_the_sunday(
         self, fill_sunday: Callable[..., Sunday], clock: FixedClock
     ) -> None:
         sunday = fill_sunday()
         clock.set(AFTER_GAME)
-        assert not sunday.game_day.is_finished
+        start_game(sunday.game_day)
         page = text(login(sunday.line[0]).get(HOME))
         hero = hero_of(page)
-        assert "Domingo encerrado" in hero
-        assert "Ver como foi o domingo" in hero
-        assert "Acompanhar o domingo" not in page.split('<nav class="tabbar"', 1)[0]
-        assert "18/10" in hero
+        assert "Domingo encerrado" not in hero
+        assert "Acompanhar o domingo" in hero
+        sunday.game_day.refresh_from_db()
+        assert not sunday.game_day.is_finished
 
-    def test_the_card_keeps_saying_it_until_monday(
-        self, fill_sunday: Callable[..., Sunday], clock: FixedClock
-    ) -> None:
-        sunday = fill_sunday()
+    def test_the_card_keeps_saying_it_until_monday(self, sunday: Sunday, clock: FixedClock) -> None:
         clock.set(datetime(2026, 10, 19, 7, 0, tzinfo=SP))
         hero = hero_of(text(login(sunday.line[0]).get(HOME)))
         assert "Domingo encerrado" in hero

@@ -1,6 +1,6 @@
 """Pay a Sunday by Pix: the player sends the receipt, the presidente confirms it."""
 
-from datetime import datetime
+from datetime import date, datetime
 
 import pytest
 from playwright.sync_api import Page, expect
@@ -9,7 +9,8 @@ from accounts.models import Player
 from core.clock import FixedClock
 from core.models import ClubSettings
 from finance.models import Charge, ChargeStatus
-from tests.conftest import PIX_KEY, PNG_BYTES, SP, TEST_PASSWORD
+from games import services as games
+from tests.conftest import PIX_KEY, PNG_BYTES, SP, TEST_PASSWORD, start_game
 from tests.e2e.helpers import sign_out, tab
 
 pytestmark = [pytest.mark.e2e, pytest.mark.django_db(transaction=True)]
@@ -36,7 +37,10 @@ def test_pay_by_pix_and_board_confirms(
     expect(page.get_by_text("Você está na lista", exact=True)).to_be_visible()
     expect(page.locator('[data-state="pagamento"]')).to_have_count(0)
 
-    clock.set(datetime(2026, 10, 18, 12, 31, tzinfo=SP))  # the game is over: the fee opens
+    clock.set(datetime(2026, 10, 18, 12, 31, tzinfo=SP))
+    sunday = games.game_day_for(date(2026, 10, 18))
+    start_game(sunday)
+    games.finish_game_day(sunday.pk, president)  # the diretoria finished it: the fee opens
     page.goto(f"{live_server.url}/")
 
     payment = page.locator('[data-state="pagamento"]')

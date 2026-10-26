@@ -18,7 +18,7 @@ from fines.models import Fine, FineReason, FineStatus
 from games import services
 from games.domain.roster import ListError
 from games.models import Attendance, GameDay
-from tests.conftest import SP, end_game
+from tests.conftest import SP, end_game, start_game
 
 pytestmark = pytest.mark.django_db
 
@@ -190,6 +190,8 @@ class TestSundayCharges:
     ) -> None:
         player = make_player()
         services.join_list(game_day.pk, player)
+        clock.set(AFTER_KICKOFF)
+        start_game()
         clock.set(datetime(2026, 10, 20, 9, 0, tzinfo=SP))
         monthly.join(player)
         services.finish_game_day(game_day.pk, board_member)
@@ -205,6 +207,7 @@ class TestSundayCharges:
         player = make_player()
         services.join_list(game_day.pk, player)
         clock.set(AFTER_KICKOFF)
+        start_game()
         services.finish_game_day(game_day.pk, board_member)
         clock.advance(timedelta(minutes=1))
         monthly.join(player)
@@ -224,31 +227,35 @@ class TestChargesOpenAfterTheGame:
         services.join_list(game_day.pk, player)
         assert game_charges(player) == []
 
-    def test_nothing_is_owed_before_12h30(
+    def test_the_clock_never_ends_the_game_nor_charges(
         self, game_day: GameDay, make_player, clock: FixedClock
     ) -> None:
         player = make_player()
         services.join_list(game_day.pk, player)
-        clock.set(SUNDAY_CHARGES_OPEN - timedelta(minutes=1))
-        assert charges.settle_finished_games() == 0
-        assert game_charges(player) == []
+        clock.set(AFTER_KICKOFF)
+        start_game()
+        for moment in (SUNDAY_CHARGES_OPEN, datetime(2026, 10, 20, 9, 0, tzinfo=SP)):
+            clock.set(moment)
+            assert game_charges(player) == []
+            game_day.refresh_from_db()
+            assert not game_day.is_finished
 
-    def test_at_12h30_everyone_on_the_list_owes_once(
-        self, game_day: GameDay, make_player, clock: FixedClock
+    def test_finishing_charges_everyone_on_the_list_once(
+        self, game_day: GameDay, make_player, board_member: Player, clock: FixedClock
     ) -> None:
         avulso, mensalista = make_player(), make_player(player_type=PlayerType.MENSALISTA)
         for player in (avulso, mensalista):
             services.join_list(game_day.pk, player)
-        clock.set(SUNDAY_CHARGES_OPEN)
-        assert charges.settle_finished_games() == 1
-        assert charges.settle_finished_games() == 0
+        clock.set(AFTER_KICKOFF)
+        start_game()
+        clock.set(SUNDAY_CHARGES_OPEN + timedelta(hours=1))
+        assert services.finish_game_day(game_day.pk, board_member) is True
         charge = active_game_charge(avulso)
         assert charge.status == ChargeStatus.PENDING
         assert charge.due_date == SUNDAY
         assert game_charges(mensalista) == []
         game_day.refresh_from_db()
-        assert game_day.is_finished
-        assert game_day.finished_at == SUNDAY_CHARGES_OPEN
+        assert game_day.finished_at == SUNDAY_CHARGES_OPEN + timedelta(hours=1)
 
     def test_the_diretoria_can_finish_the_game_early_without_duplicating(
         self, game_day: GameDay, make_player, board_member: Player, clock: FixedClock
@@ -256,10 +263,9 @@ class TestChargesOpenAfterTheGame:
         player = make_player()
         services.join_list(game_day.pk, player)
         clock.set(AFTER_KICKOFF)
+        start_game()
         assert services.finish_game_day(game_day.pk, board_member) is True
         assert services.finish_game_day(game_day.pk, board_member) is False
-        clock.set(SUNDAY_CHARGES_OPEN)
-        assert charges.settle_finished_games() == 0
         assert len(game_charges(player)) == 1
         game_day.refresh_from_db()
         assert game_day.finished_by == board_member
@@ -267,9 +273,11 @@ class TestChargesOpenAfterTheGame:
     def test_cannot_finish_before_the_game_starts_or_when_cancelled(
         self, game_day: GameDay, board_member: Player, clock: FixedClock
     ) -> None:
-        with pytest.raises(ListError, match="início"):
+        clock.set(AFTER_KICKOFF)
+        with pytest.raises(ListError, match="ainda não começou"):
             services.finish_game_day(game_day.pk, board_member)
         clock.set(AFTER_KICKOFF)
+        start_game()
         services.cancel_game_day(game_day.pk, board_member, "Chuva")
         with pytest.raises(ListError, match="cancelado"):
             services.finish_game_day(game_day.pk, board_member)
@@ -278,6 +286,7 @@ class TestChargesOpenAfterTheGame:
         self, game_day: GameDay, make_player, clock: FixedClock
     ) -> None:
         clock.set(AFTER_KICKOFF)
+        start_game()
         with pytest.raises(PermissionDenied):
             services.finish_game_day(game_day.pk, make_player())
 
@@ -288,7 +297,8 @@ class TestChargesOpenAfterTheGame:
         services.join_list(game_day.pk, player)
         services.cancel_game_day(game_day.pk, board_member, "Chuva")
         clock.set(SUNDAY_CHARGES_OPEN)
-        assert charges.settle_finished_games() == 0
+        with pytest.raises(ListError, match="cancelado"):
+            services.finish_game_day(game_day.pk, board_member)
         assert game_charges(player) == []
 
     def test_a_late_dropout_fine_is_unaffected_by_the_game_fee(
@@ -444,6 +454,7 @@ class TestFineCharges:
         player = make_player()
         services.join_list(game_day.pk, player)
         clock.set(AFTER_KICKOFF)
+        start_game()
         fine = services.mark_attendance(game_day.pk, player, Attendance.FALTOU, board_member)
         receipt = payments.submit_receipt(fine.charge.pk, player, receipt_upload())
         services.mark_attendance(game_day.pk, player, Attendance.PRESENTE, board_member)
@@ -463,6 +474,7 @@ class TestFineCharges:
         player = make_player()
         services.join_list(game_day.pk, player)
         clock.set(AFTER_KICKOFF)
+        start_game()
         fine = services.mark_attendance(game_day.pk, player, Attendance.FALTOU, board_member)
         receipt = payments.submit_receipt(fine.charge.pk, player, receipt_upload())
 
@@ -484,6 +496,7 @@ class TestFineCharges:
         player = make_player()
         services.join_list(game_day.pk, player)
         clock.set(AFTER_KICKOFF)
+        start_game()
         fine = services.mark_attendance(game_day.pk, player, Attendance.FALTOU, board_member)
         receipt = payments.submit_receipt(fine.charge.pk, player, receipt_upload())
         payments.approve_receipt(receipt.pk, president)

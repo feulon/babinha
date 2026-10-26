@@ -16,7 +16,7 @@ from games import services as games
 from games.models import Attendance
 from matchday import services
 from matchday.models import Lineup
-from tests.conftest import SP, Sunday
+from tests.conftest import SP, Sunday, start_game
 
 pytestmark = pytest.mark.django_db
 
@@ -51,6 +51,7 @@ class TestBeforeTheTeams:
     ) -> None:
         assert reverse("board:add_to_list", kwargs={"day": DAY}) in page(board_client)
         clock.set(AFTER_KICKOFF)
+        start_game()
         assert reverse("board:add_to_list", kwargs={"day": DAY}) not in page(board_client)
 
 
@@ -77,6 +78,7 @@ class TestAttendanceStep:
         lineup = draw(sunday, board_member)
         services.confirm(sunday.game_day.pk, board_member)
         clock.set(AFTER_KICKOFF)
+        start_game()
         return lineup
 
     def test_a_no_show_only_records_the_fine_and_keeps_the_confirmed_teams(

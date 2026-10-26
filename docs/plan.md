@@ -36,7 +36,7 @@ Aplicativo para gerenciar o bába semanal de domingo de um grupo de amigos, semp
 ## Dinheiro
 
 - Mesmo valor para todos. Os valores (mensalidade, avulso, multas) serao definidos depois e devem ser configuraveis pela diretoria.
-- A vaga vale ao confirmar. O pagamento do domingo so e cobrado depois do jogo (12h30 de domingo ou quando um diretor finaliza o jogo), com prazo (ate sabado). Quem nao pagou aparece como pendente para a diretoria.
+- A vaga vale ao confirmar. O pagamento do domingo so e cobrado depois do jogo (quando um diretor finaliza o jogo; o relogio nunca encerra o domingo), com prazo (ate sabado). Quem nao pagou aparece como pendente para a diretoria.
 - Mensalidade: ver as regras de adesao, vencimento e renovacao no [README](../README.md#dinheiro-resumo).
 - O jogador envia foto ou PDF do comprovante do Pix. O presidente confirma o pagamento; a diretoria pode recusar (com motivo). Chave Pix unica, configuravel, mostrada no app junto com o valor.
 - Multa: desistencia depois do prazo, falta sem aviso (pela lista de presenca) ou atraso. O atraso tem valor fixo por faixa (padrao: 15 min = R$ 10, 30 min = R$ 25; editavel pela diretoria), fora da escada das faltas, e a diretoria multa no fim do domingo. A multa de falta parte de um valor base (R$ 50) e sobe pelo multiplicador (padrao 1,5x, editavel pela diretoria) a cada ocorrencia (50, 75, 112,50...), por jogador, e a contagem nunca zera. Paga pelo mesmo fluxo de Pix e comprovante.

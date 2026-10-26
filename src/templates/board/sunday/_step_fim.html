@@ -1,4 +1,4 @@
-{% comment %}Step 4: after the game. The no-show and late fines and the charges, in that order. Locked until the game starts.{% endcomment %}
+{% comment %}Step 4: after the game. The no-show and late fines and the charges, in that order. Locked until the diretoria starts the Sunday.{% endcomment %}
 {% load money %}
 {% if not can_mark_attendance %}
   <div class="card step step--locked" id="passo-fim" data-step="fim">
@@ -6,7 +6,7 @@
       <span class="step__num" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3z"/></svg></span>
       <span class="step__text">
         <span class="step__title">Finalizar e cobrar</span>
-        <span class="step__sub">Abre às {{ schedule.starts|date:"H\h" }}</span>
+        <span class="step__sub">Abre quando o domingo começar</span>
       </span>
     </div>
   </div>
@@ -16,7 +16,7 @@
       <span class="step__num" aria-hidden="true">{% if game_day.is_finished %}✓{% else %}4{% endif %}</span>
       <span class="step__text">
         <span class="step__title">Finalizar e cobrar</span>
-        <span class="step__sub">{% if game_day.is_finished %}Cobranças abertas{% else %}Cobranças abrem às {{ schedule.charges_open|date:"H\hi" }}{% endif %}</span>
+        <span class="step__sub">{% if game_day.is_finished %}Cobranças abertas{% else %}Cobranças abrem ao finalizar o jogo{% endif %}</span>
       </span>
     </summary>
     <div class="step__body">
