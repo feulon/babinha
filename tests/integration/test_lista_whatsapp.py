@@ -133,14 +133,6 @@ def test_people_who_left_are_not_listed(
     assert "1. Ficou" in out
 
 
-def test_a_cancelled_sunday_says_so(
-    clock: FixedClock, make_player: Callable[..., Player], president: Player
-) -> None:
-    join(make_player, president, "Jogador")
-    games.cancel_game_day(games.current_game_day().pk, president, "Chuva")
-    assert "Domingo cancelado pela diretoria." in lista()
-
-
 def test_data_picks_another_sunday(
     clock: FixedClock, make_player: Callable[..., Player], president: Player
 ) -> None:

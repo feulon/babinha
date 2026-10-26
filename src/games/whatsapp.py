@@ -50,8 +50,6 @@ def whatsapp_list(sunday: date) -> str:
         ),
     ]
     blocks = [_header(sunday)]
-    if game_day.is_cancelled:
-        blocks.append("Domingo cancelado pela diretoria.")
     blocks.extend(_numbered(title, people) for title, people in sections if people)
     if len(blocks) == 1:
         blocks.append("Ninguém na lista ainda.")
