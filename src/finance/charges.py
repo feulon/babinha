@@ -5,8 +5,9 @@
   Once it is over, leaving the list (or losing the spot) cancels a charge nobody paid yet. A
   cancelled Sunday charges nobody and refunds nothing automatically.
 - Monthly fee: one charge per player who joined the monthly plan (accounts.MonthlyEnrollment)
-  for the calendar month, due on the configured day. Nobody renews by themselves; the Sunday fee of
-  a player not enrolled in the month of that Sunday is owed like any avulso's.
+  for a month, due on the configured day of that month, the same for any number of Sundays.
+  Nobody renews by themselves; the Sunday fee of a player not enrolled in the month of that
+  Sunday is owed like any avulso's.
 - Fine: every recorded fine with a value becomes a charge, due the Saturday after.
 
 A charge with a receipt under review or already paid is never cancelled automatically: the
@@ -19,7 +20,7 @@ from datetime import date, timedelta
 
 from django.conf import settings
 
-from accounts.models import MonthlyEnrollment, Player
+from accounts.models import MonthlyEnrollment, Player, plan_month
 from core import clock
 from core.models import ZERO, ClubSettings
 from finance.models import Charge, ChargeKind, ChargeStatus
@@ -176,19 +177,19 @@ def cancel_fine_charge(fine: Fine, actor: Player | None, reason: str) -> None:
         cancel(charge, actor, reason)
 
 
-def ensure_monthly_charges(today: date | None = None, player: Player | None = None) -> int:
-    """Create this month's fee for the active mensalistas (or just `player`) who have none yet.
+def ensure_monthly_charges(month: date | None = None, player: Player | None = None) -> int:
+    """Create the fee of `month` (default: the plan month, see accounts.models.plan_month) for
+    its active mensalistas (or just `player`) who have none yet.
 
     Mensalistas are the players enrolled in the month, so it is empty for a month nobody joined.
 
     Safe to call on every page view: existing charges, including waived ones, are kept, and
     concurrent calls cannot duplicate a month thanks to the unique constraint.
     """
-    today = today or clock.now().date()
     values = ClubSettings.load()
     if values.monthly_fee <= ZERO:
         return 0
-    month = month_start(today)
+    month = month_start(month or plan_month())
     mensalistas = Player.objects.filter(is_active=True, enrollments__month=month)
     if player is not None:
         mensalistas = mensalistas.filter(pk=player.pk)

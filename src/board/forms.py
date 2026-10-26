@@ -2,6 +2,7 @@ from datetime import date
 
 from django import forms
 from django.db.models import Q
+from django.utils.formats import date_format
 
 from accounts.forms import (
     ContactCleanMixin,
@@ -11,7 +12,7 @@ from accounts.forms import (
     PhotoFormMixin,
     ReferrerField,
 )
-from accounts.models import Player
+from accounts.models import Player, plan_month
 from accounts.phone import format_phone
 from core import clock
 from core.forms import localize_money
@@ -25,13 +26,18 @@ POTE_HELP = (
 )
 
 
-MONTHLY_LABEL = "Mensalista deste mês"
-MONTHLY_HELP = "Vale só até o fim do mês e não pode ser retirada."
+MONTHLY_HELP = "Vale até o último domingo do mês e não pode ser retirada."
 
 
 def monthly_field() -> forms.BooleanField:
-    """The diretoria's way to join a player in this month's plan."""
-    return forms.BooleanField(required=False, label=MONTHLY_LABEL, help_text=MONTHLY_HELP)
+    """The diretoria's way to join a player in the plan month (named by `name_monthly_field`)."""
+    return forms.BooleanField(required=False, help_text=MONTHLY_HELP)
+
+
+def name_monthly_field(form: forms.Form) -> None:
+    """Name the month the box joins: after the month's last Sunday it is already the next one."""
+    month = date_format(plan_month(), "F").lower()
+    form.fields["mensalista"].label = f"Mensalista de {month}"
 
 
 def place_after(form: forms.Form, name: str, after: str) -> None:
@@ -148,6 +154,7 @@ class PlayerForm(PhotoFormMixin, SameNameMixin, ContactCleanMixin, forms.ModelFo
     def __init__(self, *args: object, editor: Player, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
         place_after(self, "mensalista", "player_type")
+        name_monthly_field(self)
         self.initial["mensalista"] = self.instance.pk is not None and self.instance.is_mensalista
         if (
             self.instance.is_presidente
@@ -197,7 +204,9 @@ class PlayerForm(PhotoFormMixin, SameNameMixin, ContactCleanMixin, forms.ModelFo
     def clean_mensalista(self) -> bool:
         enrolled = self.cleaned_data["mensalista"]
         if self.instance.pk and self.instance.is_mensalista and not enrolled:
-            raise forms.ValidationError("A adesão vale até o fim do mês e não pode ser retirada.")
+            raise forms.ValidationError(
+                "A adesão vale até o último domingo do mês e não pode ser retirada."
+            )
         return enrolled
 
     def clean_referred_by(self) -> Player | None:
@@ -357,6 +366,7 @@ class NewPlayerForm(PhotoFormMixin, SameNameMixin, ContactCleanMixin, forms.Mode
     def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
         place_after(self, "mensalista", "player_type")
+        name_monthly_field(self)
         # This is somebody else's contact: the browser must not autofill the board's own.
         self.fields["phone"].widget.attrs["autocomplete"] = "off"
         self.fields["email"].widget.attrs["autocomplete"] = "off"

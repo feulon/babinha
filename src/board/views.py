@@ -62,7 +62,7 @@ def dashboard(request: HttpRequest) -> HttpResponse:
         return redirect(welcome.board_start_url())
     game_day = services.matchday_game_day()
     today = clock.now().date()
-    charges.ensure_monthly_charges(today)
+    charges.ensure_monthly_charges()
     club = ClubSettings.load()
     pending_fines = Fine.objects.filter(status=FineStatus.PENDING).count()
     receipts_to_review = review_queue().count()
@@ -185,7 +185,7 @@ def player_new(request: HttpRequest) -> HttpResponse:
 
 
 def _apply_monthly(request: HttpRequest, form: forms.Form, player: Player) -> None:
-    """Join the player in this month's plan when requested."""
+    """Join the player in the plan month when requested."""
     wanted = form.cleaned_data["mensalista"]
     if wanted == player.is_mensalista:
         return

@@ -265,18 +265,22 @@ do limite de vagas.
   desistencia tardia ou falta segue as regras dela). Depois do fim, sair da lista (ou perder a
   vaga) cancela a cobranca ainda nao paga. Domingo cancelado nao cobra ninguem e nao devolve
   nada automaticamente.
-- Mensalidade: mensalista nao e um tipo fixo, vale por um mes civil. O jogador aperta "Virar
-  mensalista" (inicio ou Pagamentos, qualquer dia do mes) e fica mensalista ate o fim do mes; a
-  adesao abre a cobranca da mensalidade, que vence no dia configurado,
+- Mensalidade: mensalista nao e um tipo fixo, vale para os domingos de um mes (o domingo e do
+  mes da sua data), pela mesma mensalidade com 4 ou 5 domingos. O jogador aperta "Virar
+  mensalista" (inicio ou Pagamentos) e fica mensalista ate o ultimo domingo do mes; a adesao abre
+  a cobranca da mensalidade, que vence no dia configurado do mes,
   e o app leva a enviar o comprovante, mas pode ser depois: a adesao vale e a cobranca
-  fica pendente ate a diretoria confirmar. No dia 1o ninguem renova sozinho: o mes de referencia
-  vem do relogio do app (America/Sao_Paulo, e o relogio de teste vale), sem job agendado, e todo
-  mundo volta ao tipo fixo (avulso ou agregado) ate aderir de novo. Quem nao aderiu paga o
-  domingo como avulso e a mensalidade nao paga do mes anterior continua devida. A diretoria ve
-  quem aderiu, pagou e esta pendente em A receber e no Caixa, cobra em "Avisar quem deve", e tambem registra
-  a adesao em Jogadores > Editar ("Mensalista deste mes"). A adesao nao pode ser retirada antes
-  do fim do mes. A virada do mes preserva pagamentos, dividas e a cobertura dos domingos
-  anteriores. A adesao nao apaga cobrancas avulsas anteriores: para cobrir um domingo, precisa
+  fica pendente ate a diretoria confirmar. A adesao do mes seguinte abre logo depois do ultimo
+  domingo do mes: quando a diretoria finaliza esse domingo ou, no maximo, as 00h da segunda
+  seguinte. Assim quem adere a novembro em 26/10 ja e mensalista na lista do domingo 01/11, que
+  abre na segunda 26/10, e pode pagar antes do dia 1o. Ninguem renova sozinho: o mes de
+  referencia vem do relogio do app (America/Sao_Paulo, e o relogio de teste vale) e do domingo
+  finalizado, sem job agendado, e todo mundo volta ao tipo fixo (avulso ou agregado) ate aderir
+  de novo. Quem nao aderiu paga o domingo como avulso e a mensalidade nao paga do mes anterior
+  continua devida. A diretoria ve quem aderiu ao mes aberto, pagou e esta pendente em A receber e
+  no Caixa, cobra em "Avisar quem deve", e tambem registra a adesao em Jogadores > Editar
+  ("Mensalista de <mes>"). A adesao nao pode ser retirada antes do ultimo domingo do mes. A
+  virada do mes preserva pagamentos, dividas e a cobertura dos domingos anteriores. A adesao nao apaga cobrancas avulsas anteriores: para cobrir um domingo, precisa
   ocorrer ate as 12h30 dele ou sua finalizacao pela diretoria, o que vier primeiro.
 - Multa: vira cobranca, com vencimento no sabado seguinte. Paga continua contando para a
   escalada; so o perdao tira da contagem.

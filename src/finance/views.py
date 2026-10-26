@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 def payments_context(request: HttpRequest) -> dict:
     """What the player owes, the Pix key and the upload form (home and payments screens)."""
     today = clock.now().date()
-    charges.ensure_monthly_charges(today, player=request.user)
+    charges.ensure_monthly_charges(player=request.user)
     return {
         "payments": player_payments(request.user, today),
         "plan": monthly_plan(request.user),
@@ -41,7 +41,7 @@ def payments(request: HttpRequest) -> HttpResponse:
 @login_required
 @require_POST
 def join_monthly(request: HttpRequest) -> HttpResponse:
-    """The "Virar mensalista" button: join this month's plan, then go pay the fee (or later)."""
+    """The "Virar mensalista" button: join the plan month, then go pay the fee (or later)."""
     try:
         enrollment, _ = monthly.join(request.user)
     except monthly.MonthlyError as error:

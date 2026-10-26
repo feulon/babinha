@@ -1,4 +1,7 @@
-"""The monthly plan: a player joins for one month and everybody starts over on the 1st."""
+"""The monthly plan: a player joins for one month and everybody starts over after its last Sunday.
+
+The turn itself (the window between the month's last Sunday and the 1st) is in
+test_monthly_turn.py."""
 
 import importlib
 from collections.abc import Callable
@@ -30,6 +33,10 @@ pytestmark = pytest.mark.django_db
 OCTOBER = date(2026, 10, 1)
 NOVEMBER = date(2026, 11, 1)
 FIRST_OF_NOVEMBER = datetime(2026, 11, 1, 8, 0, tzinfo=SP)  # a Sunday
+# The last minute of the last Sunday of October nobody finished, and the Monday that follows:
+# joining November opens at 00:00 of that Monday.
+LAST_OCTOBER_MINUTE = datetime(2026, 10, 25, 23, 59, 59, 999999, tzinfo=SP)
+NOVEMBER_OPENS = datetime(2026, 10, 26, 0, 0, tzinfo=SP)
 HOME = reverse("games:home")
 PAYMENTS = reverse("finance:payments")
 JOIN = reverse("finance:join_monthly")
@@ -77,8 +84,7 @@ class TestJoining:
     def test_joining_across_midnight_charges_the_enrollment_month(
         self, fees: ClubSettings, player: Player, clock: FixedClock, monkeypatch
     ) -> None:
-        before = datetime(2026, 10, 31, 23, 59, 59, 999999, tzinfo=SP)
-        after = datetime(2026, 11, 1, 0, 0, tzinfo=SP)
+        before, after = LAST_OCTOBER_MINUTE, NOVEMBER_OPENS
         instants = chain([before], repeat(after))
         monkeypatch.setattr(clock, "now", lambda: next(instants))
 
@@ -191,9 +197,9 @@ class TestTheMonthStartsOver:
         self, fees: ClubSettings, player: Player, clock: FixedClock
     ) -> None:
         monthly.join(player)
-        clock.set(datetime(2026, 10, 31, 23, 59, tzinfo=SP))
+        clock.set(LAST_OCTOBER_MINUTE)
         assert player.is_mensalista
-        clock.set(datetime(2026, 11, 1, 0, 0, tzinfo=SP))
+        clock.set(NOVEMBER_OPENS)
         assert not player.is_mensalista
         assert player.effective_type == PlayerType.AVULSO
         assert player.is_enrolled_in(OCTOBER)  # the history stays
@@ -414,12 +420,12 @@ class TestJoinButton:
         clock: FixedClock,
         monkeypatch,
     ) -> None:
-        clock.set(datetime(2026, 10, 31, 23, 59, 59, 999999, tzinfo=SP))
+        clock.set(LAST_OCTOBER_MINUTE)
         join = monthly.join
 
         def join_across_midnight(*args, **kwargs):
             result = join(*args, **kwargs)
-            clock.set(datetime(2026, 11, 1, 0, 0, tzinfo=SP))
+            clock.set(NOVEMBER_OPENS)
             return result
 
         monkeypatch.setattr(monthly, "join", join_across_midnight)
@@ -535,7 +541,8 @@ class TestBoardView:
         monthly.join(player)
         html = board_client.get(PENDING).content.decode()
         assert "1 aderiu · 0 pagaram · 1 pendente." in html
-        assert f'href="{CASH}">Ver no Caixa</a>' in html
+        october_cash = reverse("board:cash_month", args=["2026-10"])
+        assert f'href="{october_cash}">Ver no Caixa</a>' in html
         caixa = board_client.get(CASH).content.decode()
         assert "0 pagaram · 1 pendente" in caixa
         assert 'data-section="mensalistas"' in caixa

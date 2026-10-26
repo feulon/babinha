@@ -15,7 +15,7 @@ from finance.selectors import open_charges, pix_info
 
 def _debtors() -> tuple[Debtor, ...]:
     today = clock.now().date()
-    charges.ensure_monthly_charges(today)
+    charges.ensure_monthly_charges()
     return reminders.debtors(open_charges(today))
 
 

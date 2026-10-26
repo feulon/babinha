@@ -1,4 +1,4 @@
-{# Join (or see) this month's plan. Needs plan. Hidden while the monthly fee is off. On the Início (compact) only the mensalista card shows; joining there is finance/_join_monthly_home.html. #}
+{# Join (or see) the plan month (accounts.models.plan_month). Needs plan. Hidden while the monthly fee is off. On the Início (compact) only the mensalista card shows; joining there is finance/_join_monthly_home.html. #}
 {% if plan.is_offered %}
   {% if plan.enrolled %}
     <section class="status status--ok" data-state="mensalista">
@@ -7,7 +7,7 @@
   {% elif not compact %}
     <section class="card" data-state="virar-mensalista">
       <h2>Virar mensalista de {{ plan.month|date:"F"|lower }}</h2>
-      <p class="small">Prioridade na lista e mensalidade de <strong>R$&nbsp;{{ plan.fee|floatformat:"2g" }}</strong>, em vez de pagar cada domingo. Vale só este mês: no dia 1º é preciso aderir de novo.</p>
+      <p class="small">Prioridade na lista e mensalidade de <strong>R$&nbsp;{{ plan.fee|floatformat:"2g" }}</strong>, em vez de pagar cada domingo. Vale para os domingos de {{ plan.month|date:"F"|lower }}: depois do último domingo do mês, é preciso aderir de novo.</p>
       <form method="post" action="{% url 'finance:join_monthly' %}" data-confirm="Virar mensalista de {{ plan.month|date:'F'|lower }}? Abre a mensalidade de R$ {{ plan.fee|floatformat:'2g' }}.">
         {% csrf_token %}
         <button type="submit" class="btn btn--primary btn--block">Virar mensalista</button>

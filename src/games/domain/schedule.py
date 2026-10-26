@@ -142,3 +142,32 @@ def teams_out(now: datetime) -> bool:
         return True
     local = now.astimezone(SAO_PAULO)
     return local.weekday() == SUNDAY and local.time() >= TEAMS_OUT_AT
+
+
+def sunday_on_or_after(day: date) -> date:
+    return day + timedelta(days=(SUNDAY - day.weekday()) % 7)
+
+
+def is_last_sunday_of_month(sunday: date) -> bool:
+    return (sunday + timedelta(days=7)).month != sunday.month
+
+
+def plan_month(today: date, *, today_ended: bool) -> date:
+    """The month of the monthly plan on `today`: the month of the next Sunday that has not ended.
+
+    A Sunday belongs to the month of its date and ends when the diretoria finishes it
+    (`today_ended`, about today's Sunday) or, at the latest, at 00:00 of the Monday after. So a
+    month's mensalistas hold through its last Sunday, and joining the next month opens right
+    after it, before the list of that month's first Sunday opens.
+    """
+    sunday = sunday_on_or_after(today)
+    if sunday == today and today_ended:
+        sunday += timedelta(days=7)
+    return sunday.replace(day=1)
+
+
+def plan_opens(month: date) -> datetime:
+    """When joining `month` opens at the latest: 00:00 of the Monday after the last Sunday of the
+    month before, which is the Monday of the week of the month's first Sunday."""
+    first_sunday = sunday_on_or_after(month.replace(day=1))
+    return _at(first_sunday - timedelta(days=DAYS_FROM_MONDAY), time(0, 0))

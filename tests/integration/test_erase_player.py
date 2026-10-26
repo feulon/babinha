@@ -16,7 +16,7 @@ from django.test import Client
 
 from accounts import erasure, photos
 from accounts.management.commands import apagar_jogador
-from accounts.models import MonthlyEnrollment, Player, current_month
+from accounts.models import MonthlyEnrollment, Player, plan_month
 from community import services as community
 from community.models import Ballot
 from core.clock import FixedClock
@@ -93,7 +93,7 @@ def scene(
     charge = Charge.objects.get(player=target)
     receipt = payments.submit_receipt(charge.pk, target, receipt_upload(PDF_BYTES, "pix.pdf"))
     payments.approve_receipt(receipt.pk, president)
-    MonthlyEnrollment.objects.create(player=target, month=current_month())
+    MonthlyEnrollment.objects.create(player=target, month=plan_month())
     Feedback.objects.create(author=target, kind=FeedbackKind.BUG, text="O botão some.")
     photos.replace(target, PNG_BYTES)
     referred = make_player("Indicado", referred_by=target)
