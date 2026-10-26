@@ -373,7 +373,9 @@ ou `rclone sync` para outro bucket.
   assistencia (um jogador, "Nenhum" ou "Nao se aplica"; `Goal.assist_not_applicable`, migracao
   `matchday.0006`), ou registra um gol contra. A
   partida acaba quando um time faz 2 gols, ou quando o diretor encerra no fim do tempo (empate
-  vale). O cronometro de 7 minutos roda so no celular do diretor; nao ha placar ao vivo, os
+  vale). O cronometro de 7 minutos roda so no celular do diretor; no fim do tempo ele vibra e apita
+  (o botao "Som ligado/desligado" silencia o apito, e a tela fica acordada enquanto roda, onde o
+  navegador permite); nao ha placar ao vivo, os
   jogadores veem os resultados ao abrir a tela.
   O autor e a assistencia podem ser qualquer jogador da lista (o time que marcou aparece
   primeiro), e os times podem ser refeitos ou ajustados a qualquer hora: o gol guarda o time, o
