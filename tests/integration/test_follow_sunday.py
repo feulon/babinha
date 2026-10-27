@@ -62,6 +62,11 @@ def hero_of(page: str) -> str:
     return page[start : page.index("</section>", start)]
 
 
+def recap_of(page: str) -> str:
+    start = page.index('class="recap"')
+    return page[start : page.index("</section>", start)]
+
+
 class TestVenue:
     """The hero shows the venue the diretoria configured, and nothing when there is none."""
 
@@ -88,17 +93,34 @@ class TestFinishedSunday:
 
     def test_once_it_ends_the_card_stops_following_and_the_vote_opens(self, sunday: Sunday) -> None:
         page = text(login(sunday.line[0]).get(HOME))
-        hero = hero_of(page)
+        recap = recap_of(page)
         assert "Acompanhar o domingo" not in page.split('<nav class="tabbar"', 1)[0]
-        assert "Domingo encerrado" in hero
-        assert "Ver como foi o domingo" in hero
-        assert f'href="{FOLLOW}"' in hero
+        assert "Domingo encerrado" in recap
+        assert "Ver como foi o domingo" in recap
+        assert f'href="{FOLLOW}"' in recap
         assert "votação aberta" in page
 
-    def test_the_next_sunday_list_card_comes_before_the_recap_card(self, sunday: Sunday) -> None:
+    def test_the_next_sunday_list_card_is_the_green_one_and_the_recap_is_not(
+        self, sunday: Sunday
+    ) -> None:
         page = text(login(sunday.line[0]).get(HOME))
-        assert 'data-state="' in page
-        assert page.index('data-state="') < page.index('class="hero"')
+        hero = hero_of(page)
+        assert 'data-state="' in hero
+        assert "Próximo jogo" in hero
+        assert "Domingo encerrado" not in hero
+        assert "Domingo encerrado" in recap_of(page)
+
+    def test_the_recap_card_comes_after_the_list_row_and_before_the_invite(
+        self, sunday: Sunday
+    ) -> None:
+        page = text(login(sunday.line[0]).get(HOME))
+        order = [
+            page.index('class="hero"'),
+            page.index("Lista do domingo"),
+            page.index('class="recap"'),
+            page.index("Convide um amigo"),
+        ]
+        assert order == sorted(order)
 
     def test_while_the_sunday_is_on_the_game_card_keeps_the_list_state_inside_it(
         self, fill_sunday: Callable[..., Sunday], clock: FixedClock
@@ -124,9 +146,9 @@ class TestFinishedSunday:
 
     def test_the_card_keeps_saying_it_until_monday(self, sunday: Sunday, clock: FixedClock) -> None:
         clock.set(datetime(2026, 10, 19, 7, 0, tzinfo=SP))
-        hero = hero_of(text(login(sunday.line[0]).get(HOME)))
-        assert "Domingo encerrado" in hero
-        assert "Acompanhar o domingo" not in hero
+        page = text(login(sunday.line[0]).get(HOME))
+        assert "Domingo encerrado" in recap_of(page)
+        assert "Acompanhar o domingo" not in hero_of(page)
 
 
 class TestWayBack:

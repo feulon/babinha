@@ -3,9 +3,13 @@
   {% if oob_messages %}{% include "includes/messages.html" with oob=True %}{% endif %}
   {% include "finance/_monthly_card.html" with compact=True %}
 
-  {% if hero_over %}{% include "games/_list_state.html" %}{% endif %}
-
-  {% include "games/_hero.html" %}
+  {% if hero_over %}
+    {% include "games/_hero.html" %}
+    {% if not week.game_day.is_cancelled %}{% include "games/_who.html" %}{% endif %}
+    {% include "games/_recap.html" %}
+  {% else %}
+    {% include "games/_hero.html" with with_follow=True %}
+  {% endif %}
 
   {% gold_ball_card user "top" %}
 
@@ -13,7 +17,7 @@
 
   {% gold_ball_card user "below" %}
 
-  {% if not week.game_day.is_cancelled %}{% include "games/_who.html" %}{% endif %}
+  {% if not hero_over and not week.game_day.is_cancelled %}{% include "games/_who.html" %}{% endif %}
 
   {% include "finance/_join_monthly_home.html" %}
 

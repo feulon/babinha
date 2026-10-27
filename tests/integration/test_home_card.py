@@ -65,13 +65,15 @@ class TestListInsideTheCard:
         assert reverse("games:leave") in hero
         assert "Desistir" in hero
 
-    def test_while_the_finished_sunday_is_shown_its_card_does_not_carry_the_next_list(
+    def test_while_the_finished_sunday_is_shown_the_next_list_stays_in_the_green_card(
         self, player_client: Client, clock: FixedClock
     ) -> None:
         end_game(games.game_day_for(date(2026, 10, 11)))
         clock.set(datetime(2026, 10, 12, 7, 0, tzinfo=SP))
-        assert "data-state" not in hero_of(player_client)
-        assert 'data-state="fechada"' in player_client.get(HOME).content.decode()
+        page = player_client.get(HOME).content.decode()
+        recap = page[page.index('class="recap"') :]
+        assert 'data-state="fechada"' in hero_of(player_client)
+        assert "data-state" not in recap[: recap.index("</section>")]
 
 
 class TestFollowButton:
