@@ -85,8 +85,8 @@
 
   <section class="status status--info" data-state="mensalistas-do-mes">
     <p class="status__headline">Mensalistas de {{ month|date:"F"|lower }}</p>
-    <p>{% if members %}{{ members }} ader{{ members|pluralize:"iu,iram" }} · {{ members_paid }} pag{{ members_paid|pluralize:"ou,aram" }} · {{ members_open }} pendente{{ members_open|pluralize }}.{% else %}Ninguém aderiu ainda neste mês.{% endif %}</p>
-    <a class="btn btn--ghost btn--small" href="{% url 'board:cash' %}">Ver no Caixa</a>
+    <p>{% if members %}{{ members }} ader{{ members|pluralize:"iu,iram" }} · {{ members_paid }} pag{{ members_paid|pluralize:"ou,aram" }} · {{ members_open }} pendente{{ members_open|pluralize }}.{% else %}Ninguém aderiu ainda.{% endif %}</p>
+    <a class="btn btn--ghost btn--small" href="{% url 'board:cash_month' month=month|date:'Y-m' %}">Ver no Caixa</a>
   </section>
 </div>
 {% endblock %}

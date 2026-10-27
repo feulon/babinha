@@ -10,6 +10,7 @@ from django.urls import reverse
 from django.utils.formats import date_format
 from django.views.decorators.http import require_http_methods, require_POST
 
+from accounts.models import plan_month
 from core import clock, navigation
 from core.decorators import board_required, presidente_required
 from core.models import ZERO
@@ -105,14 +106,16 @@ def refuse_receipt(request: HttpRequest, receipt_id: int) -> HttpResponse:
 @board_required
 def pending(request: HttpRequest) -> HttpResponse:
     today = clock.now().date()
-    charges.ensure_monthly_charges(today)
+    charges.ensure_monthly_charges()
     only_unpaid = request.GET.get("filtro") == UNPAID_FILTER
     rows = open_charges(today)
     if only_unpaid:
         rows = tuple(row for row in rows if row.charge.status != ChargeStatus.UNDER_REVIEW)
-    members = month_members(today, today)
+    # The month players join now: after the month's last Sunday, already the next one.
+    month = plan_month()
+    members = month_members(month, today)
     context = {
-        "month": charges.month_start(today),
+        "month": month,
         "members": len(members),
         "members_paid": sum(1 for member in members if member.is_paid),
         "members_open": sum(1 for member in members if member.is_open),
@@ -128,8 +131,7 @@ def pending(request: HttpRequest) -> HttpResponse:
 @board_required
 def cash(request: HttpRequest, month: str | None = None) -> HttpResponse:
     """The diretoria's Caixa: the month's totals with who paid, who owes and the expenses."""
-    today = clock.now().date()
-    charges.ensure_monthly_charges(today)
+    charges.ensure_monthly_charges()
     return render(request, "board/cash.html", report_context(month, with_people=True))
 
 

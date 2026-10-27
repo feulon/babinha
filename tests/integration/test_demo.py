@@ -1,5 +1,5 @@
 from collections import Counter
-from datetime import datetime
+from datetime import date, datetime
 from io import StringIO
 
 import pytest
@@ -8,7 +8,7 @@ from django.core.management.base import CommandError
 from django.test import override_settings
 from django.urls import reverse
 
-from accounts.models import Player
+from accounts.models import MonthlyEnrollment, Player
 from community import selectors as community
 from community import services as community_services
 from community.domain.voting import Phase
@@ -25,11 +25,14 @@ from matchday import services as matchday
 from matchday.models import Lineup, Match
 from tests.conftest import SP
 
-# Any day and hour will do: a Tuesday morning, a Sunday afternoon and a Saturday night.
+# Any day and hour will do: a Tuesday morning, a Sunday afternoon and a Saturday night, and a
+# Tuesday after October's last Sunday, when the demo Sunday (01/11) is already November's.
+IN_THE_TURN = datetime(2026, 10, 27, 9, 0, tzinfo=SP)
 MOMENTS = [
     datetime(2026, 10, 13, 9, 0, tzinfo=SP),
     datetime(2026, 10, 18, 15, 30, tzinfo=SP),
     datetime(2026, 10, 17, 23, 50, tzinfo=SP),
+    IN_THE_TURN,
 ]
 
 # flush (used by --reset) needs real transactions.
@@ -86,6 +89,24 @@ class TestScenarios:
         assert counts[(EntryStatus.ESPERA.value, "linha")] == 2
         bumped = ListEntry.objects.filter(game_day=game_day, bumped=True)
         assert [e.player.nickname for e in bumped] == ["Sabiá"]
+
+    def test_in_the_turn_the_mensalistas_are_novembers(self) -> None:
+        with use_clock(FixedClock(IN_THE_TURN)):
+            run_demo("cobranca")
+            game_day = sunday_of(IN_THE_TURN)
+            presidente = Player.objects.get(is_presidente=True)
+            assert presidente.is_mensalista
+        assert game_day.date == date(2026, 11, 1)
+        assert [e.player.nickname for e in ListEntry.objects.filter(bumped=True)] == ["Sabiá"]
+        november = date(2026, 11, 1)
+        assert MonthlyEnrollment.objects.filter(player=presidente, month=november).exists()
+        fee = Charge.objects.get(
+            player=presidente, kind=ChargeKind.MONTHLY, reference_date=november
+        )
+        assert fee.status == ChargeStatus.PAID
+        assert not Charge.objects.filter(
+            game_day=game_day, kind=ChargeKind.GAME, player=presidente
+        ).exists()
 
     def test_the_teams_are_drawn_then_confirmed(self) -> None:
         now = MOMENTS[0]

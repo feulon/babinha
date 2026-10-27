@@ -37,7 +37,7 @@ from finance.models import Charge, ChargeKind
 from fines import services as fines
 from fines.models import FineReason
 from games import services as games
-from games.domain.schedule import upcoming_sunday
+from games.domain.schedule import plan_opens, upcoming_sunday
 from games.domain.types import EntryStatus
 from games.models import Attendance, GameDay, ListEntry
 from matchday import services as matchday
@@ -193,15 +193,12 @@ class _Seeder:
         values.save()
 
     def enroll_mensalistas(self) -> None:
-        """Whoever the story calls a mensalista pressed the button on the 1st of each month the
-        story touches (last Sunday's, today's and this Sunday's), so they paid no single fee."""
-        today = clock.now()
-        firsts = {
-            day.replace(day=1) for day in (today.date(), self.sunday, self.sunday - timedelta(7))
-        }
+        """Whoever the story calls a mensalista pressed the button as soon as joining opened for
+        each month the story's Sundays belong to (last Sunday's and this Sunday's), so they paid
+        no single fee."""
+        firsts = {day.replace(day=1) for day in (self.sunday, self.sunday - timedelta(7))}
         for first in sorted(firsts):
-            moment = datetime.combine(first, time(8, 0), tzinfo=clock.SAO_PAULO)
-            with use_clock(FixedClock(moment)):
+            with use_clock(FixedClock(plan_opens(first))):
                 for spec in PLAYERS:
                     if spec.player_type == PlayerType.MENSALISTA:
                         monthly.join(self.players[spec.key])
@@ -250,8 +247,8 @@ class _Seeder:
             games.join_list(self.day_id, self.players[key])
 
     def monthly_fees(self) -> None:
-        charges.ensure_monthly_charges()
-        month = charges.month_start(clock.now().date())
+        month = self.sunday.replace(day=1)
+        charges.ensure_monthly_charges(month)
         for key, approve in (("presidente", True), ("diretoria", True), ("paredao", None)):
             charge = Charge.objects.get(
                 player=self.players[key], kind=ChargeKind.MONTHLY, reference_date=month

@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from django.db.models import Prefetch, QuerySet, Sum
 
-from accounts.models import MonthlyEnrollment, Player, current_month
+from accounts.models import MonthlyEnrollment, Player, plan_month
 from core.models import ZERO, ClubSettings
 from finance.charges import month_start, next_month
 from finance.models import (
@@ -152,7 +152,8 @@ def payment_history(player: Player) -> tuple[HistoryEntry, ...]:
 
 @dataclass(frozen=True)
 class MonthlyPlan:
-    """Where a player stands in this month's plan, for the "Virar mensalista" card."""
+    """Where a player stands in the plan month (see accounts.models.plan_month), for the "Virar
+    mensalista" card."""
 
     month: date
     enrolled: bool
@@ -170,7 +171,7 @@ class MonthlyPlan:
 
 
 def monthly_plan(player: Player, *, month: date | None = None) -> MonthlyPlan:
-    month = month if month is not None else current_month()
+    month = month if month is not None else plan_month()
     enrolled = MonthlyEnrollment.objects.filter(player=player, month=month).exists()
     charge = (
         Charge.objects.filter(player=player, kind=ChargeKind.MONTHLY, reference_date=month)

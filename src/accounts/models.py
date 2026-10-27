@@ -1,5 +1,6 @@
 from datetime import date
 
+from django.apps import apps
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 from django.core.exceptions import ValidationError
@@ -9,7 +10,7 @@ from django.db.models.functions import Lower
 
 from accounts.phone import normalize_phone, validate_phone
 from core import clock
-from games.domain import types
+from games.domain import schedule, types
 
 POTE_MIN = 1
 POTE_MAX = 5
@@ -23,8 +24,8 @@ class PlayerType(models.TextChoices):
     AGREGADO = types.PlayerType.AGREGADO.value, "Agregado"
 
 
-# Mensalista is not a standing type: it lasts one calendar month, from the player's
-# MonthlyEnrollment, and the next month everybody starts over (see Player.type_in).
+# Mensalista is not a standing type: it lasts the Sundays of one month, from the player's
+# MonthlyEnrollment, and after the month's last Sunday everybody starts over (see plan_month).
 STANDING_TYPES = [
     (PlayerType.AVULSO.value, PlayerType.AVULSO.label),
     (PlayerType.AGREGADO.value, PlayerType.AGREGADO.label),
@@ -35,8 +36,19 @@ def month_start(day: date) -> date:
     return day.replace(day=1)
 
 
-def current_month() -> date:
-    return month_start(clock.now().date())
+def plan_month(today: date | None = None) -> date:
+    """The month whose mensalistas count on `today` (default: now), and the one a player joins:
+    the month of the next Sunday that has not ended (see games.domain.schedule.plan_month). It is
+    the calendar month except after the month's last Sunday, when it is already the next one."""
+    today = today or clock.now().date()
+    today_ended = (
+        today.weekday() == schedule.SUNDAY
+        and schedule.is_last_sunday_of_month(today)
+        and apps.get_model("games", "GameDay")
+        .objects.filter(date=today, finished_at__isnull=False)
+        .exists()
+    )
+    return schedule.plan_month(today, today_ended=today_ended)
 
 
 class Position(models.TextChoices):
@@ -49,12 +61,13 @@ class PlayerQuerySet(models.QuerySet["Player"]):
     def _enrolled(month: date | None) -> models.Exists:
         return models.Exists(
             MonthlyEnrollment.objects.filter(
-                player=models.OuterRef("pk"), month=month or current_month()
+                player=models.OuterRef("pk"), month=month or plan_month()
             )
         )
 
     def with_enrollment(self, month: date | None = None) -> "PlayerQuerySet":
-        """Annotate `enrolled`: whether each player is a mensalista in `month` (default: now)."""
+        """Annotate `enrolled`: whether each player is a mensalista in `month` (default: the
+        plan month, see `plan_month`)."""
         return self.annotate(enrolled=self._enrolled(month))
 
     def of_type(self, kind: str, month: date | None = None) -> "PlayerQuerySet":
@@ -162,7 +175,7 @@ class Player(AbstractBaseUser, PermissionsMixin):
         max_length=12,
         choices=STANDING_TYPES,
         default=PlayerType.AVULSO,
-        help_text="Mensalista não é um tipo fixo: vale por um mês, a partir da adesão.",
+        help_text="Mensalista não é um tipo fixo: vale para os domingos do mês em que aderiu.",
     )
     position = models.CharField(
         "posição", max_length=10, choices=Position.choices, default=Position.LINHA
@@ -310,7 +323,7 @@ class Player(AbstractBaseUser, PermissionsMixin):
         return self.member_since or self.created_at.astimezone(clock.SAO_PAULO).date()
 
     def is_enrolled_in(self, month: date) -> bool:
-        """Whether the player joined the monthly plan for the calendar month of `month`."""
+        """Whether the player joined the monthly plan for the month of the date `month`."""
         return self.enrollments.filter(month=month_start(month)).exists()
 
     def type_in(self, month: date) -> str:
@@ -319,12 +332,13 @@ class Player(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_mensalista(self) -> bool:
-        return self.is_enrolled_in(current_month())
+        """Mensalista now: joined the plan month (see `plan_month`)."""
+        return self.is_enrolled_in(plan_month())
 
     @property
     def effective_type(self) -> str:
         """Type right now. Lists of players annotate `enrolled` instead of asking one by one."""
-        return self.type_in(current_month())
+        return self.type_in(plan_month())
 
     @property
     def effective_type_label(self) -> str:
@@ -336,11 +350,12 @@ class Player(AbstractBaseUser, PermissionsMixin):
 
 
 class MonthlyEnrollment(models.Model):
-    """A player joined the monthly plan for one calendar month.
+    """A player joined the monthly plan for one month: a mensalista on that month's Sundays.
 
-    Nothing renews by itself: the month is the reference, so on the 1st nobody has an enrollment
-    for the new month and every player is back to their standing type until they join again.
-    The monthly fee is a finance.Charge created when they join.
+    Nothing renews by itself: once the month's last Sunday has ended (see `plan_month`) nobody
+    has an enrollment for the new month and every player is back to their standing type until
+    they join again. The monthly fee is a finance.Charge created when they join, the same for
+    any number of Sundays.
     """
 
     player = models.ForeignKey(Player, on_delete=models.PROTECT, related_name="enrollments")

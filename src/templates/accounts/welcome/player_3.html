@@ -13,6 +13,6 @@
     <dt>Avulso e agregado, por domingo</dt><dd>{% if club.single_fee %}{{ club.single_fee|brl }}{% else %}a definir{% endif %}</dd>
     <dt>Mensalidade (vence dia {{ club.monthly_due_day }})</dt><dd>{% if club.monthly_fee %}{{ club.monthly_fee|brl }}{% else %}a definir{% endif %}</dd>
   </dl>
-  <p class="small muted">Mensalista paga a mensalidade e não paga cada domingo.</p>
+  <p class="small muted">Mensalista paga a mensalidade e não paga cada domingo. Vale para os domingos do mês, e a adesão do mês seguinte abre depois do último domingo.</p>
 </section>
 {% endblock %}

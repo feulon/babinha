@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from accounts.models import MonthlyEnrollment, Player, PlayerType, Position, current_month
+from accounts.models import MonthlyEnrollment, Player, PlayerType, Position, plan_month
 from core.clock import FixedClock, use_clock
 from core.clock import now as clock_now
 from core.models import ClubSettings
@@ -80,7 +80,7 @@ def make_player(db: None) -> Callable[..., Player]:
             **extra,
         )
         if mensalista:
-            MonthlyEnrollment.objects.create(player=player, month=current_month())
+            MonthlyEnrollment.objects.create(player=player, month=plan_month())
         return player
 
     return make

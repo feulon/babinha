@@ -1,9 +1,18 @@
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 import pytest
 
-from games.domain.schedule import WeekSchedule, follow_sunday, matchday_sunday, upcoming_sunday
+from games.domain.schedule import (
+    WeekSchedule,
+    follow_sunday,
+    is_last_sunday_of_month,
+    matchday_sunday,
+    plan_month,
+    plan_opens,
+    sunday_on_or_after,
+    upcoming_sunday,
+)
 from games.domain.slots import fits, line_capacity
 from games.domain.types import PlayerType
 
@@ -126,3 +135,71 @@ def test_at_most_four_goalkeepers() -> None:
 )
 def test_follow_sunday_keeps_the_game_all_monday(now: datetime, expected: date) -> None:
     assert follow_sunday(now) == expected
+
+
+class TestPlanMonth:
+    """A Sunday belongs to the month of its date; the plan turns once the month's last Sunday
+    has ended (finished by the diretoria, or at 00:00 of the Monday after)."""
+
+    @pytest.mark.parametrize(
+        ("today", "ended", "month"),
+        [
+            # 25/10/2026 is October's last Sunday; 01/11/2026 is November's first.
+            (date(2026, 10, 24), False, date(2026, 10, 1)),
+            (date(2026, 10, 25), False, date(2026, 10, 1)),
+            (date(2026, 10, 25), True, date(2026, 11, 1)),
+            (date(2026, 10, 26), False, date(2026, 11, 1)),
+            (date(2026, 10, 31), False, date(2026, 11, 1)),
+            (date(2026, 11, 1), False, date(2026, 11, 1)),
+            (date(2026, 11, 1), True, date(2026, 11, 1)),
+            # Finishing a Sunday that is not the month's last changes nothing.
+            (date(2026, 10, 18), True, date(2026, 10, 1)),
+            # 31/05/2026 is May's fifth and last Sunday, on the last day of the month.
+            (date(2026, 5, 31), False, date(2026, 5, 1)),
+            (date(2026, 5, 31), True, date(2026, 6, 1)),
+            (date(2026, 6, 1), False, date(2026, 6, 1)),
+            # The year turn: 27/12/2026 is December's last Sunday, 03/01/2027 January's first.
+            (date(2026, 12, 27), False, date(2026, 12, 1)),
+            (date(2026, 12, 27), True, date(2027, 1, 1)),
+            (date(2026, 12, 28), False, date(2027, 1, 1)),
+            (date(2027, 1, 1), False, date(2027, 1, 1)),
+            # Days of a month before its first Sunday are already that month.
+            (date(2026, 10, 1), False, date(2026, 10, 1)),
+        ],
+    )
+    def test_the_month_of_the_next_sunday_that_has_not_ended(
+        self, today: date, ended: bool, month: date
+    ) -> None:
+        assert plan_month(today, today_ended=ended) == month
+
+    def test_never_behind_the_calendar_nor_more_than_a_month_ahead(self) -> None:
+        day = date(2026, 1, 1)
+        while day.year < 2028:
+            month = plan_month(day, today_ended=False)
+            calendar = day.replace(day=1)
+            assert month in {calendar, (calendar + timedelta(days=32)).replace(day=1)}
+            assert month == sunday_on_or_after(day).replace(day=1)
+            day += timedelta(days=1)
+
+    @pytest.mark.parametrize(
+        ("month", "opens"),
+        [
+            (date(2026, 11, 1), datetime(2026, 10, 26, 0, 0, tzinfo=SP)),
+            (date(2026, 10, 1), datetime(2026, 9, 28, 0, 0, tzinfo=SP)),
+            (date(2026, 6, 1), datetime(2026, 6, 1, 0, 0, tzinfo=SP)),
+            (date(2027, 1, 1), datetime(2026, 12, 28, 0, 0, tzinfo=SP)),
+        ],
+    )
+    def test_joining_opens_the_monday_after_the_last_sunday_before(
+        self, month: date, opens: datetime
+    ) -> None:
+        assert plan_opens(month) == opens
+        assert plan_month(opens.date(), today_ended=False) == month
+        assert plan_month((opens - timedelta(minutes=1)).date(), today_ended=False) < month
+
+    @pytest.mark.parametrize(
+        ("sunday", "last"),
+        [(date(2026, 10, 25), True), (date(2026, 10, 18), False), (date(2026, 5, 31), True)],
+    )
+    def test_last_sunday_of_month(self, sunday: date, last: bool) -> None:
+        assert is_last_sunday_of_month(sunday) is last

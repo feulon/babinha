@@ -51,7 +51,7 @@
       <dt>Atraso de 30 min</dt><dd>{{ club.late_fine_30|brl }}</dd>
     </dl>
     <p class="small muted">{% fine_progression %} Faltar quando você está na lista ou desistir depois de sábado 23h59 gera multa.</p>
-    <p class="small muted">Mensalista vale por um mês. No dia 1º, volta ao tipo fixo (avulso ou agregado) até aderir de novo.</p>
+    <p class="small muted">{% include "core/help/_monthly.html" %}</p>
     <p class="small muted">Avulsos e agregados pagam a cobrança que aparece depois do futebol, por Pix, enviando o comprovante no app.</p>
   </section>
 

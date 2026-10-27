@@ -22,8 +22,8 @@ def csrf_cookie(request: HttpRequest) -> dict[str, object]:
 
 
 def monthly_member(request: HttpRequest) -> dict[str, object]:
-    """`viewer_is_monthly` is true for a signed-in mensalista of the current month, for the "M"
-    mark on their avatar. Lazy and cached: one query, and only on screens that show it."""
+    """`viewer_is_monthly` is true for a signed-in mensalista of the plan month, for the "M"
+    mark on their avatar. Lazy and cached: only screens that show it ask."""
     user = request.user
     if not user.is_authenticated:
         return {"viewer_is_monthly": False}
